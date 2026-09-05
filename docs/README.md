@@ -39,7 +39,7 @@ The first PoC/MVP targets:
    - Endpoints
    - Prisma models where available
 5. User can click a node to inspect details.
-6. User can trace dependencies and execution paths.
+6. User can inspect requested DI tokens and supported static calls, with unresolved calls explicitly marked; the PoC does not prove runtime execution paths.
 7. User can copy relevant context for use in an external LLM.
 
 ## Product direction
@@ -53,3 +53,5 @@ Future views may include:
 - Data Canvas
 
 The PoC should focus only on proving that a real codebase can be converted into a useful, understandable visual model.
+
+The [v0.1 graph contract](DATA_MODEL.md) is the authority for evidence, identifiers, validation and snapshot semantics. The initial experience above is the intended PoC; current runnable functionality is listed in the [root README](../README.md). After source changes, regenerate and re-select the graph.
