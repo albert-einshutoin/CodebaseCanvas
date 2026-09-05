@@ -1,0 +1,10 @@
+// Schema-only input. No datasource, client generation, or database connection.
+model User {
+  id String @id
+  name String
+}
+
+model Token {
+  id String @id
+  value String
+}

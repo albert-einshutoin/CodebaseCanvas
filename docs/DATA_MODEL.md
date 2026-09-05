@@ -207,6 +207,6 @@ An unsupported external source reference is not read: mark the affected source u
 
 ## Downstream acceptance
 
-Issue #4 will provide an independently reviewed expected graph with a shared provider, equal routes with different handlers, `useClass` overrides, and unknown calls. `injects` describes only the requested runtime class token; interface/type-only/custom/ambiguous DI must produce diagnostics in the analyzer, not edges that a shape validator pretends to prove.
+Issue #4 provides the [NestJS fixture and hand-authored expected graph](../examples/nestjs-sample/README.md) with a shared provider, equal routes with different handlers, `useClass` overrides, and unknown calls. `injects` describes only the requested runtime class token; interface/type-only/custom/ambiguous DI must produce diagnostics in the analyzer, not edges that a shape validator pretends to prove.
 
 Issue #26 must build the current Rust checkout, analyze a disposable copy of that source fixture, and import the newly emitted file through the production File API and this Zod validator. Build/analysis/import failure fails the test; a saved JSON graph cannot substitute for current output. Issue #3 does not implement extraction, File API, GraphBuilder, or this browser E2E.
