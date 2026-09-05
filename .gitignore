@@ -9,4 +9,6 @@ node_modules/
 target/
 dist/
 coverage/
+playwright-report/
+test-results/
 *.log
