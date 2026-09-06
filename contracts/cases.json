@@ -2928,6 +2928,126 @@
           ]
         ]
       }
+    },
+    {
+      "name": "node C1 U+0080",
+      "path": [
+        "nodes",
+        4,
+        "file"
+      ],
+      "value": "src/\u0080name.ts"
+    },
+    {
+      "name": "node evidence C1 U+0080",
+      "path": [
+        "nodes",
+        0,
+        "evidence",
+        0,
+        "file"
+      ],
+      "value": "src/\u0080name.ts"
+    },
+    {
+      "name": "edge evidence C1 U+0080",
+      "path": [
+        "edges",
+        0,
+        "evidence",
+        0,
+        "file"
+      ],
+      "value": "src/\u0080name.ts"
+    },
+    {
+      "name": "diagnostic C1 U+0080",
+      "path": [
+        "diagnostics",
+        0,
+        "file"
+      ],
+      "value": "src/\u0080name.ts"
+    },
+    {
+      "name": "node C1 U+0085",
+      "path": [
+        "nodes",
+        4,
+        "file"
+      ],
+      "value": "src/\u0085name.ts"
+    },
+    {
+      "name": "node evidence C1 U+0085",
+      "path": [
+        "nodes",
+        0,
+        "evidence",
+        0,
+        "file"
+      ],
+      "value": "src/\u0085name.ts"
+    },
+    {
+      "name": "edge evidence C1 U+0085",
+      "path": [
+        "edges",
+        0,
+        "evidence",
+        0,
+        "file"
+      ],
+      "value": "src/\u0085name.ts"
+    },
+    {
+      "name": "diagnostic C1 U+0085",
+      "path": [
+        "diagnostics",
+        0,
+        "file"
+      ],
+      "value": "src/\u0085name.ts"
+    },
+    {
+      "name": "node C1 U+009F",
+      "path": [
+        "nodes",
+        4,
+        "file"
+      ],
+      "value": "src/\u009fname.ts"
+    },
+    {
+      "name": "node evidence C1 U+009F",
+      "path": [
+        "nodes",
+        0,
+        "evidence",
+        0,
+        "file"
+      ],
+      "value": "src/\u009fname.ts"
+    },
+    {
+      "name": "edge evidence C1 U+009F",
+      "path": [
+        "edges",
+        0,
+        "evidence",
+        0,
+        "file"
+      ],
+      "value": "src/\u009fname.ts"
+    },
+    {
+      "name": "diagnostic C1 U+009F",
+      "path": [
+        "diagnostics",
+        0,
+        "file"
+      ],
+      "value": "src/\u009fname.ts"
     }
   ],
   "ids": [
