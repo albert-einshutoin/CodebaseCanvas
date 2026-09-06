@@ -48,6 +48,8 @@ pnpm web:build
 
 | 目的 | コマンド |
 |---|---|
+| 完全検証（依存 install + Rust/Web/fixture） | `pnpm run ci` |
+| PR 検証（現在は完全検証へ委譲） | `pnpm run ci-pr` |
 | Web 開発サーバー | `pnpm web:dev` |
 | Fixture 型検査 | `pnpm fixture:typecheck` |
 | Web 契約テスト | `pnpm web:test` |
@@ -65,7 +67,7 @@ preview は先にビルドしてから [確認画面](http://127.0.0.1:4173) を
 
 Rust と Web は共通 JSON ケースで契約を検証します。解析器の抽出精度を検証するテストは後続 Issue です。
 `codebasecanvas` バイナリは未実装の説明を出して終了コード 1 を返し、ファイルを生成しません。
-`web:e2e`、`ci`、`ci-pr` の成功する仮コマンドは用意していません。
+`web:e2e` は未実装です。成功する仮コマンドは用意していません。
 
 ## 構成と後続作業
 
@@ -77,7 +79,7 @@ Rust と Web は共通 JSON ケースで契約を検証します。解析器の�
 | `docs/` | 製品・設計・graph 契約の文書 |
 
 #3 の契約は [DATA_MODEL.md](docs/DATA_MODEL.md) と `contracts/cases.json` に定義しています。
-#26 で `pnpm web:e2e`、#31 で CI を導入します。
+#31 の基本 CI は導入済みです。#26 で `pnpm web:e2e` を同じ完全検証入口へ接続します。
 Rust と Web はソースコードを共有せず、正規 JSON graph を境界とします。
 
 解析パイプライン完成後は `codebasecanvas analyze <repo>` で
@@ -100,3 +102,11 @@ graph は解析時点の snapshot なので、ソース変更後には再解析�
 型と検証の入口・後続 Issue の責務は [契約の実装境界](docs/DATA_MODEL.md#wire-validation-and-ownership) を参照してください。
 
 Fixture の意味・期待件数と変更規則は [fixture README](examples/nestjs-sample/README.md) を参照してください。期待 graph は Analyzer 出力の代替ではありません。
+
+## CI の正本と後続の検証
+
+`package.json` の `ci` が独立した完全検証の正本です。`ci:rust` と `ci:web` に分けた既存検証を順に実行し、失敗時に停止します。`ci-pr` は `ci` へ一方向委譲します。変更範囲 selector は未実装です。
+
+GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を実行します。Ubuntu 24.04 の1環境、Node は `.node-version`、pnpm は `packageManager`、Rust は `rust-toolchain.toml` で固定します。Actions は commit SHA 固定、token は contents read、pnpm store のみ標準 cache、古い同一 PR run は中止します。必須 check に設定する場合は `Rust / Web quality` を選びます（branch protection の設定は別工程）。
+
+#18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続し、#30 で対象 commit の hosted 結果を確認します。現在 E2E は未実装です。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。

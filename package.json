@@ -11,6 +11,10 @@
     "web:build": "pnpm --filter @codebasecanvas/web build",
     "web:preview": "pnpm --filter @codebasecanvas/web preview",
     "web:test": "pnpm --filter @codebasecanvas/web test",
-    "fixture:typecheck": "pnpm --filter @codebasecanvas/nestjs-sample typecheck"
+    "fixture:typecheck": "pnpm --filter @codebasecanvas/nestjs-sample typecheck",
+    "ci:rust": "cargo build --workspace --locked && cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked",
+    "ci:web": "pnpm web:typecheck && pnpm web:test && pnpm web:build && pnpm fixture:typecheck",
+    "ci": "pnpm install --frozen-lockfile --ignore-scripts && pnpm run ci:rust && pnpm run ci:web",
+    "ci-pr": "pnpm run ci"
   }
 }
