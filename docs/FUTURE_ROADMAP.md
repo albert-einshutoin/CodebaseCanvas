@@ -44,3 +44,5 @@ This file is intentionally non-binding for the PoC.
 - Non-engineer product lens
 - Visual architecture editing
 - Expected architecture vs actual implementation
+
+The v0.1 boundary is the [versioned snapshot contract](DATA_MODEL.md). Later change views must not assume its IDs survive moves/refactors or introduce silent version migration. Health analysis is optional after the required PoC, as tracked separately by #29.

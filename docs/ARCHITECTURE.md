@@ -96,6 +96,12 @@ Use a native Rust/Oxc analyzer and a React/Vite/Cytoscape.js SPA hosted as Cloud
 - Rust and TypeScript remain decoupled through the normalized JSON contract.
 - Oxc accuracy must be proven against NestJS fixtures and a representative real repository before expanding recognizers.
 
+### Review decisions — graph correctness
+
+The [v0.1 graph contract](DATA_MODEL.md) defines requested-token DI semantics, edge directions, multi-module membership, display parents, observable unknown calls, and bounded context traversal. Requested tokens are not resolved provider implementations; injected-receiver call inference is outside the PoC. This avoids adding a runtime container simulator and leaves those calls explicitly unknown.
+
+Issue #7 must probe both the fixture and a representative real NestJS repository pinned to a commit before recognizer expansion. Record import, decorator, and constructor-token capability and failures; production recognizers and final usability evaluation remain separate work. Failure to obtain required information stops expansion for technology/scope reconsideration.
+
 ## Analyzer pipeline
 
 ```text
@@ -160,14 +166,29 @@ The analyzer outputs a normalized graph:
 
 ```json
 {
+  "schemaVersion": "0.1",
+  "metadata": {
+    "analyzerVersion": "0.1.0",
+    "analyzedAt": "2026-09-05T00:00:00Z",
+    "callAnalysis": {
+      "scope": "parsed_named_class_methods",
+      "mode": "same_class_only",
+      "examinedCalls": 0,
+      "emittedCalls": 0,
+      "skippedCalls": 0
+    }
+  },
   "nodes": [],
-  "edges": []
+  "edges": [],
+  "diagnostics": []
 }
 ```
 
 The UI should not depend directly on AST structures.
 
 The UI validates the selected JSON before rendering it. Invalid or unsupported graph data is rejected with a diagnostic; it is not partially guessed or sent to a server.
+
+Issue #26 will add a browser E2E that builds the current analyzer and generates fresh fixture output before importing that exact file. Failure to build or generate the file fails the test; saved JSON is used only for independent validator/negative tests, never as a fallback for the Rust-to-browser boundary.
 
 This separation is important because future analyzers may support other languages.
 
@@ -179,3 +200,7 @@ This separation is important because future analyzers may support other language
 - [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
 - [tRPC Fetch and Edge adapter](https://trpc.io/docs/server/adapters/fetch)
 - [Effect Platform stability](https://effect.website/docs/v3/platform/introduction)
+
+## Contract implementation boundary
+
+Use the [v0.1 validator and ID APIs](DATA_MODEL.md#wire-validation-and-ownership) from #3. Discovery, resolution, Prisma and output must enforce the [same repository root](DATA_MODEL.md#repository-io-boundary-implementation-in-5-6-13). Graphs are timestamped snapshots requiring re-analysis and file re-selection after source changes. #16 owns assembly and #19 owns File API integration; neither duplicates the contract validator.

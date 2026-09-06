@@ -16,6 +16,7 @@ Output:
 
 Requirements:
 
+- Before expanding recognizers, pass the #7 capability probe on both the fixture and a representative real NestJS repository pinned to a commit. Record capabilities and unsupported cases; missing required capability stops expansion.
 - Discover TypeScript files
 - Ignore:
   - node_modules
@@ -28,11 +29,12 @@ Requirements:
 - Detect classes
 - Detect interfaces
 - Detect NestJS decorators
-- Detect constructor dependencies
+- Detect requested constructor DI tokens, without claiming resolved provider implementations
 - Detect module composition
 - Detect controller routes
 - Report unsupported or unresolved constructs without guessing relationships
 - Serialize the normalized graph with Serde
+- Follow [DATA_MODEL.md](DATA_MODEL.md) for edge meanings, membership/display parents, evidence, and mandatory unknown-call diagnostics/counts. Injected-receiver call inference is outside the PoC.
 
 ## Milestone 2 — Graph UI
 
@@ -53,14 +55,13 @@ Requirements:
 
 Improve readability.
 
-Suggested grouping:
+Grouping follows the contract's display-parent rules. Shared providers remain outside Module groups with all membership edges preserved; DB models remain outside groups.
 
 ```text
 Module
   Controller
   Service
   Repository
-  DB
 ```
 
 Avoid rendering every method by default.
@@ -81,6 +82,8 @@ Generate Markdown for a selected node containing:
 - endpoints
 - methods
 - file locations
+
+Apply the allowed paths and fixed limits in [DATA_MODEL.md](DATA_MODEL.md#bounded-copy-context): at most 2 hops, 50 items per section, 200 distinct related nodes, and 32,000 Unicode code points. Include requested-token labels, unknown/confidence notices, and deterministic truncation notices. Associated controller endpoints do not prove service execution.
 
 ## Milestone 5 — Static deployment
 
@@ -106,4 +109,8 @@ The PoC is done when a user can point CodebaseCanvas at a real NestJS repository
 
 The analyzer must pass exact structural checks against the fixture project and a representative real repository. Record analysis time and peak memory before making performance claims; Rust adoption alone is not evidence of improved speed or accuracy.
 
-The browser test must prove that the generated fixture graph can be selected locally, validated, rendered, searched, and inspected without a network upload.
+Issue #26 will add a browser test that builds the analyzer from the current checkout and generates a fresh fixture graph in a temporary fixture copy. That exact file must be selected locally, validated, rendered, searched, and inspected without a network upload. Generation/build failure fails the test; a saved JSON graph cannot replace it. Hand-reviewed expected graphs remain the independent structural oracle.
+
+## Contract prerequisites
+
+The milestone descriptions above are product stages; the current dependency order is owned by Epic #1. #3 provides the [wire types, validation and IDs](DATA_MODEL.md#wire-validation-and-ownership), #4 the independently reviewed NestJS fixture, #16 graph assembly, and #19 local import. Follow the shared repository I/O boundary for discovery/config/import/Prisma/output. After source edits, regenerate and re-select the timestamped snapshot.

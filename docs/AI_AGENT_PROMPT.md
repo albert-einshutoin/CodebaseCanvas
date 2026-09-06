@@ -44,7 +44,7 @@ Do not implement:
 - Team functionality
 - Built-in AI/LLM calls
 - GitHub App
-- CI integration
+- CI failure ingestion as a product feature (repository development CI in Issue #31 is required)
 - Runtime tracing
 - Multi-language support
 
@@ -63,7 +63,7 @@ Use:
 
 A single repository is enough.
 
-Do not add a TypeScript analyzer fallback. Validate Oxc against the fixture before building recognizers on top of it.
+Do not add a TypeScript analyzer fallback. Validate Oxc against the fixture and a representative real NestJS repository pinned to a commit before building recognizers on top of it (Issue #7).
 
 The PoC has no backend. Do not add Next.js, React Flow, tRPC, Effect, a Worker API, or Cloudflare storage products unless the product scope is explicitly changed.
 
@@ -73,30 +73,13 @@ The analyzer must produce a normalized graph model that is independent from the 
 
 Do not expose raw AST nodes directly to the frontend.
 
-Expected shape:
+Use [DATA_MODEL.md](DATA_MODEL.md) as the canonical v0.1 contract, including schemaVersion, metadata/call coverage, nodes, edges, and diagnostics. Do not maintain another reduced schema here.
 
-```ts
-interface SystemGraph {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-}
-```
+`injects` means a requested runtime class token, never a resolved provider implementation. Do not infer injected-receiver method calls. Record skipped calls with scoped diagnostics and counts. Preserve multi-module membership independently from display parents, and use only the contract's bounded paths for Copy Context.
 
 ## First implementation sequence
 
-1. Define graph schema.
-2. Implement file discovery.
-3. Validate Oxc parsing and resolution against the fixture.
-4. Detect NestJS classes and decorators.
-5. Detect constructor dependency injection.
-6. Detect modules and controller routes.
-7. Generate `graph.json`.
-8. Build the React/Vite/Cytoscape.js canvas UI.
-9. Add local graph selection and Zod validation.
-10. Add selection and details panel.
-11. Add search and focus mode.
-12. Add Copy Context.
-13. Deploy the static SPA to Cloudflare Workers Static Assets.
+Follow Epic #1 and the selected Issue for the authoritative dependency order. #3 owns the [wire validators and canonical IDs](DATA_MODEL.md#wire-validation-and-ownership), #4 the independent source fixture, #16 graph assembly and #19 file import. Reuse these APIs. All file access must follow the contract's repository I/O boundary. Preserve `analyzedAt` and require re-analysis/re-selection for changed source.
 
 ## Testing
 
@@ -105,7 +88,8 @@ At minimum:
 - Rust unit tests for analyzer recognizers.
 - Fixture NestJS project.
 - Snapshot or structural graph tests.
-- One end-to-end test proving the fixture can be analyzed and rendered.
+- One end-to-end test that builds the current Rust checkout, freshly analyzes the fixture, and imports that exact graph through the production File API, Zod validation, and Canvas. Fail on analyzer errors; never substitute a saved graph.
+- Negative cases for provider overrides/type-only DI, shared module membership, unknown call counts, and bounded context traversal/truncation.
 - A recorded analysis-time and peak-memory measurement on a representative real repository before claiming a performance improvement.
 
 ## Avoid

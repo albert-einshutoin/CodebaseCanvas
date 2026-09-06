@@ -69,7 +69,7 @@ Detect:
 - writes
 - depends_on
 
-Not every edge type must be perfect in the first implementation.
+Use the exact semantics in [DATA_MODEL.md](DATA_MODEL.md). `injects` denotes requested tokens, not resolved implementations. `calls` is limited to supported same-class methods; other analyzed call sites remain observable unknowns. `reads`/`writes` are reserved and not emitted by the PoC.
 
 Priority:
 
@@ -107,7 +107,7 @@ Display:
 - Methods
 - Incoming dependencies
 - Outgoing dependencies
-- Source snippet if easy to support
+- Evidence and snapshot timestamp (source snippets are outside the JSON contract)
 
 ### Filters
 
@@ -132,12 +132,12 @@ Component: AuthService
 Type: NestJS Service
 File: src/auth/auth.service.ts
 
-Dependencies:
+Requested DI tokens (not resolved implementations):
 - UserRepository
 - JwtService
 - ConfigService
 
-Used by:
+Requested by:
 - AuthController
 
 Methods:
@@ -145,15 +145,19 @@ Methods:
 - refresh()
 - logout()
 
-Related endpoints:
+Declared on controllers requesting this token (not proven execution paths):
 - POST /auth/login
 - POST /auth/refresh
 ```
 
 The exported context must be plain text or Markdown so the user can paste it into any external LLM.
 
+Use only [the contract's bounded traversal](DATA_MODEL.md#bounded-copy-context): direct relationships plus explicitly listed 2-hop paths, with deterministic size limits and omission notices. Preserve confidence, call-analysis scope, and relevant unknown counts.
+
 ## Out of scope
 
 Anything not directly required to prove repository-to-visual-system mapping should be postponed.
 
 This includes tRPC, the Effect runtime, Cloudflare D1/R2/Queues, cloud repository analysis, authentication, and persisted graph sharing.
+
+Graphs are [validated v0.1 snapshots](DATA_MODEL.md), not live source synchronization. Re-run analysis and re-select the file after edits. All analysis input/output stays within the selected repository boundary.

@@ -74,3 +74,7 @@ Do not implement:
 - Authentication
 - Billing
 - Enterprise security
+
+## Evidence and freshness
+
+A graph describes a static snapshot, with evidence and the `analyzedAt` timestamp defined in [DATA_MODEL.md](DATA_MODEL.md). It does not prove runtime provider execution or current-source synchronization. Unknown relationships remain visible; source changes require re-analysis and file re-selection.

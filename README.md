@@ -5,7 +5,8 @@ AI が生成・変更するコードを、人間が理解できる構造の地�
 
 ## 現在の状態
 
-Issue #2 の開発基盤です。Rust のビルドと React/Vite の起動画面が利用できます。
+Issue #2 の開発基盤に、#3 の SystemGraph v0.1 型・検証・契約テストを追加しています。
+Rust のビルドと React/Vite の起動画面が利用できます。
 リポジトリ解析、graph 生成、ファイル選択、Canvas はまだ実装していません。
 内蔵 LLM、バックエンド、認証、データベースはありません。
 
@@ -48,6 +49,7 @@ pnpm web:build
 | 目的 | コマンド |
 |---|---|
 | Web 開発サーバー | `pnpm web:dev` |
+| Web 契約テスト | `pnpm web:test` |
 | Web 型検査 | `pnpm web:typecheck` |
 | Web 本番ビルド | `pnpm web:build` |
 | ビルド済み Web の確認 | `pnpm web:preview` |
@@ -60,9 +62,9 @@ pnpm web:build
 preview は先にビルドしてから [確認画面](http://127.0.0.1:4173) を開きます。
 ポート使用中は別ポートへ自動変更せずエラーになります。終了は Ctrl+C です。
 
-現時点の Rust test は 0 件です。解析品質を検証したことにはなりません。
+Rust と Web は共通 JSON ケースで契約を検証します。解析器の抽出精度を検証するテストは後続 Issue です。
 `codebasecanvas` バイナリは未実装の説明を出して終了コード 1 を返し、ファイルを生成しません。
-`web:test`、`web:e2e`、`ci`、`ci-pr` の成功する仮コマンドは用意していません。
+`web:e2e`、`ci`、`ci-pr` の成功する仮コマンドは用意していません。
 
 ## 構成と後続作業
 
@@ -73,7 +75,8 @@ preview は先にビルドしてから [確認画面](http://127.0.0.1:4173) を
 | `examples/nestjs-sample/` | #4 で作成予定。まだ存在しません |
 | `docs/` | 製品・設計・graph 契約の文書 |
 
-#3 で graph 型・validator・関連 test、#26 で `pnpm web:e2e`、#31 で CI を導入します。
+#3 の契約は [DATA_MODEL.md](docs/DATA_MODEL.md) と `contracts/cases.json` に定義しています。
+#26 で `pnpm web:e2e`、#31 で CI を導入します。
 Rust と Web はソースコードを共有せず、正規 JSON graph を境界とします。
 
 解析パイプライン完成後は `codebasecanvas analyze <repo>` で
@@ -93,4 +96,4 @@ graph は解析時点の snapshot なので、ソース変更後には再解析�
 - [将来のロードマップ](docs/FUTURE_ROADMAP.md)
 
 現在の着手順と完了条件は [Epic #1](https://github.com/albert-einshutoin/CodebaseCanvas/issues/1) と各 Issue を参照してください。
-既存文書と整理済み Issue の契約整合は #3 の担当です。
+型と検証の入口・後続 Issue の責務は [契約の実装境界](docs/DATA_MODEL.md#wire-validation-and-ownership) を参照してください。
