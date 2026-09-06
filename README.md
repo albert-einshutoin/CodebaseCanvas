@@ -100,6 +100,7 @@ graph は解析時点の snapshot なので、ソース変更後には再解析�
 - [PoC 実装計画](docs/POC_IMPLEMENTATION.md)
 - [Agent 向け説明](docs/AI_AGENT_PROMPT.md)
 - [将来のロードマップ](docs/FUTURE_ROADMAP.md)
+- [Oxc capability probe (#7)](docs/OXC_CAPABILITIES.md)
 
 現在の着手順と完了条件は [Epic #1](https://github.com/albert-einshutoin/CodebaseCanvas/issues/1) と各 Issue を参照してください。
 型と検証の入口・後続 Issue の責務は [契約の実装境界](docs/DATA_MODEL.md#wire-validation-and-ownership) を参照してください。
