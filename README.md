@@ -66,7 +66,7 @@ preview は先にビルドしてから [確認画面](http://127.0.0.1:4173) を
 ポート使用中は別ポートへ自動変更せずエラーになります。終了は Ctrl+C です。
 
 Rust と Web は共通 JSON ケースで契約を検証します。解析器の抽出精度を検証するテストは後続 Issue です。
-`codebasecanvas` バイナリは未実装の説明を出して終了コード 1 を返し、ファイルを生成しません。
+`codebasecanvas --help` は成功し、`codebasecanvas analyze <repo>` は引数と repository を検証します。実解析は #17 で接続するため、現在は未実装エラーで終了コード 1 を返し、graph を生成しません。
 `web:e2e` は未実装です。成功する仮コマンドは用意していません。
 
 ## 構成と後続作業
@@ -110,3 +110,18 @@ Fixture の意味・期待件数と変更規則は [fixture README](examples/nes
 GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を実行します。Ubuntu 24.04 の1環境、Node は `.node-version`、pnpm は `packageManager`、Rust は `rust-toolchain.toml` で固定します。Actions は commit SHA 固定、token は contents read、pnpm store のみ標準 cache、古い同一 PR run は中止します。必須 check に設定する場合は `Rust / Web quality` を選びます（branch protection の設定は別工程）。
 
 #18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続し、#30 で対象 commit の hosted 結果を確認します。現在 E2E は未実装です。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
+
+## CLI 入出力の境界 (#5)
+
+```sh
+cargo run --locked -p codebasecanvas-analyzer -- --help
+cargo run --locked -p codebasecanvas-analyzer -- analyze ./examples/nestjs-sample
+```
+
+help は終了コード 0、引数不正は 2、repository・解析・保存の fatal error は 1 です。現在の analyze は解析未実装として 1 を返します。空 graph や手定義 fixture を解析済みの出力にする経路はありません。#17 で `cli::analyze` に実 pipeline を接続します。成功した pipeline の warning は保存を妨げず、保存先と diagnostics 件数を表示します。fatal error は graph diagnostics と分離します。
+
+保存経路は `SystemGraph::to_json` で検証・正規化してから、固定の `.codebasecanvas/graph.json` に保存します。Unix (macOS/Linux) の directory-relative I/O で開いた root/output directory を使い、既存 output directory/target の symlink・非regular target を拒否します。temp は排他的に作成し権限0600、書込・sync完了後に同じdirectory内でatomic renameします。失敗時は旧 graph を保持しtempを削除し、削除も失敗した場合はそのエラーを報告します。非Unixは安全な保存の未対応エラーです。
+
+symlink参照先への書込は行いません。検査後にtargetがsymlinkへ変わってもrenameはlink自体を置換します。root/output directoryのidentityを照合し、検出した差替えは失敗にします。ただし同一ユーザーが保存中にdirectory自体を移動し続ける状況や、同時writer同士の競合を隔離するsandbox/lockではありません。保存中はrepository/output directoryを移動・変更しないでください。atomic置換は途中JSONの公開を防ぐ保証であり、停電後のdirectory entryの永続性まで保証しません。
+
+成功・再保存・warning・途中write失敗・symlink差替え・旧graph保護は、使い捨てdirectoryの合成graphで検証します。これは現行Analyzerの解析成功やE2Eの証拠ではありません。依存は引数処理の `clap`（独自parserを避ける）と、unsafe自作syscallを避ける `rustix`（Unix filesystemのみ）に限定します。

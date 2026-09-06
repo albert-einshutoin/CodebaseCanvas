@@ -24,6 +24,8 @@
 | Web 型検査 | `pnpm web:typecheck` |
 | Web ビルド | `pnpm web:build` |
 | Web preview | `pnpm web:preview` |
+| CLI help | `cargo run --locked -p codebasecanvas-analyzer -- --help` |
+| CLI/保存境界の対象検証 | `cargo test --workspace --locked --bin codebasecanvas --test cli` |
 | Rust ビルド | `cargo build --workspace --locked` |
 | Rust format | `cargo fmt --all --check` |
 | Rust lint | `cargo clippy --workspace --all-targets --locked -- -D warnings` |
@@ -52,3 +54,5 @@ Rust/Web 契約テストは `contracts/cases.json` を共用する。#4 の `exa
 GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を実行します。Ubuntu 24.04 の1環境、Node は `.node-version`、pnpm は `packageManager`、Rust は `rust-toolchain.toml` で固定します。Actions は commit SHA 固定、token は contents read、pnpm store のみ標準 cache、古い同一 PR run は中止します。必須 check に設定する場合は `Rust / Web quality` を選びます（branch protection の設定は別工程）。
 
 #18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続し、#30 で対象 commit の hosted 結果を確認します。現在 E2E は未実装です。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
+
+#5 の CLI は引数・repository と安全な保存経路を提供する。実解析は #17 まで非0・無書込。合成 graph による保存 test を実解析の成功としない。Unix dirfd による保存は同一ユーザーの同時 directory 移動を隔離しない（README の境界参照）。
