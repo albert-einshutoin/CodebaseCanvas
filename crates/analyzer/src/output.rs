@@ -1,8 +1,8 @@
-use codebasecanvas_analyzer::SystemGraph;
+use codebasecanvas_analyzer::{SystemGraph, discovery::RepositoryRoot};
 use std::path::{Path, PathBuf};
 
 pub struct Repository {
-    pub path: PathBuf,
+    pub root: RepositoryRoot,
     #[cfg(unix)]
     directory: std::fs::File,
 }
@@ -11,9 +11,9 @@ impl Repository {
     pub fn open(path: &Path) -> Result<Self, String> {
         // Capture the selected directory before resolving any symlink/canonical path.
         let before =
-            std::fs::metadata(path).map_err(|error| format!("repository {path:?}: {error}"))?;
+            std::fs::metadata(path).map_err(|_| "repository cannot be opened".to_owned())?;
         if !before.is_dir() {
-            return Err(format!("repository {path:?}: not a directory"));
+            return Err("repository is not a directory".to_owned());
         }
         #[cfg(unix)]
         {
@@ -26,11 +26,9 @@ impl Repository {
     #[cfg(unix)]
     fn open_checked(path: &Path, before: &std::fs::Metadata) -> Result<Self, String> {
         use std::os::unix::fs::MetadataExt;
-        let path = path
-            .canonicalize()
-            .map_err(|error| format!("repository {path:?}: {error}"))?;
-        let directory = rustix::fs::open(&path, unix::DIR_FLAGS, rustix::fs::Mode::empty())
-            .map_err(|error| format!("repository {path:?}: {error}"))?;
+        let root = RepositoryRoot::open(path)?;
+        let directory = rustix::fs::open(root.path(), unix::DIR_FLAGS, rustix::fs::Mode::empty())
+            .map_err(|_| "repository cannot be opened safely".to_owned())?;
         let directory = std::fs::File::from(directory);
         let opened = directory
             .metadata()
@@ -38,7 +36,7 @@ impl Repository {
         if before.dev() != opened.dev() || before.ino() != opened.ino() {
             return Err("repository changed while opening".into());
         }
-        Ok(Self { path, directory })
+        Ok(Self { root, directory })
     }
 
     pub fn save(&self, graph: &SystemGraph) -> Result<PathBuf, String> {
@@ -50,18 +48,18 @@ impl Repository {
         {
             use std::io::Write;
             use std::os::unix::fs::MetadataExt;
-            let named = std::fs::symlink_metadata(&self.path)
-                .map_err(|error| format!("repository {:?}: {error}", self.path))?;
+            let named = std::fs::symlink_metadata(self.root.path())
+                .map_err(|error| format!("repository {:?}: {error}", self.root.path()))?;
             let opened = self
                 .directory
                 .metadata()
-                .map_err(|error| format!("repository {:?}: {error}", self.path))?;
+                .map_err(|error| format!("repository {:?}: {error}", self.root.path()))?;
             if !named.is_dir() || named.dev() != opened.dev() || named.ino() != opened.ino() {
                 return Err("repository changed during analysis".into());
             }
             unix::atomic_write(&self.directory, |file| file.write_all(json.as_bytes()))
-                .map_err(|error| format!("output in {:?}: {error}", self.path))?;
-            Ok(self.path.join(".codebasecanvas/graph.json"))
+                .map_err(|error| format!("output in {:?}: {error}", self.root.path()))?;
+            Ok(self.root.path().join(".codebasecanvas/graph.json"))
         }
         #[cfg(not(unix))]
         {

@@ -3,6 +3,8 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{Map, Value};
 use std::collections::{HashMap, HashSet};
 
+pub mod discovery;
+
 // An optional wire field may be absent, but explicit null is not a value.
 fn present<'de, D: Deserializer<'de>, T: Deserialize<'de>>(d: D) -> Result<Option<T>, D::Error> {
     T::deserialize(d).map(Some)
