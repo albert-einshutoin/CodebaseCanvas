@@ -177,7 +177,7 @@ fn root_changed_during_pipeline_does_not_create_output() {
 fn orchestration_accepts_warning_graph_and_passes_canonical_root() {
     let sandbox = Sandbox::new();
     let summary = crate::cli::analyze(&sandbox.0.join("."), |root| {
-        assert_eq!(root, sandbox.0);
+        assert_eq!(root.path(), sandbox.0);
         Ok(graph())
     })
     .unwrap();
@@ -207,7 +207,11 @@ fn selected_root_identity_survives_canonicalization() {
     let before = fs::metadata(&selected).unwrap();
     // A symlink input is valid when it still identifies the captured directory.
     assert_eq!(
-        Repository::open_checked(&selected, &before).unwrap().path,
+        Repository::open_checked(&selected, &before)
+            .unwrap()
+            .root
+            .path()
+            .to_owned(),
         sandbox.0
     );
     fs::remove_file(&selected).unwrap();

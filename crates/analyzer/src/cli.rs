@@ -1,6 +1,6 @@
 use clap::{Arg, Command, value_parser};
-use codebasecanvas_analyzer::{Severity, SystemGraph};
-use std::path::{Path, PathBuf};
+use codebasecanvas_analyzer::{Severity, SystemGraph, discovery::RepositoryRoot};
+use std::path::PathBuf;
 
 pub fn command() -> Command {
     Command::new("codebasecanvas")
@@ -26,11 +26,11 @@ pub struct Summary {
 }
 
 pub fn analyze(
-    path: &Path,
-    pipeline: impl FnOnce(&Path) -> Result<SystemGraph, String>,
+    path: &std::path::Path,
+    pipeline: impl FnOnce(&RepositoryRoot) -> Result<SystemGraph, String>,
 ) -> Result<Summary, String> {
     let root = crate::output::Repository::open(path)?;
-    let graph = pipeline(&root.path)?;
+    let graph = pipeline(&root.root)?;
     let path = root.save(&graph)?;
     Ok(Summary {
         path,

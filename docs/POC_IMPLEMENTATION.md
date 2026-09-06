@@ -16,6 +16,7 @@ Output:
 
 Requirements:
 
+- Issue #6 の discovery は `codebasecanvas_analyzer::discovery::discover` を使い、canonical な repository root と root-relative `/` path を共有する。`.git`、`.codebasecanvas`、`node_modules`、`dist`、`build`、`coverage`、`.next`、generated directory、`.d.ts` を除外し、source symlink は root 内だけを追跡する。外向き・loop・除外先 alias は診断して取り込まず、絶対 path を graph に渡さない。
 - Before expanding recognizers, pass the #7 capability probe on both the fixture and a representative real NestJS repository pinned to a commit. Record capabilities and unsupported cases; missing required capability stops expansion.
 - Discover TypeScript files
 - Ignore:
