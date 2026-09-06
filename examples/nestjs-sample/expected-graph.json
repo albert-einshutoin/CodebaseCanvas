@@ -1,0 +1,2484 @@
+{
+  "schemaVersion": "0.1",
+  "metadata": {
+    "analyzerVersion": "hand-authored-fixture-v1",
+    "analyzedAt": "2026-09-05T00:00:00Z",
+    "rootName": "nestjs-sample",
+    "callAnalysis": {
+      "scope": "parsed_named_class_methods",
+      "mode": "same_class_only",
+      "examinedCalls": 9,
+      "emittedCalls": 2,
+      "skippedCalls": 7
+    }
+  },
+  "nodes": [
+    {
+      "id": "class:7372632f6170702e6d6f64756c652e7473:4170704d6f64756c65",
+      "kind": "module",
+      "name": "AppModule",
+      "qualifiedName": "AppModule",
+      "file": "src/app.module.ts",
+      "line": 6,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/app.module.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/app.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "kind": "controller",
+      "name": "AuthController",
+      "qualifiedName": "AuthController",
+      "file": "src/auth/auth.controller.ts",
+      "line": 5,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.controller.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.controller.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ],
+      "parentId": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65"
+    },
+    {
+      "id": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "kind": "module",
+      "name": "AuthModule",
+      "qualifiedName": "AuthModule",
+      "file": "src/auth/auth.module.ts",
+      "line": 12,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.module.ts",
+          "line": 12,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.module.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "kind": "service",
+      "name": "AuthService",
+      "qualifiedName": "AuthService",
+      "file": "src/auth/auth.service.ts",
+      "line": 5,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.service.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.service.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ],
+      "parentId": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65"
+    },
+    {
+      "id": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "kind": "repository",
+      "name": "TokenRepository",
+      "qualifiedName": "TokenRepository",
+      "file": "src/auth/token.repository.ts",
+      "line": 4,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/token.repository.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/auth/token.repository.ts",
+          "line": 3,
+          "confidence": "best_effort"
+        }
+      ],
+      "parentId": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65"
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f6964656e746974792e7473:416c706861:53616d65",
+      "kind": "class",
+      "name": "Same",
+      "qualifiedName": "Alpha.Same",
+      "file": "src/regressions/identity.ts",
+      "line": 4,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/identity.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f6964656e746974792e7473:42657461:53616d65",
+      "kind": "class",
+      "name": "Same",
+      "qualifiedName": "Beta.Same",
+      "file": "src/regressions/identity.ts",
+      "line": 5,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/identity.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f6964656e746974792e7473:45787465726e616c42696e64696e6773",
+      "kind": "class",
+      "name": "ExternalBindings",
+      "qualifiedName": "ExternalBindings",
+      "file": "src/regressions/identity.ts",
+      "line": 6,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/identity.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4d6f636b557365727353657276696365",
+      "kind": "class",
+      "name": "MockUsersService",
+      "qualifiedName": "MockUsersService",
+      "file": "src/regressions/override.module.ts",
+      "line": 4,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/override.module.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "kind": "controller",
+      "name": "OverrideController",
+      "qualifiedName": "OverrideController",
+      "file": "src/regressions/override.module.ts",
+      "line": 8,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/override.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/regressions/override.module.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ],
+      "parentId": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f766572726964654d6f64756c65"
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f766572726964654d6f64756c65",
+      "kind": "module",
+      "name": "OverrideModule",
+      "qualifiedName": "OverrideModule",
+      "file": "src/regressions/override.module.ts",
+      "line": 17,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/override.module.ts",
+          "line": 17,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/regressions/override.module.ts",
+          "line": 13,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f706f7274732e7473:547970654f6e6c79546f6b656e",
+      "kind": "class",
+      "name": "TypeOnlyToken",
+      "qualifiedName": "TypeOnlyToken",
+      "file": "src/regressions/ports.ts",
+      "line": 2,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/ports.ts",
+          "line": 2,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:44796e616d696346656174757265",
+      "kind": "module",
+      "name": "DynamicFeature",
+      "qualifiedName": "DynamicFeature",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 17,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 17,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 16,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572",
+      "kind": "service",
+      "name": "UnsupportedConsumer",
+      "qualifiedName": "UnsupportedConsumer",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 9,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ],
+      "parentId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65"
+    },
+    {
+      "id": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65",
+      "kind": "module",
+      "name": "UnsupportedModule",
+      "qualifiedName": "UnsupportedModule",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 29,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 29,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 21,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "kind": "repository",
+      "name": "UserRepository",
+      "qualifiedName": "UserRepository",
+      "file": "src/users/user.repository.ts",
+      "line": 4,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/user.repository.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/users/user.repository.ts",
+          "line": 3,
+          "confidence": "best_effort"
+        }
+      ],
+      "parentId": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65"
+    },
+    {
+      "id": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "kind": "controller",
+      "name": "UsersController",
+      "qualifiedName": "UsersController",
+      "file": "src/users/users.controller.ts",
+      "line": 5,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ],
+      "parentId": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65"
+    },
+    {
+      "id": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "kind": "module",
+      "name": "UsersModule",
+      "qualifiedName": "UsersModule",
+      "file": "src/users/users.module.ts",
+      "line": 11,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.module.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/users/users.module.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "service",
+      "name": "UsersService",
+      "qualifiedName": "UsersService",
+      "file": "src/users/users.service.ts",
+      "line": 5,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "nestjs",
+          "file": "src/users/users.service.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "database_model:707269736d612f736368656d612e707269736d61:546f6b656e",
+      "kind": "database_model",
+      "name": "Token",
+      "file": "prisma/schema.prisma",
+      "line": 7,
+      "evidence": [
+        {
+          "source": "prisma",
+          "file": "prisma/schema.prisma",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "database_model:707269736d612f736368656d612e707269736d61:55736572",
+      "kind": "database_model",
+      "name": "User",
+      "file": "prisma/schema.prisma",
+      "line": 2,
+      "evidence": [
+        {
+          "source": "prisma",
+          "file": "prisma/schema.prisma",
+          "line": 2,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "endpoint:44454c455445:2f75736572732f3a6964:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373236353664366637363635",
+      "kind": "endpoint",
+      "name": "DELETE /users/:id",
+      "file": "src/users/users.controller.ts",
+      "line": 14,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 14,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "httpMethod": "DELETE",
+        "path": "/users/:id",
+        "controllerMethodId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:72656d6f7665"
+      }
+    },
+    {
+      "id": "endpoint:474554:2f6f76657272696465:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363636333733363336333533373332333733323336333933363334333633353332363533363634333636363336333433373335333636333336333533323635333733343337333333613334363633373336333633353337333233373332333633393336333433363335333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "kind": "endpoint",
+      "name": "GET /override",
+      "file": "src/regressions/override.module.ts",
+      "line": 10,
+      "parentId": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/regressions/override.module.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "httpMethod": "GET",
+        "path": "/override",
+        "controllerMethodId": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696e7374616e6365:6c697374"
+      }
+    },
+    {
+      "id": "endpoint:474554:2f7573657273:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36313663363936313733",
+      "kind": "endpoint",
+      "name": "GET /users",
+      "file": "src/users/users.controller.ts",
+      "line": 10,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "httpMethod": "GET",
+        "path": "/users",
+        "controllerMethodId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:616c696173"
+      }
+    },
+    {
+      "id": "endpoint:474554:2f7573657273:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "kind": "endpoint",
+      "name": "GET /users",
+      "file": "src/users/users.controller.ts",
+      "line": 7,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "httpMethod": "GET",
+        "path": "/users",
+        "controllerMethodId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:6c697374"
+      }
+    },
+    {
+      "id": "endpoint:5041544348:2f75736572732f3a6964:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373537303634363137343635",
+      "kind": "endpoint",
+      "name": "PATCH /users/:id",
+      "file": "src/users/users.controller.ts",
+      "line": 12,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 12,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "httpMethod": "PATCH",
+        "path": "/users/:id",
+        "controllerMethodId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:757064617465"
+      }
+    },
+    {
+      "id": "endpoint:504f5354:2f617574682f6c6f67696e:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533363333333636363336363533373334333733323336363633363633333636333336333533373332333236353337333433373333336133343331333733353337333433363338333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36633666363736393665",
+      "kind": "endpoint",
+      "name": "POST /auth/login",
+      "file": "src/auth/auth.controller.ts",
+      "line": 7,
+      "parentId": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "httpMethod": "POST",
+        "path": "/auth/login",
+        "controllerMethodId": "method:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696e7374616e6365:6c6f67696e"
+      }
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:436f6e74726f6c6c6572",
+      "kind": "external_dependency",
+      "name": "Controller",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.controller.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:44656c657465",
+      "kind": "external_dependency",
+      "name": "Delete",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:44796e616d69634d6f64756c65",
+      "kind": "external_dependency",
+      "name": "DynamicModule",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 2,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:476574",
+      "kind": "external_dependency",
+      "name": "Get",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:496e6a656374",
+      "kind": "external_dependency",
+      "name": "Inject",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:496e6a65637461626c65",
+      "kind": "external_dependency",
+      "name": "Injectable",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.service.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/auth/token.repository.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/users/user.repository.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/users/users.service.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:4d6f64756c65",
+      "kind": "external_dependency",
+      "name": "Module",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/app.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        },
+        {
+          "source": "resolver",
+          "file": "src/users/users.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:5061746368",
+      "kind": "external_dependency",
+      "name": "Patch",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:506f7374",
+      "kind": "external_dependency",
+      "name": "Post",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.controller.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:406e6573746a732f636f6d6d6f6e:666f7277617264526566",
+      "kind": "external_dependency",
+      "name": "forwardRef",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:72786a732f6f70657261746f7273:6d6170",
+      "kind": "external_dependency",
+      "name": "map",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/identity.ts",
+          "line": 2,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external:72786a73:6d6170",
+      "kind": "external_dependency",
+      "name": "map",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/identity.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "interface:7372632f72656772657373696f6e732f706f7274732e7473:506f7274",
+      "kind": "interface",
+      "name": "Port",
+      "qualifiedName": "Port",
+      "file": "src/regressions/ports.ts",
+      "line": 1,
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/ports.ts",
+          "line": 1,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696e7374616e6365:6c6f67696e",
+      "kind": "method",
+      "name": "login",
+      "file": "src/auth/auth.controller.ts",
+      "line": 8,
+      "parentId": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.controller.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e7374616e6365:6c6f67696e",
+      "kind": "method",
+      "name": "login",
+      "file": "src/auth/auth.service.ts",
+      "line": 7,
+      "parentId": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.service.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e7374616e6365:6e6f726d616c697a65",
+      "kind": "method",
+      "name": "normalize",
+      "file": "src/auth/auth.service.ts",
+      "line": 11,
+      "parentId": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.service.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739:696e7374616e6365:73617665",
+      "kind": "method",
+      "name": "save",
+      "file": "src/auth/token.repository.ts",
+      "line": 5,
+      "parentId": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/token.repository.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a3733373236333266373236353637373236353733373336393666366537333266363936343635366537343639373437393265373437333a3435373837343635373236653631366334323639366536343639366536373733:696e7374616e6365:696e7370656374",
+      "kind": "method",
+      "name": "inspect",
+      "file": "src/regressions/identity.ts",
+      "line": 7,
+      "parentId": "class:7372632f72656772657373696f6e732f6964656e746974792e7473:45787465726e616c42696e64696e6773",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/identity.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a3464366636333662353537333635373237333533363537323736363936333635:696e7374616e6365:6c697374",
+      "kind": "method",
+      "name": "list",
+      "file": "src/regressions/override.module.ts",
+      "line": 5,
+      "parentId": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4d6f636b557365727353657276696365",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/override.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "kind": "method",
+      "name": "list",
+      "file": "src/regressions/override.module.ts",
+      "line": 11,
+      "parentId": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/override.module.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a34343739366536313664363936333436363536313734373537323635:737461746963:7265676973746572",
+      "kind": "method",
+      "name": "register",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 18,
+      "parentId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:44796e616d696346656174757265",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 18,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739:696e7374616e6365:66696e64",
+      "kind": "method",
+      "name": "find",
+      "file": "src/users/user.repository.ts",
+      "line": 5,
+      "parentId": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/user.repository.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:616c696173",
+      "kind": "method",
+      "name": "alias",
+      "file": "src/users/users.controller.ts",
+      "line": 11,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "kind": "method",
+      "name": "list",
+      "file": "src/users/users.controller.ts",
+      "line": 8,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:72656d6f7665",
+      "kind": "method",
+      "name": "remove",
+      "file": "src/users/users.controller.ts",
+      "line": 15,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 15,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:757064617465",
+      "kind": "method",
+      "name": "update",
+      "file": "src/users/users.controller.ts",
+      "line": 13,
+      "parentId": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 13,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:63686f6f7365",
+      "kind": "method",
+      "name": "choose",
+      "file": "src/users/users.service.ts",
+      "line": 10,
+      "parentId": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:66696e64",
+      "kind": "method",
+      "name": "find",
+      "file": "src/users/users.service.ts",
+      "line": 9,
+      "parentId": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:6c697374",
+      "kind": "method",
+      "name": "list",
+      "file": "src/users/users.service.ts",
+      "line": 7,
+      "parentId": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:737461746963:66696e64",
+      "kind": "method",
+      "name": "find",
+      "file": "src/users/users.service.ts",
+      "line": 8,
+      "parentId": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:636c6173733a373337323633326636313730373032653664366636343735366336353265373437333a343137303730346436663634373536633635:646570656e64735f6f6e:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635",
+      "from": "class:7372632f6170702e6d6f64756c652e7473:4170704d6f64756c65",
+      "to": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/app.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313730373032653664366636343735366336353265373437333a343137303730346436663634373536633635:646570656e64735f6f6e:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635",
+      "from": "class:7372632f6170702e6d6f64756c652e7473:4170704d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/app.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313730373032653664366636343735366336353265373437333a343137303730346436663634373536633635:696d706f727473:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635",
+      "from": "class:7372632f6170702e6d6f64756c652e7473:4170704d6f64756c65",
+      "to": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/app.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313730373032653664366636343735366336353265373437333a343137303730346436663634373536633635:696d706f727473:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635",
+      "from": "class:7372632f6170702e6d6f64756c652e7473:4170704d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/app.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313730373032653664366636343735366336353265373437333a343137303730346436663634373536633635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a346436663634373536633635",
+      "from": "class:7372632f6170702e6d6f64756c652e7473:4170704d6f64756c65",
+      "to": "external:406e6573746a732f636f6d6d6f6e:4d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/app.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533363333333636363336363533373334333733323336363633363633333636333336333533373332333236353337333433373333336133343331333733353337333433363338333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36633666363736393665",
+      "from": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "to": "method:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696e7374616e6365:6c6f67696e",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.controller.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:6578706f736573:656e64706f696e743a35303466353335343a326636313735373436383266366336663637363936653a366436353734363836663634336133363333333636333336333133373333333733333333363133333337333333333333333733333332333333363333333333333332333633363333333633333331333333373333333533333337333333343333333633333338333333323336333633333336333333313333333733333335333333373333333433333336333333383333333233363335333333363333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233333332333633353333333733333334333333373333333333333631333333343333333133333337333333353333333733333334333333363333333833333334333333333333333633363336333333363336333533333337333333343333333733333332333333363336333633333336333633333333333633363333333333363333333533333337333333323361333633393336363533373333333733343336333133363635333633333336333533613336363333363636333633373336333933363635",
+      "from": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "to": "endpoint:504f5354:2f617574682f6c6f67696e:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533363333333636363336363533373334333733323336363633363633333636333336333533373332333236353337333433373333336133343331333733353337333433363338333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36633666363736393665",
+      "kind": "exposes",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696d706f727473:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635",
+      "from": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "to": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.controller.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3433366636653734373236663663366336353732",
+      "from": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "to": "external:406e6573746a732f636f6d6d6f6e:436f6e74726f6c6c6572",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.controller.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696e6a65637473:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635",
+      "from": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "to": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "kind": "injects",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.controller.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "semantics": "requested_token"
+      }
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:636f6e7461696e73:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:636f6e7461696e73:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:636f6e7461696e73:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:636f6e7461696e73:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:696d706f727473:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f617574682f617574682e636f6e74726f6c6c65722e7473:41757468436f6e74726f6c6c6572",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:696d706f727473:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:696d706f727473:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:696d706f727473:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326636313735373436383266363137353734363832653664366636343735366336353265373437333a3431373537343638346436663634373536633635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a346436663634373536633635",
+      "from": "class:7372632f617574682f617574682e6d6f64756c652e7473:417574684d6f64756c65",
+      "to": "external:406e6573746a732f636f6d6d6f6e:4d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.module.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533373333333633353337333233373336333633393336333333363335333236353337333433373333336133343331333733353337333433363338333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a36633666363736393665",
+      "from": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "to": "method:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e7374616e6365:6c6f67696e",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.service.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533373333333633353337333233373336333633393336333333363335333236353337333433373333336133343331333733353337333433363338333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a366536663732366436313663363937613635",
+      "from": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "to": "method:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e7374616e6365:6e6f726d616c697a65",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.service.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696d706f727473:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739",
+      "from": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "to": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.service.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3439366536613635363337343631363236633635",
+      "from": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "to": "external:406e6573746a732f636f6d6d6f6e:496e6a65637461626c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.service.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e6a65637473:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739",
+      "from": "class:7372632f617574682f617574682e736572766963652e7473:4175746853657276696365",
+      "to": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "kind": "injects",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.service.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "semantics": "requested_token"
+      }
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739:636f6e7461696e73:6d6574686f643a3633366336313733373333613337333333373332333633333332363633363331333733353337333433363338333236363337333433363636333636323336333533363635333236353337333233363335333733303336363633373333333633393337333433363636333733323337333933323635333733343337333333613335333433363636333636323336333533363635333533323336333533373330333636363337333333363339333733343336363633373332333733393a363936653733373436313665363336353a3733363137363635",
+      "from": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "to": "method:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739:696e7374616e6365:73617665",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/token.repository.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663631373537343638326637343666366236353665326537323635373036663733363937343666373237393265373437333a353436663662363536653532363537303666373336393734366637323739:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3439366536613635363337343631363236633635",
+      "from": "class:7372632f617574682f746f6b656e2e7265706f7369746f72792e7473:546f6b656e5265706f7369746f7279",
+      "to": "external:406e6573746a732f636f6d6d6f6e:496e6a65637461626c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/token.repository.ts",
+          "line": 3,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a3733373236333266373236353637373236353733373336393666366537333266363936343635366537343639373437393265373437333a3435373837343635373236653631366334323639366536343639366536373733:636f6e7461696e73:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363339333633343336333533363635333733343336333933373334333733393332363533373334333733333361333433353337333833373334333633353337333233363635333633313336363333343332333633393336363533363334333633393336363533363337333733333a363936653733373436313665363336353a3639366537333730363536333734",
+      "from": "class:7372632f72656772657373696f6e732f6964656e746974792e7473:45787465726e616c42696e64696e6773",
+      "to": "method:636c6173733a3733373236333266373236353637373236353733373336393666366537333266363936343635366537343639373437393265373437333a3435373837343635373236653631366334323639366536343639366536373733:696e7374616e6365:696e7370656374",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/identity.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a3464366636333662353537333635373237333533363537323736363936333635:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333233363335333633373337333233363335333733333337333333363339333636363336363533373333333236363336363633373336333633353337333233373332333633393336333433363335333236353336363433363636333633343337333533363633333633353332363533373334333733333361333436343336363633363333333636323335333533373333333633353337333233373333333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a3663363937333734",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4d6f636b557365727353657276696365",
+      "to": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a3464366636333662353537333635373237333533363537323736363936333635:696e7374616e6365:6c697374",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/override.module.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:636f6e7461696e73:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363636333733363336333533373332333733323336333933363334333633353332363533363634333636363336333433373335333636333336333533323635333733343337333333613334363633373336333633353337333233373332333633393336333433363335333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "to": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/override.module.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:6578706f736573:656e64706f696e743a3437343535343a3266366637363635373237323639363436353a366436353734363836663634336133363333333636333336333133373333333733333333363133333337333333333333333733333332333333363333333333333332333633363333333733333332333333363333333533333336333333373333333733333332333333363333333533333337333333333333333733333333333333363333333933333336333633363333333633363335333333373333333333333332333633363333333633363336333333373333333633333336333333353333333733333332333333373333333233333336333333393333333633333334333333363333333533333332333633353333333633363334333333363336333633333336333333343333333733333335333333363336333333333336333333353333333233363335333333373333333433333337333333333333363133333334333633363333333733333336333333363333333533333337333333323333333733333332333333363333333933333336333333343333333633333335333333343333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233613336333933363635333733333337333433363331333636353336333333363335336133363633333633393337333333373334",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "to": "endpoint:474554:2f6f76657272696465:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363636333733363336333533373332333733323336333933363334333633353332363533363634333636363336333433373335333636333336333533323635333733343337333333613334363633373336333633353337333233373332333633393336333433363335333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "kind": "exposes",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/regressions/override.module.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696d706f727473:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3433366636653734373236663663366336353732",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "to": "external:406e6573746a732f636f6d6d6f6e:436f6e74726f6c6c6572",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696e6a65637473:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "injects",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/regressions/override.module.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "semantics": "requested_token"
+      }
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a34663736363537323732363936343635346436663634373536633635:636f6e7461696e73:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f766572726964654d6f64756c65",
+      "to": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f76657272696465436f6e74726f6c6c6572",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/regressions/override.module.ts",
+          "line": 14,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a34663736363537323732363936343635346436663634373536633635:696d706f727473:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f766572726964654d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 15,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a34663736363537323732363936343635346436663634373536633635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a346436663634373536633635",
+      "from": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f766572726964654d6f64756c65",
+      "to": "external:406e6573746a732f636f6d6d6f6e:4d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 13,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a34343739366536313664363936333436363536313734373537323635:636f6e7461696e73:6d6574686f643a36333663363137333733336133373333333733323336333333323636333733323336333533363337333733323336333533373333333733333336333933363636333636353337333333323636333733353336363533373333333733353337333033373330333636363337333233373334333633353336333433323635333636343336363633363334333733353336363333363335333236353337333433373333336133343334333733393336363533363331333636343336333933363333333433363336333533363331333733343337333533373332333633353a3733373436313734363936333a37323635363736393733373436353732",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:44796e616d696346656174757265",
+      "to": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a34343739366536313664363936333436363536313734373537323635:737461746963:7265676973746572",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 18,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a34343739366536313664363936333436363536313734373537323635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a346436663634373536633635",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:44796e616d696346656174757265",
+      "to": "external:406e6573746a732f636f6d6d6f6e:4d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 16,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a3535366537333735373037303666373237343635363434333666366537333735366436353732:696d706f727473:636c6173733a3733373236333266373236353637373236353733373336393666366537333266373036663732373437333265373437333a3534373937303635346636653663373935343666366236353665",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572",
+      "to": "class:7372632f72656772657373696f6e732f706f7274732e7473:547970654f6e6c79546f6b656e",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 12,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a3535366537333735373037303666373237343635363434333666366537333735366436353732:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a343936653661363536333734",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572",
+      "to": "external:406e6573746a732f636f6d6d6f6e:496e6a656374",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 13,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a3535366537333735373037303666373237343635363434333666366537333735366436353732:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3439366536613635363337343631363236633635",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572",
+      "to": "external:406e6573746a732f636f6d6d6f6e:496e6a65637461626c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a3535366537333735373037303666373237343635363434333666366537333735366436353732:696d706f727473:696e746572666163653a3733373236333266373236353637373236353733373336393666366537333266373036663732373437333265373437333a3530366637323734",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572",
+      "to": "interface:7372632f72656772657373696f6e732f706f7274732e7473:506f7274",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a35353665373337353730373036663732373436353634346436663634373536633635:636f6e7461696e73:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a3535366537333735373037303666373237343635363434333666366537333735366436353732",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65",
+      "to": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 24,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a35353665373337353730373036663732373436353634346436663634373536633635:696d706f727473:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 22,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a35353665373337353730373036663732373436353634346436663634373536633635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a346436663634373536633635",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65",
+      "to": "external:406e6573746a732f636f6d6d6f6e:4d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 21,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a35353665373337353730373036663732373436353634346436663634373536633635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3636366637323737363137323634353236353636",
+      "from": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65",
+      "to": "external:406e6573746a732f636f6d6d6f6e:666f7277617264526566",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 22,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739:636f6e7461696e73:6d6574686f643a36333663363137333733336133373333333733323336333333323636333733353337333333363335333733323337333333323636333733353337333333363335333733323332363533373332333633353337333033363636333733333336333933373334333636363337333233373339333236353337333433373333336133353335333733333336333533373332333533323336333533373330333636363337333333363339333733343336363633373332333733393a363936653733373436313665363336353a3636363936653634",
+      "from": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "to": "method:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739:696e7374616e6365:66696e64",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/user.repository.ts",
+          "line": 5,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3439366536613635363337343631363236633635",
+      "from": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "to": "external:406e6573746a732f636f6d6d6f6e:496e6a65637461626c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/user.repository.ts",
+          "line": 3,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36313663363936313733",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:616c696173",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373236353664366637363635",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:72656d6f7665",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 15,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373537303634363137343635",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:757064617465",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.controller.ts",
+          "line": 13,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:6578706f736573:656e64706f696e743a3434343534633435353434353a32663735373336353732373332663361363936343a36643635373436383666363433613336333333363633333633313337333333373333333336313333333733333333333333373333333233333336333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363335333333363333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233333332333633353333333733333334333333373333333333333631333333353333333533333337333333333333333633333335333333373333333233333337333333333333333433333333333333363336333633333336333633353333333733333334333333373333333233333336333633363333333633363333333333363336333333333336333333353333333733333332336133363339333636353337333333373334333633313336363533363333333633353361333733323336333533363634333636363337333633363335",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "endpoint:44454c455445:2f75736572732f3a6964:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373236353664366637363635",
+      "kind": "exposes",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 14,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:6578706f736573:656e64706f696e743a3437343535343a3266373537333635373237333a366436353734363836663634336133363333333636333336333133373333333733333333363133333337333333333333333733333332333333363333333333333332333633363333333733333335333333373333333333333336333333353333333733333332333333373333333333333332333633363333333733333335333333373333333333333336333333353333333733333332333333373333333333333332333633353333333633333333333333363336333633333336333633353333333733333334333333373333333233333336333633363333333633363333333333363336333333333336333333353333333733333332333333323336333533333337333333343333333733333333333336313333333533333335333333373333333333333336333333353333333733333332333333373333333333333334333333333333333633363336333333363336333533333337333333343333333733333332333333363336333633333336333633333333333633363333333333363333333533333337333333323361333633393336363533373333333733343336333133363635333633333336333533613336333133363633333633393336333133373333",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "endpoint:474554:2f7573657273:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36313663363936313733",
+      "kind": "exposes",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:6578706f736573:656e64706f696e743a3437343535343a3266373537333635373237333a3664363537343638366636343361333633333336363333363331333733333337333333333631333333373333333333333337333333323333333633333333333333323336333633333337333333353333333733333333333333363333333533333337333333323333333733333333333333323336333633333337333333353333333733333333333333363333333533333337333333323333333733333333333333323336333533333336333333333333333633363336333333363336333533333337333333343333333733333332333333363336333633333336333633333333333633363333333333363333333533333337333333323333333233363335333333373333333433333337333333333333363133333335333333353333333733333333333333363333333533333337333333323333333733333333333333343333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233613336333933363635333733333337333433363331333636353336333333363335336133363633333633393337333333373334",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "endpoint:474554:2f7573657273:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "kind": "exposes",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:6578706f736573:656e64706f696e743a353034313534343334383a32663735373336353732373332663361363936343a36643635373436383666363433613336333333363633333633313337333333373333333336313333333733333333333333373333333233333336333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363335333333363333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233333332333633353333333733333334333333373333333333333631333333353333333533333337333333333333333633333335333333373333333233333337333333333333333433333333333333363336333633333336333633353333333733333334333333373333333233333336333633363333333633363333333333363336333333333336333333353333333733333332336133363339333636353337333333373334333633313336363533363333333633353361333733353337333033363334333633313337333433363335",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "endpoint:5041544348:2f75736572732f3a6964:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373537303634363137343635",
+      "kind": "exposes",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 12,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696d706f727473:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3433366636653734373236663663366336353732",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "external:406e6573746a732f636f6d6d6f6e:436f6e74726f6c6c6572",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e6a65637473:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "injects",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "semantics": "requested_token"
+      }
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635:636f6e7461696e73:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739",
+      "from": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "to": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635:636f6e7461696e73:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732",
+      "from": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.module.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635:636f6e7461696e73:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635:696d706f727473:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739",
+      "from": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "to": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635:696d706f727473:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732",
+      "from": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e636f6e74726f6c6c65722e7473:5573657273436f6e74726f6c6c6572",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.module.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635:696d706f727473:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635",
+      "from": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "to": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.module.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a37333732363332663735373336353732373332663735373336353732373332653664366636343735366336353265373437333a35353733363537323733346436663634373536633635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a346436663634373536633635",
+      "from": "class:7372632f75736572732f75736572732e6d6f64756c652e7473:55736572734d6f64756c65",
+      "to": "external:406e6573746a732f636f6d6d6f6e:4d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.module.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353337333333363335333733323337333633363339333633333336333533323635333733343337333333613335333533373333333633353337333233373333333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a363336383666366637333635",
+      "from": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:63686f6f7365",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353337333333363335333733323337333633363339333633333336333533323635333733343337333333613335333533373333333633353337333233373333333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a3636363936653634",
+      "from": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:66696e64",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 9,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353337333333363335333733323337333633363339333633333336333533323635333733343337333333613335333533373333333633353337333233373333333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a3663363937333734",
+      "from": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:6c697374",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:636f6e7461696e73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353337333333363335333733323337333633363339333633333336333533323635333733343337333333613335333533373333333633353337333233373333333533333336333533373332333733363336333933363333333633353a3733373436313734363936333a3636363936653634",
+      "from": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:737461746963:66696e64",
+      "kind": "contains",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696d706f727473:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739",
+      "from": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "to": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.service.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3439366536613635363337343631363236633635",
+      "from": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "to": "external:406e6573746a732f636f6d6d6f6e:496e6a65637461626c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.service.ts",
+          "line": 4,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e6a65637473:636c6173733a37333732363332663735373336353732373332663735373336353732326537323635373036663733363937343666373237393265373437333a35353733363537323532363537303666373336393734366637323739",
+      "from": "class:7372632f75736572732f75736572732e736572766963652e7473:557365727353657276696365",
+      "to": "class:7372632f75736572732f757365722e7265706f7369746f72792e7473:557365725265706f7369746f7279",
+      "kind": "injects",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.service.ts",
+          "line": 6,
+          "confidence": "confirmed"
+        }
+      ],
+      "metadata": {
+        "semantics": "requested_token"
+      }
+    },
+    {
+      "id": "edge:656e64706f696e743a3434343534633435353434353a32663735373336353732373332663361363936343a36643635373436383666363433613336333333363633333633313337333333373333333336313333333733333333333333373333333233333336333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363335333333363333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233333332333633353333333733333334333333373333333333333631333333353333333533333337333333333333333633333335333333373333333233333337333333333333333433333333333333363336333633333336333633353333333733333334333333373333333233333336333633363333333633363333333333363336333333333336333333353333333733333332336133363339333636353337333333373334333633313336363533363333333633353361333733323336333533363634333636363337333633363335:646570656e64735f6f6e:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373236353664366637363635",
+      "from": "endpoint:44454c455445:2f75736572732f3a6964:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373236353664366637363635",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:72656d6f7665",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 14,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:656e64706f696e743a3437343535343a3266366637363635373237323639363436353a366436353734363836663634336133363333333636333336333133373333333733333333363133333337333333333333333733333332333333363333333333333332333633363333333733333332333333363333333533333336333333373333333733333332333333363333333533333337333333333333333733333333333333363333333933333336333633363333333633363335333333373333333333333332333633363333333633363336333333373333333633333336333333353333333733333332333333373333333233333336333333393333333633333334333333363333333533333332333633353333333633363334333333363336333633333336333333343333333733333335333333363336333333333336333333353333333233363335333333373333333433333337333333333333363133333334333633363333333733333336333333363333333533333337333333323333333733333332333333363333333933333336333333343333333633333335333333343333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233613336333933363635333733333337333433363331333636353336333333363335336133363633333633393337333333373334:646570656e64735f6f6e:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363636333733363336333533373332333733323336333933363334333633353332363533363634333636363336333433373335333636333336333533323635333733343337333333613334363633373336333633353337333233373332333633393336333433363335333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "from": "endpoint:474554:2f6f76657272696465:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363636333733363336333533373332333733323336333933363334333633353332363533363634333636363336333433373335333636333336333533323635333733343337333333613334363633373336333633353337333233373332333633393336333433363335333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "to": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/regressions/override.module.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:656e64706f696e743a3437343535343a3266373537333635373237333a366436353734363836663634336133363333333636333336333133373333333733333333363133333337333333333333333733333332333333363333333333333332333633363333333733333335333333373333333333333336333333353333333733333332333333373333333333333332333633363333333733333335333333373333333333333336333333353333333733333332333333373333333333333332333633353333333633333333333333363336333633333336333633353333333733333334333333373333333233333336333633363333333633363333333333363336333333333336333333353333333733333332333333323336333533333337333333343333333733333333333336313333333533333335333333373333333333333336333333353333333733333332333333373333333333333334333333333333333633363336333333363336333533333337333333343333333733333332333333363336333633333336333633333333333633363333333333363333333533333337333333323361333633393336363533373333333733343336333133363635333633333336333533613336333133363633333633393336333133373333:646570656e64735f6f6e:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36313663363936313733",
+      "from": "endpoint:474554:2f7573657273:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36313663363936313733",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:616c696173",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:656e64706f696e743a3437343535343a3266373537333635373237333a3664363537343638366636343361333633333336363333363331333733333337333333333631333333373333333333333337333333323333333633333333333333323336333633333337333333353333333733333333333333363333333533333337333333323333333733333333333333323336333633333337333333353333333733333333333333363333333533333337333333323333333733333333333333323336333533333336333333333333333633363336333333363336333533333337333333343333333733333332333333363336333633333336333633333333333633363333333333363333333533333337333333323333333233363335333333373333333433333337333333333333363133333335333333353333333733333333333333363333333533333337333333323333333733333333333333343333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233613336333933363635333733333337333433363331333636353336333333363335336133363633333633393337333333373334:646570656e64735f6f6e:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "from": "endpoint:474554:2f7573657273:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:656e64706f696e743a353034313534343334383a32663735373336353732373332663361363936343a36643635373436383666363433613336333333363633333633313337333333373333333336313333333733333333333333373333333233333336333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363336333333373333333533333337333333333333333633333335333333373333333233333337333333333333333233363335333333363333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233333332333633353333333733333334333333373333333333333631333333353333333533333337333333333333333633333335333333373333333233333337333333333333333433333333333333363336333633333336333633353333333733333334333333373333333233333336333633363333333633363333333333363336333333333336333333353333333733333332336133363339333636353337333333373334333633313336363533363333333633353361333733353337333033363334333633313337333433363335:646570656e64735f6f6e:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373537303634363137343635",
+      "from": "endpoint:5041544348:2f75736572732f3a6964:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373537303634363137343635",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:757064617465",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/users/users.controller.ts",
+          "line": 12,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:656e64706f696e743a35303466353335343a326636313735373436383266366336663637363936653a366436353734363836663634336133363333333636333336333133373333333733333333363133333337333333333333333733333332333333363333333333333332333633363333333633333331333333373333333533333337333333343333333633333338333333323336333633333336333333313333333733333335333333373333333433333336333333383333333233363335333333363333333333333336333633363333333633363335333333373333333433333337333333323333333633363336333333363336333333333336333633333333333633333335333333373333333233333332333633353333333733333334333333373333333333333631333333343333333133333337333333353333333733333334333333363333333833333334333333333333333633363336333333363336333533333337333333343333333733333332333333363336333633333336333633333333333633363333333333363333333533333337333333323361333633393336363533373333333733343336333133363635333633333336333533613336363333363636333633373336333933363635:646570656e64735f6f6e:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533363333333636363336363533373334333733323336363633363633333636333336333533373332333236353337333433373333336133343331333733353337333433363338333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36633666363736393665",
+      "from": "endpoint:504f5354:2f617574682f6c6f67696e:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533363333333636363336363533373334333733323336363633363633333636333336333533373332333236353337333433373333336133343331333733353337333433363338333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36633666363736393665",
+      "to": "method:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696e7374616e6365:6c6f67696e",
+      "kind": "depends_on",
+      "evidence": [
+        {
+          "source": "nestjs",
+          "file": "src/auth/auth.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533363333333636363336363533373334333733323336363633363633333636333336333533373332333236353337333433373333336133343331333733353337333433363338333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36633666363736393665:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3530366637333734",
+      "from": "method:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696e7374616e6365:6c6f67696e",
+      "to": "external:406e6573746a732f636f6d6d6f6e:506f7374",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/auth/auth.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533373333333633353337333233373336333633393336333333363335333236353337333433373333336133343331333733353337333433363338333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a36633666363736393665:63616c6c73:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373335333733343336333833323636333633313337333533373334333633383332363533373333333633353337333233373336333633393336333333363335333236353337333433373333336133343331333733353337333433363338333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a366536663732366436313663363937613635",
+      "from": "method:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e7374616e6365:6c6f67696e",
+      "to": "method:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e7374616e6365:6e6f726d616c697a65",
+      "kind": "calls",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/auth/auth.service.ts",
+          "line": 8,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363339333633343336333533363635333733343336333933373334333733393332363533373334333733333361333433353337333833373334333633353337333233363635333633313336363333343332333633393336363533363334333633393336363533363337333733333a363936653733373436313665363336353a3639366537333730363536333734:696d706f727473:65787465726e616c3a373237383661373332663666373036353732363137343666373237333a366436313730",
+      "from": "method:636c6173733a3733373236333266373236353637373236353733373336393666366537333266363936343635366537343639373437393265373437333a3435373837343635373236653631366334323639366536343639366536373733:696e7374616e6365:696e7370656374",
+      "to": "external:72786a732f6f70657261746f7273:6d6170",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/identity.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363339333633343336333533363635333733343336333933373334333733393332363533373334333733333361333433353337333833373334333633353337333233363635333633313336363333343332333633393336363533363334333633393336363533363337333733333a363936653733373436313665363336353a3639366537333730363536333734:696d706f727473:65787465726e616c3a37323738366137333a366436313730",
+      "from": "method:636c6173733a3733373236333266373236353637373236353733373336393666366537333266363936343635366537343639373437393265373437333a3435373837343635373236653631366334323639366536343639366536373733:696e7374616e6365:696e7370656374",
+      "to": "external:72786a73:6d6170",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/identity.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a3633366336313733373333613337333333373332333633333332363633373332333633353336333733373332333633353337333333373333333633393336363633363635333733333332363633363636333733363336333533373332333733323336333933363334333633353332363533363634333636363336333433373335333636333336333533323635333733343337333333613334363633373336333633353337333233373332333633393336333433363335333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a343736353734",
+      "from": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "to": "external:406e6573746a732f636f6d6d6f6e:476574",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/override.module.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a36333663363137333733336133373333333733323336333333323636333733323336333533363337333733323336333533373333333733333336333933363636333636353337333333323636333733353336363533373333333733353337333033373330333636363337333233373334333633353336333433323635333636343336363633363334333733353336363333363335333236353337333433373333336133343334333733393336363533363331333636343336333933363333333433363336333533363331333733343337333533373332333633353a3733373436313734363936333a37323635363736393733373436353732:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a3434373936653631366436393633346436663634373536633635",
+      "from": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663735366537333735373037303666373237343635363432653664366636343735366336353265373437333a34343739366536313664363936333436363536313734373537323635:737461746963:7265676973746572",
+      "to": "external:406e6573746a732f636f6d6d6f6e:44796e616d69634d6f64756c65",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/regressions/unsupported.module.ts",
+          "line": 18,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a36313663363936313733:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a343736353734",
+      "from": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:616c696173",
+      "to": "external:406e6573746a732f636f6d6d6f6e:476574",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 10,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3663363937333734:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a343736353734",
+      "from": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "to": "external:406e6573746a732f636f6d6d6f6e:476574",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 7,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373236353664366637363635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a343436353663363537343635",
+      "from": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:72656d6f7665",
+      "to": "external:406e6573746a732f636f6d6d6f6e:44656c657465",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 14,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353336333333363636333636353337333433373332333636363336363333363633333633353337333233323635333733343337333333613335333533373333333633353337333233373333333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a373537303634363137343635:696d706f727473:65787465726e616c3a343036653635373337343661373332663633366636643664366636653a35303631373436333638",
+      "from": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:757064617465",
+      "to": "external:406e6573746a732f636f6d6d6f6e:5061746368",
+      "kind": "imports",
+      "evidence": [
+        {
+          "source": "resolver",
+          "file": "src/users/users.controller.ts",
+          "line": 12,
+          "confidence": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "edge:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353337333333363335333733323337333633363339333633333336333533323635333733343337333333613335333533373333333633353337333233373333333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a363336383666366637333635:63616c6c73:6d6574686f643a363336633631373337333361333733333337333233363333333236363337333533373333333633353337333233373333333236363337333533373333333633353337333233373333333236353337333333363335333733323337333633363339333633333336333533323635333733343337333333613335333533373333333633353337333233373333333533333336333533373332333733363336333933363333333633353a363936653733373436313665363336353a3636363936653634",
+      "from": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:63686f6f7365",
+      "to": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:66696e64",
+      "kind": "calls",
+      "evidence": [
+        {
+          "source": "ast",
+          "file": "src/users/users.service.ts",
+          "line": 11,
+          "confidence": "confirmed"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "unsupported_call_computed_target",
+      "severity": "warning",
+      "message": "Computed call target is ambiguous.",
+      "file": "src/users/users.service.ts",
+      "line": 12,
+      "relatedNodeId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:63686f6f7365",
+      "skippedCount": 1
+    },
+    {
+      "code": "unsupported_call_injected_receiver",
+      "severity": "warning",
+      "message": "Requested token does not prove the executed implementation.",
+      "file": "src/auth/auth.controller.ts",
+      "line": 8,
+      "relatedNodeId": "method:636c6173733a3733373236333266363137353734363832663631373537343638326536333666366537343732366636633663363537323265373437333a34313735373436383433366636653734373236663663366336353732:696e7374616e6365:6c6f67696e",
+      "skippedCount": 1
+    },
+    {
+      "code": "unsupported_call_injected_receiver",
+      "severity": "warning",
+      "message": "Requested token does not prove the executed implementation.",
+      "file": "src/auth/auth.service.ts",
+      "line": 9,
+      "relatedNodeId": "method:636c6173733a3733373236333266363137353734363832663631373537343638326537333635373237363639363336353265373437333a34313735373436383533363537323736363936333635:696e7374616e6365:6c6f67696e",
+      "skippedCount": 1
+    },
+    {
+      "code": "unsupported_call_injected_receiver",
+      "severity": "warning",
+      "message": "Requested token does not prove the executed implementation.",
+      "file": "src/regressions/override.module.ts",
+      "line": 11,
+      "relatedNodeId": "method:636c6173733a37333732363332663732363536373732363537333733363936663665373332663666373636353732373236393634363532653664366636343735366336353265373437333a346637363635373237323639363436353433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "skippedCount": 1
+    },
+    {
+      "code": "unsupported_call_injected_receiver",
+      "severity": "warning",
+      "message": "Requested token does not prove the executed implementation.",
+      "file": "src/users/users.controller.ts",
+      "line": 8,
+      "relatedNodeId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326536333666366537343732366636633663363537323265373437333a353537333635373237333433366636653734373236663663366336353732:696e7374616e6365:6c697374",
+      "skippedCount": 1
+    },
+    {
+      "code": "unsupported_call_injected_receiver",
+      "severity": "warning",
+      "message": "Requested token does not prove the executed implementation.",
+      "file": "src/users/users.service.ts",
+      "line": 7,
+      "relatedNodeId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:6c697374",
+      "skippedCount": 1
+    },
+    {
+      "code": "unsupported_call_nested_function",
+      "severity": "warning",
+      "message": "Call inside a nested function is outside same-class call support.",
+      "file": "src/users/users.service.ts",
+      "line": 13,
+      "relatedNodeId": "method:636c6173733a373337323633326637353733363537323733326637353733363537323733326537333635373237363639363336353265373437333a353537333635373237333533363537323736363936333635:696e7374616e6365:63686f6f7365",
+      "skippedCount": 1
+    },
+    {
+      "code": "unsupported_di_custom_token",
+      "severity": "warning",
+      "message": "Custom Inject token is outside PoC support.",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 13,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572"
+    },
+    {
+      "code": "unsupported_di_interface",
+      "severity": "warning",
+      "message": "Interface has no runtime class token.",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 11,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572"
+    },
+    {
+      "code": "unsupported_di_type_only",
+      "severity": "warning",
+      "message": "Type-only import cannot supply a runtime token.",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 12,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f72746564436f6e73756d6572"
+    },
+    {
+      "code": "unsupported_module_dynamic",
+      "severity": "warning",
+      "message": "Dynamic module invocation is not expanded.",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 22,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65"
+    },
+    {
+      "code": "unsupported_module_forward_ref",
+      "severity": "warning",
+      "message": "forwardRef module reference is not expanded.",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 22,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65"
+    },
+    {
+      "code": "unsupported_module_provider",
+      "severity": "warning",
+      "message": "Factory provider object is not expanded.",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 26,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65"
+    },
+    {
+      "code": "unsupported_module_provider",
+      "severity": "warning",
+      "message": "useClass provider object is not expanded.",
+      "file": "src/regressions/override.module.ts",
+      "line": 15,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f6f766572726964652e6d6f64756c652e7473:4f766572726964654d6f64756c65"
+    },
+    {
+      "code": "unsupported_module_spread",
+      "severity": "warning",
+      "message": "Provider spread is not expanded.",
+      "file": "src/regressions/unsupported.module.ts",
+      "line": 25,
+      "relatedNodeId": "class:7372632f72656772657373696f6e732f756e737570706f727465642e6d6f64756c652e7473:556e737570706f727465644d6f64756c65"
+    }
+  ]
+}

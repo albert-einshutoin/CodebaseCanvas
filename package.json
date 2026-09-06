@@ -10,6 +10,7 @@
     "web:typecheck": "pnpm --filter @codebasecanvas/web typecheck",
     "web:build": "pnpm --filter @codebasecanvas/web build",
     "web:preview": "pnpm --filter @codebasecanvas/web preview",
-    "web:test": "pnpm --filter @codebasecanvas/web test"
+    "web:test": "pnpm --filter @codebasecanvas/web test",
+    "fixture:typecheck": "pnpm --filter @codebasecanvas/nestjs-sample typecheck"
   }
 }

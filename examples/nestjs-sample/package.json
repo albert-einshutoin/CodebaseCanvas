@@ -1,0 +1,9 @@
+{
+  "name": "@codebasecanvas/nestjs-sample",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": { "@nestjs/common": "12.0.1", "reflect-metadata": "0.2.2", "rxjs": "7.8.2" },
+  "devDependencies": { "@types/node": "24.2.1", "typescript": "7.0.2" }
+}

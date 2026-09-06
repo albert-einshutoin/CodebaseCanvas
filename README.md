@@ -6,7 +6,7 @@ AI が生成・変更するコードを、人間が理解できる構造の地�
 ## 現在の状態
 
 Issue #2 の開発基盤に、#3 の SystemGraph v0.1 型・検証・契約テストを追加しています。
-Rust のビルドと React/Vite の起動画面が利用できます。
+Rust のビルドと React/Vite の起動画面、#4 の NestJS fixture と手定義の期待 graph が利用できます。
 リポジトリ解析、graph 生成、ファイル選択、Canvas はまだ実装していません。
 内蔵 LLM、バックエンド、認証、データベースはありません。
 
@@ -49,6 +49,7 @@ pnpm web:build
 | 目的 | コマンド |
 |---|---|
 | Web 開発サーバー | `pnpm web:dev` |
+| Fixture 型検査 | `pnpm fixture:typecheck` |
 | Web 契約テスト | `pnpm web:test` |
 | Web 型検査 | `pnpm web:typecheck` |
 | Web 本番ビルド | `pnpm web:build` |
@@ -72,7 +73,7 @@ Rust と Web は共通 JSON ケースで契約を検証します。解析器の�
 |---|---|
 | `crates/analyzer/` | Rust crate `codebasecanvas-analyzer` / binary `codebasecanvas`。CLI は #5、Oxc 能力確認は #7 |
 | `apps/web/` | React/Vite SPA。graph 選択は #19、Canvas は #20 |
-| `examples/nestjs-sample/` | #4 で作成予定。まだ存在しません |
+| `examples/nestjs-sample/` | #4 の NestJS source・手定義 expected graph・根拠 README |
 | `docs/` | 製品・設計・graph 契約の文書 |
 
 #3 の契約は [DATA_MODEL.md](docs/DATA_MODEL.md) と `contracts/cases.json` に定義しています。
@@ -97,3 +98,5 @@ graph は解析時点の snapshot なので、ソース変更後には再解析�
 
 現在の着手順と完了条件は [Epic #1](https://github.com/albert-einshutoin/CodebaseCanvas/issues/1) と各 Issue を参照してください。
 型と検証の入口・後続 Issue の責務は [契約の実装境界](docs/DATA_MODEL.md#wire-validation-and-ownership) を参照してください。
+
+Fixture の意味・期待件数と変更規則は [fixture README](examples/nestjs-sample/README.md) を参照してください。期待 graph は Analyzer 出力の代替ではありません。
