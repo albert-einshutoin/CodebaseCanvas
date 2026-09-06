@@ -15,6 +15,8 @@
 
 | 目的 | コマンド |
 |---|---|
+| 完全検証（依存 install + Rust/Web/fixture） | `pnpm run ci` |
+| PR 検証（現在は完全検証へ委譲） | `pnpm run ci-pr` |
 | 依存インストール | `pnpm install --frozen-lockfile --ignore-scripts` |
 | Web 開発 | `pnpm web:dev` |
 | Fixture 型検査 | `pnpm fixture:typecheck` |
@@ -42,3 +44,11 @@ Rust/Web 契約テストは `contracts/cases.json` を共用する。#4 の `exa
 - 未対応構文は最小範囲の unknown と診断にし、推測 edge・暗黙 fallback を作らない。
 - ソースや graph の外部送信、backend、内蔵 LLM、Cloudflare binding を追加しない。
 - `node_modules`、`target`、`dist`、解析出力、秘密情報を納品しない。lockfile は管理する。
+
+## CI の正本と後続の検証
+
+`package.json` の `ci` が独立した完全検証の正本です。`ci:rust` と `ci:web` に分けた既存検証を順に実行し、失敗時に停止します。`ci-pr` は `ci` へ一方向委譲します。変更範囲 selector は未実装です。
+
+GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を実行します。Ubuntu 24.04 の1環境、Node は `.node-version`、pnpm は `packageManager`、Rust は `rust-toolchain.toml` で固定します。Actions は commit SHA 固定、token は contents read、pnpm store のみ標準 cache、古い同一 PR run は中止します。必須 check に設定する場合は `Rust / Web quality` を選びます（branch protection の設定は別工程）。
+
+#18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続し、#30 で対象 commit の hosted 結果を確認します。現在 E2E は未実装です。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
