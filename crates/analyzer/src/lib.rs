@@ -289,7 +289,7 @@ pub fn is_repository_path(path: &str) -> bool {
     !path.is_empty()
         && !path
             .chars()
-            .any(|c| c == '\\' || c == ':' || c <= '\u{1f}' || c == '\u{7f}')
+            .any(|c| c == '\\' || c == ':' || c.is_control())
         && path
             .split('/')
             .all(|p| !p.is_empty() && p != "." && p != "..")

@@ -24,7 +24,7 @@ const metadataSchema = z.custom<Record<string, JsonValue>>((value: unknown) => {
   return true;
 }, 'Expected JSON metadata with valid Unicode and maximum value depth 32');
 export function isRepositoryPath(path: string): boolean {
-  return path.length > 0 && !/[\\:\u0000-\u001f\u007f]/u.test(path)
+  return path.length > 0 && !/[\\:\u0000-\u001f\u007f-\u009f]/u.test(path)
     && path.split('/').every(part => part !== '' && part !== '.' && part !== '..');
 }
 const file = text.refine(isRepositoryPath, 'Expected a normalized repository-relative path');
