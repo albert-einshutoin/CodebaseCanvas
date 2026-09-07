@@ -4,6 +4,8 @@ use serde_json::{Map, Value};
 use std::collections::{HashMap, HashSet};
 
 pub mod discovery;
+pub mod graph_builder;
+pub use graph_builder::GraphBuilder;
 
 // An optional wire field may be absent, but explicit null is not a value.
 fn present<'de, D: Deserializer<'de>, T: Deserialize<'de>>(d: D) -> Result<Option<T>, D::Error> {
@@ -347,7 +349,7 @@ impl NodeKind {
     }
 }
 impl EdgeKind {
-    fn wire(self) -> &'static str {
+    pub(crate) fn wire(self) -> &'static str {
         match self {
             Self::Contains => "contains",
             Self::Imports => "imports",
@@ -469,22 +471,25 @@ impl SystemGraph {
     pub fn to_json(&self) -> Result<String, String> {
         self.validate()?;
         let mut graph = self.clone();
-        graph.nodes.sort_by(|a, b| a.id.cmp(&b.id));
-        graph.edges.sort_by(|a, b| a.id.cmp(&b.id));
+        graph.canonicalize();
+        serde_json::to_string_pretty(&graph).map_err(|e| e.to_string())
+    }
+
+    pub(crate) fn canonicalize(&mut self) {
+        self.nodes.sort_by(|a, b| a.id.cmp(&b.id));
+        self.edges.sort_by(|a, b| a.id.cmp(&b.id));
         fn sort_evidence(items: &mut Vec<Evidence>) {
             items.sort_by_cached_key(|e| serde_json::to_string(e).expect("finite evidence fields"));
             items.dedup();
         }
-        for n in &mut graph.nodes {
+        for n in &mut self.nodes {
             sort_evidence(&mut n.evidence);
         }
-        for e in &mut graph.edges {
+        for e in &mut self.edges {
             sort_evidence(&mut e.evidence);
         }
-        graph
-            .diagnostics
+        self.diagnostics
             .sort_by_cached_key(|d| serde_json::to_string(d).expect("finite diagnostic fields"));
-        serde_json::to_string_pretty(&graph).map_err(|e| e.to_string())
     }
 
     pub fn validate(&self) -> Result<(), String> {
@@ -561,6 +566,17 @@ impl SystemGraph {
             }
         }
         for n in &self.nodes {
+            let mut seen = HashSet::from([n.id.as_str()]);
+            let mut parent = n.parent_id.as_deref();
+            while let Some(id) = parent {
+                if !seen.insert(id) {
+                    return fail("Cyclic parent");
+                }
+                let Some(p) = nodes.get(id) else {
+                    return fail("Dangling parent");
+                };
+                parent = p.parent_id.as_deref();
+            }
             if n.name.is_empty()
                 || n.qualified_name.as_ref().is_some_and(|s| s.is_empty())
                 || !position(n.file.as_deref(), n.line, n.end_line)
@@ -653,17 +669,6 @@ impl SystemGraph {
             if !n.kind.class_like() && !matches!(n.kind, Method | Endpoint) && n.parent_id.is_some()
             {
                 return fail("Unexpected parent");
-            }
-            let mut seen = HashSet::from([n.id.as_str()]);
-            let mut parent = n.parent_id.as_deref();
-            while let Some(id) = parent {
-                if !seen.insert(id) {
-                    return fail("Cyclic parent");
-                }
-                let Some(p) = nodes.get(id) else {
-                    return fail("Dangling parent");
-                };
-                parent = p.parent_id.as_deref();
             }
         }
         let mut skipped = 0u64;
