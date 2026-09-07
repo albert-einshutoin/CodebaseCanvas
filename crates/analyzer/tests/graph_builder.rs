@@ -29,8 +29,8 @@ fn hand_made_findings() -> (GraphMetadata, GraphNode, GraphNode, GraphEdge) {
         end_line: None,
         confidence: Confidence::Confirmed,
     };
-    let module_id = GraphBuilder::node_id(NodeKind::Module, "src/a.ts", &[], "A");
-    let service_id = GraphBuilder::node_id(NodeKind::Service, "src/a.ts", &[], "S");
+    let module_id = GraphBuilder::node_id(NodeKind::Module, "src/a.ts", &[], "A").unwrap();
+    let service_id = GraphBuilder::node_id(NodeKind::Service, "src/a.ts", &[], "S").unwrap();
     let module = GraphNode {
         id: module_id.clone(),
         kind: NodeKind::Module,
@@ -218,7 +218,7 @@ fn finish_is_deterministically_ordered() {
 #[test]
 fn preserves_multi_module_membership_without_display_parent() {
     let (metadata, module, mut service, edge) = hand_made_findings();
-    let second_id = GraphBuilder::node_id(NodeKind::Module, "src/b.ts", &[], "B");
+    let second_id = GraphBuilder::node_id(NodeKind::Module, "src/b.ts", &[], "B").unwrap();
     let second = GraphNode {
         id: second_id.clone(),
         kind: NodeKind::Module,
@@ -262,12 +262,12 @@ fn preserves_multi_module_membership_without_display_parent() {
 
 #[test]
 fn keeps_scopes_staticness_and_external_subpaths_distinct() {
-    let class_a = GraphBuilder::node_id(NodeKind::Class, "src/a.ts", &["Outer"], "Thing");
-    let class_b = GraphBuilder::node_id(NodeKind::Class, "src/a.ts", &["Inner"], "Thing");
+    let class_a = GraphBuilder::node_id(NodeKind::Class, "src/a.ts", &["Outer"], "Thing").unwrap();
+    let class_b = GraphBuilder::node_id(NodeKind::Class, "src/a.ts", &["Inner"], "Thing").unwrap();
     assert_ne!(class_a, class_b);
     assert_eq!(
-        GraphBuilder::node_id(NodeKind::Class, "src/a.ts", &[], "Thing"),
-        GraphBuilder::node_id(NodeKind::Service, "src/a.ts", &[], "Thing")
+        GraphBuilder::node_id(NodeKind::Class, "src/a.ts", &[], "Thing").unwrap(),
+        GraphBuilder::node_id(NodeKind::Service, "src/a.ts", &[], "Thing").unwrap()
     );
     assert_ne!(
         GraphBuilder::method_id(&class_a, "instance", "run"),
@@ -369,8 +369,8 @@ fn rejects_invalid_parent_and_cycle() {
     assert!(builder.finish().is_err());
 
     let evidence = service.evidence.clone();
-    let left_id = GraphBuilder::node_id(NodeKind::Class, "src/l.ts", &[], "Left");
-    let right_id = GraphBuilder::node_id(NodeKind::Class, "src/r.ts", &[], "Right");
+    let left_id = GraphBuilder::node_id(NodeKind::Class, "src/l.ts", &[], "Left").unwrap();
+    let right_id = GraphBuilder::node_id(NodeKind::Class, "src/r.ts", &[], "Right").unwrap();
     let left = GraphNode {
         id: left_id.clone(),
         kind: NodeKind::Class,
@@ -399,4 +399,15 @@ fn rejects_invalid_parent_and_cycle() {
     builder.add_node(left).unwrap();
     builder.add_node(right).unwrap();
     assert_eq!(builder.finish().unwrap_err(), "Cyclic parent");
+}
+
+#[test]
+fn rejects_specialized_kinds_from_node_id() {
+    for kind in [
+        NodeKind::Method,
+        NodeKind::Endpoint,
+        NodeKind::ExternalDependency,
+    ] {
+        assert!(GraphBuilder::node_id(kind, "src/a.ts", &[], "Thing").is_err());
+    }
 }

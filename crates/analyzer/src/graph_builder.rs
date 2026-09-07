@@ -22,16 +22,26 @@ impl GraphBuilder {
         }
     }
 
-    pub fn node_id(kind: crate::NodeKind, file: &str, scope: &[&str], name: &str) -> String {
+    pub fn node_id(
+        kind: crate::NodeKind,
+        file: &str,
+        scope: &[&str],
+        name: &str,
+    ) -> Result<String, String> {
         let tag = match kind {
+            crate::NodeKind::Module
+            | crate::NodeKind::Controller
+            | crate::NodeKind::Service
+            | crate::NodeKind::Repository
+            | crate::NodeKind::Class => "class",
             crate::NodeKind::Interface => "interface",
             crate::NodeKind::DatabaseModel => "database_model",
-            _ => "class",
+            _ => return Err("node_id requires a declaration kind".into()),
         };
         let mut parts = vec![file];
         parts.extend_from_slice(scope);
         parts.push(name);
-        crate::canonical_id(tag, &parts)
+        Ok(crate::canonical_id(tag, &parts))
     }
 
     pub fn method_id(owner: &str, staticness: &str, name: &str) -> String {
