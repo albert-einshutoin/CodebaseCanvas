@@ -91,6 +91,7 @@ fn first_add_failure_also_fails_finish() {
     conflict.name.push_str("-changed");
 
     assert!(builder.add_node(conflict).is_err());
+    assert!(builder.finish().is_err());
 }
 
 #[test]
@@ -367,14 +368,35 @@ fn rejects_invalid_parent_and_cycle() {
     builder.add_node(service.clone()).unwrap();
     assert!(builder.finish().is_err());
 
-    let mut left = service.clone();
-    let mut right = service;
-    left.id = GraphBuilder::node_id(NodeKind::Class, "src/l.ts", &[], "Left");
-    right.id = GraphBuilder::node_id(NodeKind::Class, "src/r.ts", &[], "Right");
-    left.parent_id = Some(right.id.clone());
-    right.parent_id = Some(left.id.clone());
+    let evidence = service.evidence.clone();
+    let left_id = GraphBuilder::node_id(NodeKind::Class, "src/l.ts", &[], "Left");
+    let right_id = GraphBuilder::node_id(NodeKind::Class, "src/r.ts", &[], "Right");
+    let left = GraphNode {
+        id: left_id.clone(),
+        kind: NodeKind::Class,
+        name: "Left".into(),
+        qualified_name: None,
+        file: Some("src/l.ts".into()),
+        line: Some(1),
+        end_line: None,
+        parent_id: Some(right_id.clone()),
+        evidence: evidence.clone(),
+        metadata: None,
+    };
+    let right = GraphNode {
+        id: right_id,
+        kind: NodeKind::Class,
+        name: "Right".into(),
+        qualified_name: None,
+        file: Some("src/r.ts".into()),
+        line: Some(1),
+        end_line: None,
+        parent_id: Some(left_id),
+        evidence,
+        metadata: None,
+    };
     let mut builder = GraphBuilder::new(metadata);
     builder.add_node(left).unwrap();
     builder.add_node(right).unwrap();
-    assert!(builder.finish().is_err());
+    assert_eq!(builder.finish().unwrap_err(), "Cyclic parent");
 }

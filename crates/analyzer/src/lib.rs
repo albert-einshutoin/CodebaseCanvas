@@ -566,6 +566,17 @@ impl SystemGraph {
             }
         }
         for n in &self.nodes {
+            let mut seen = HashSet::from([n.id.as_str()]);
+            let mut parent = n.parent_id.as_deref();
+            while let Some(id) = parent {
+                if !seen.insert(id) {
+                    return fail("Cyclic parent");
+                }
+                let Some(p) = nodes.get(id) else {
+                    return fail("Dangling parent");
+                };
+                parent = p.parent_id.as_deref();
+            }
             if n.name.is_empty()
                 || n.qualified_name.as_ref().is_some_and(|s| s.is_empty())
                 || !position(n.file.as_deref(), n.line, n.end_line)
@@ -658,17 +669,6 @@ impl SystemGraph {
             if !n.kind.class_like() && !matches!(n.kind, Method | Endpoint) && n.parent_id.is_some()
             {
                 return fail("Unexpected parent");
-            }
-            let mut seen = HashSet::from([n.id.as_str()]);
-            let mut parent = n.parent_id.as_deref();
-            while let Some(id) = parent {
-                if !seen.insert(id) {
-                    return fail("Cyclic parent");
-                }
-                let Some(p) = nodes.get(id) else {
-                    return fail("Dangling parent");
-                };
-                parent = p.parent_id.as_deref();
             }
         }
         let mut skipped = 0u64;
