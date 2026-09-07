@@ -266,6 +266,40 @@ fn static_blocks_keep_same_names_distinct() {
 }
 
 #[test]
+fn switch_scopes_keep_same_names_distinct() {
+    let mut builder = GraphBuilder::new(metadata());
+    let summary = extract_file(
+        "src/switch-scopes.ts",
+        "switch (first) { case 1: class Same {} }\nswitch (second) { case 2: class Same {} }",
+        &mut builder,
+    )
+    .unwrap();
+    let graph = builder.finish().unwrap();
+    assert_eq!(summary.nodes, 2);
+    let ids: Vec<_> = graph
+        .nodes
+        .iter()
+        .filter(|node| node.kind == NodeKind::Class && node.name == "Same")
+        .map(|node| node.id.as_str())
+        .collect();
+    assert_eq!(ids.len(), 2);
+    assert_ne!(ids[0], ids[1]);
+}
+
+#[test]
+fn source_evidence_handles_all_line_terminators() {
+    for separator in ["\n", "\r", "\r\n", "\u{2028}", "\u{2029}"] {
+        let mut builder = GraphBuilder::new(metadata());
+        let source = format!("class First {{}}{separator}class Second {{}} ");
+        extract_file("src/lines.ts", &source, &mut builder).unwrap();
+        let graph = builder.finish().unwrap();
+        let second = node(&graph, NodeKind::Class, "Second", "src/lines.ts");
+        assert_eq!(second.line, Some(2), "separator: {separator:?}");
+        assert_eq!(second.end_line, Some(2), "separator: {separator:?}");
+    }
+}
+
+#[test]
 fn re_exports_do_not_mark_local_declarations_as_exported() {
     let mut builder = GraphBuilder::new(metadata());
     extract_file(

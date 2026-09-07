@@ -11,8 +11,8 @@ use crate::{
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     BlockStatement, Class, ClassType, Declaration, ExportDefaultDeclarationKind, FunctionBody,
-    MethodDefinition, MethodDefinitionKind, ModuleExportName, StaticBlock, TSInterfaceDeclaration,
-    TSNamespaceDeclaration,
+    MethodDefinition, MethodDefinitionKind, ModuleExportName, StaticBlock, SwitchStatement,
+    TSInterfaceDeclaration, TSNamespaceDeclaration,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -373,6 +373,12 @@ impl<'a> Visit<'a> for Collector<'a> {
         walk::walk_static_block(self, block);
         self.scope.pop();
     }
+
+    fn visit_switch_statement(&mut self, switch: &SwitchStatement<'a>) {
+        self.scope.push(format!("@switch:{}", switch.span.start));
+        walk::walk_switch_statement(self, switch);
+        self.scope.pop();
+    }
 }
 
 pub fn extract_file(
@@ -439,8 +445,35 @@ fn export_name(name: &ModuleExportName<'_>) -> Option<String> {
 }
 
 fn line_at(source: &str, offset: u32) -> u64 {
-    let end = (offset as usize).min(source.len());
-    source[..end].bytes().filter(|byte| *byte == b'\n').count() as u64 + 1
+    let bytes = source.as_bytes();
+    let end = (offset as usize).min(bytes.len());
+    let mut line = 1;
+    let mut index = 0;
+    while index < end {
+        match bytes[index] {
+            b'\n' => {
+                line += 1;
+                index += 1;
+            }
+            b'\r' => {
+                line += 1;
+                index += 1;
+                if index < end && bytes[index] == b'\n' {
+                    index += 1;
+                }
+            }
+            0xE2 if index + 2 < end && bytes[index + 1] == 0x80 => {
+                if matches!(bytes[index + 2], 0xA8 | 0xA9) {
+                    line += 1;
+                    index += 3;
+                } else {
+                    index += 1;
+                }
+            }
+            _ => index += 1,
+        }
+    }
+    line
 }
 
 fn end_line(source: &str, span: Span) -> u64 {
