@@ -68,6 +68,8 @@ preview は先にビルドしてから [確認画面](http://127.0.0.1:4173) を
 
 Rust と Web は共通 JSON ケースで契約を検証します。解析器の抽出精度を検証するテストは後続 Issue です。
 `codebasecanvas --help` は成功し、`codebasecanvas analyze <repo>` は引数と repository を検証します。実解析は #17 で接続するため、現在は未実装エラーで終了コード 1 を返し、graph を生成しません。
+
+Recognizer は `codebasecanvas_analyzer::GraphBuilder` に findings を追加し、`finish()` で `SystemGraph::validate` 済みの graph を受け取ります。`add_node`/`add_edge`/`add_diagnostic` は `Result` を返し、最初の失敗後は同じエラーで追加と `finish()` を失敗させます。同一内容の node/edge は evidence を統合し、矛盾・dangling edge・不正な evidence は失敗します。ID は `GraphBuilder::node_id`、`method_id`、`endpoint_id`、`external_id`、`edge_id` で生成できます。
 `web:e2e` は未実装です。成功する仮コマンドは用意していません。
 
 Issue #6 の discovery API (`codebasecanvas_analyzer::discovery::discover`) は、選択した root を canonicalize し、`.ts`/`.tsx`（`.d.ts`を除く）を root 相対 `/` 区切りで決定論的に列挙します。`.git`、`.codebasecanvas`、`node_modules`、`dist`、`build`、`coverage`、`.next`、generated directory は除外し、root 外・loop・除外先への symlink alias は取り込みません。`tsconfig.json` は root 直下だけ検出します。解析 pipeline にはまだ接続せず、解析未実装の CLI は非0・無書込のままです。
