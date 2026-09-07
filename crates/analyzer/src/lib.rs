@@ -5,6 +5,7 @@ use std::collections::{HashMap, HashSet};
 
 pub mod discovery;
 pub mod graph_builder;
+pub mod typescript;
 pub use graph_builder::GraphBuilder;
 
 // An optional wire field may be absent, but explicit null is not a value.
