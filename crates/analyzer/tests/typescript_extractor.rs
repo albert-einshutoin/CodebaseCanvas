@@ -389,3 +389,43 @@ fn rejects_non_repository_or_non_typescript_paths() {
     assert!(extract_file("/tmp/broken.ts", "", &mut builder).is_err());
     assert!(extract_file("src/broken.js", "", &mut builder).is_err());
 }
+
+#[test]
+fn default_identifier_export_marks_local_class() {
+    let mut builder = GraphBuilder::new(metadata());
+    extract_file(
+        "src/default.ts",
+        "class Foo {} export default Foo;",
+        &mut builder,
+    )
+    .unwrap();
+    let graph = builder.finish().unwrap();
+    assert_eq!(
+        node(&graph, NodeKind::Class, "Foo", "src/default.ts")
+            .metadata
+            .as_ref()
+            .and_then(|m| m.get("exported")),
+        Some(&Value::Bool(true))
+    );
+}
+
+#[test]
+fn duplicate_interfaces_are_diagnosed_but_method_overloads_merge() {
+    let mut builder = GraphBuilder::new(metadata());
+    extract_file("src/duplicates.ts", "interface Config { a: string } interface Config { b: number }\nclass C {\nrun(x: string): void;\nrun(x: number): void;\nrun(x: string | number): void {}\n}", &mut builder).unwrap();
+    let graph = builder.finish().unwrap();
+    assert_eq!(graph.diagnostics.len(), 1);
+    assert_eq!(graph.diagnostics[0].code, "TS_CONTRADICTORY_DECLARATION");
+    assert_eq!(
+        node(&graph, NodeKind::Interface, "Config", "src/duplicates.ts")
+            .evidence
+            .len(),
+        1
+    );
+    assert_eq!(
+        node(&graph, NodeKind::Method, "run", "src/duplicates.ts")
+            .evidence
+            .len(),
+        3
+    );
+}

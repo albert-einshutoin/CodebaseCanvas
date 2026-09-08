@@ -89,6 +89,9 @@ impl ExportCollector {
 
     fn add_default(&mut self, declaration: &ExportDefaultDeclarationKind<'_>) {
         match declaration {
+            ExportDefaultDeclarationKind::Identifier(identifier) => {
+                self.add_name(identifier.name.to_string());
+            }
             ExportDefaultDeclarationKind::ClassDeclaration(class) => {
                 if let Some(id) = &class.id {
                     self.add_name(id.name.to_string());
@@ -212,7 +215,8 @@ impl<'a> Collector<'a> {
 
     fn add_node(&mut self, node: GraphNode) {
         if let Some(existing) = self.nodes.get_mut(&node.id) {
-            if existing.kind == node.kind
+            if node.kind == NodeKind::Method
+                && existing.kind == node.kind
                 && existing.name == node.name
                 && existing.qualified_name == node.qualified_name
                 && existing.file == node.file
