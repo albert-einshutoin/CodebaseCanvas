@@ -34,7 +34,12 @@ function App() {
       <h1>CodebaseCanvas</h1>
       <h2>Open a local CodebaseCanvas graph</h2>
       <ol>
-        <li>Generate a graph locally with the CLI (see setup instructions).</li>
+        <li>
+          Generate a graph locally with the CLI:
+          <code>codebasecanvas analyze &lt;repo&gt;</code>
+          → <code>&lt;repo&gt;/.codebasecanvas/graph.json</code>.
+          <a href="https://github.com/albert-einshutoin/CodebaseCanvas#セットアップ"> See setup instructions.</a>
+        </li>
         <li>
           <label htmlFor="graph-file">Choose graph.json</label>
           <input id="graph-file" type="file" accept=".json,application/json" onChange={event => void handleFileChange(event)} />
