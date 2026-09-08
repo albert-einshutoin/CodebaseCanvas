@@ -10,14 +10,15 @@ use crate::{
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BlockStatement, Class, ClassType, Declaration, ExportDefaultDeclarationKind, FunctionBody,
-    MethodDefinition, MethodDefinitionKind, ModuleExportName, StaticBlock, SwitchStatement,
-    TSInterfaceDeclaration, TSNamespaceDeclaration,
+    Class, ClassType, Declaration, ExportDefaultDeclarationKind, MethodDefinition,
+    MethodDefinitionKind, ModuleExportName, TSInterfaceDeclaration, TSNamespaceDeclaration,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::{SourceType, Span};
+use oxc_syntax::scope::{ScopeFlags, ScopeId};
 use serde_json::{Map, Value};
+use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,14 +35,42 @@ struct ClassContext {
 }
 
 #[derive(Default)]
+struct LexicalScope {
+    path: Vec<String>,
+    frames: Vec<bool>,
+    next: usize,
+}
+
+impl LexicalScope {
+    fn enter(&mut self, flags: ScopeFlags) {
+        // Named namespaces already contribute their canonical name. All other
+        // scopes use deterministic traversal identities, including future Oxc scopes.
+        let named_namespace = flags.contains(ScopeFlags::TsModuleBlock)
+            && self.path.last().is_some_and(|name| !name.starts_with('@'));
+        let added = !flags.contains(ScopeFlags::Top) && !named_namespace;
+        self.frames.push(added);
+        if added {
+            self.path.push(format!("@scope:{}", self.next));
+            self.next += 1;
+        }
+    }
+
+    fn leave(&mut self) {
+        if self.frames.pop() == Some(true) {
+            self.path.pop();
+        }
+    }
+}
+
+#[derive(Default)]
 struct ExportCollector {
-    scope: Vec<String>,
+    scope: LexicalScope,
     exported: BTreeSet<(Vec<String>, String)>,
 }
 
 impl ExportCollector {
     fn add_name(&mut self, name: impl Into<String>) {
-        self.exported.insert((self.scope.clone(), name.into()));
+        self.exported.insert((self.scope.path.clone(), name.into()));
     }
 
     fn add_declaration(&mut self, declaration: &Declaration<'_>) {
@@ -74,10 +103,18 @@ impl ExportCollector {
 }
 
 impl<'a> Visit<'a> for ExportCollector {
+    fn enter_scope(&mut self, flags: ScopeFlags, _: &Cell<Option<ScopeId>>) {
+        self.scope.enter(flags);
+    }
+
+    fn leave_scope(&mut self) {
+        self.scope.leave();
+    }
+
     fn visit_ts_namespace_declaration(&mut self, namespace: &TSNamespaceDeclaration<'a>) {
-        self.scope.push(namespace.id.name.to_string());
+        self.scope.path.push(namespace.id.name.to_string());
         walk::walk_ts_namespace_declaration(self, namespace);
-        self.scope.pop();
+        self.scope.path.pop();
     }
 
     fn visit_export_declaration(&mut self, export: &oxc_ast::ast::ExportDeclaration<'a>) {
@@ -116,7 +153,7 @@ struct Collector<'a> {
     file: &'a str,
     source: &'a str,
     exported: &'a BTreeSet<(Vec<String>, String)>,
-    scope: Vec<String>,
+    scope: LexicalScope,
     classes: Vec<Option<ClassContext>>,
     nodes: BTreeMap<String, GraphNode>,
     edges: BTreeMap<String, GraphEdge>,
@@ -129,7 +166,7 @@ impl<'a> Collector<'a> {
             file,
             source,
             exported,
-            scope: Vec::new(),
+            scope: LexicalScope::default(),
             classes: Vec::new(),
             nodes: BTreeMap::new(),
             edges: BTreeMap::new(),
@@ -138,13 +175,14 @@ impl<'a> Collector<'a> {
     }
 
     fn node_id(&self, kind: NodeKind, name: &str) -> Option<String> {
-        let scope: Vec<&str> = self.scope.iter().map(String::as_str).collect();
+        let scope: Vec<&str> = self.scope.path.iter().map(String::as_str).collect();
         GraphBuilder::node_id(kind, self.file, &scope, name).ok()
     }
 
     fn qualified_name(&self, name: &str) -> String {
         let mut parts: Vec<_> = self
             .scope
+            .path
             .iter()
             .filter(|part| !part.starts_with('@'))
             .cloned()
@@ -155,7 +193,7 @@ impl<'a> Collector<'a> {
 
     fn is_exported(&self, name: &str) -> bool {
         self.exported
-            .contains(&(self.scope.clone(), name.to_owned()))
+            .contains(&(self.scope.path.clone(), name.to_owned()))
     }
 
     fn evidence(&self, span: Span) -> Evidence {
@@ -333,6 +371,14 @@ impl<'a> Collector<'a> {
 }
 
 impl<'a> Visit<'a> for Collector<'a> {
+    fn enter_scope(&mut self, flags: ScopeFlags, _: &Cell<Option<ScopeId>>) {
+        self.scope.enter(flags);
+    }
+
+    fn leave_scope(&mut self) {
+        self.scope.leave();
+    }
+
     fn visit_class(&mut self, class: &Class<'a>) {
         let context = self.add_class(class);
         self.classes.push(context);
@@ -351,33 +397,9 @@ impl<'a> Visit<'a> for Collector<'a> {
     }
 
     fn visit_ts_namespace_declaration(&mut self, namespace: &TSNamespaceDeclaration<'a>) {
-        self.scope.push(namespace.id.name.to_string());
+        self.scope.path.push(namespace.id.name.to_string());
         walk::walk_ts_namespace_declaration(self, namespace);
-        self.scope.pop();
-    }
-
-    fn visit_block_statement(&mut self, block: &BlockStatement<'a>) {
-        self.scope.push(format!("@block:{}", block.span.start));
-        walk::walk_block_statement(self, block);
-        self.scope.pop();
-    }
-
-    fn visit_function_body(&mut self, body: &FunctionBody<'a>) {
-        self.scope.push(format!("@function:{}", body.span.start));
-        walk::walk_function_body(self, body);
-        self.scope.pop();
-    }
-
-    fn visit_static_block(&mut self, block: &StaticBlock<'a>) {
-        self.scope.push(format!("@static:{}", block.span.start));
-        walk::walk_static_block(self, block);
-        self.scope.pop();
-    }
-
-    fn visit_switch_statement(&mut self, switch: &SwitchStatement<'a>) {
-        self.scope.push(format!("@switch:{}", switch.span.start));
-        walk::walk_switch_statement(self, switch);
-        self.scope.pop();
+        self.scope.path.pop();
     }
 }
 

@@ -90,6 +90,7 @@ dependencies = [
  "oxc_resolver",
  "oxc_semantic",
  "oxc_span",
+ "oxc_syntax",
  "rustix",
  "serde",
  "serde_json",

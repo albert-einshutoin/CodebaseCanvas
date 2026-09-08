@@ -300,6 +300,56 @@ fn source_evidence_handles_all_line_terminators() {
 }
 
 #[test]
+fn common_scope_tracking_keeps_exports_and_declarations_in_sync() {
+    let source = r#"
+        switch ((() => { class Local {} return 0; })()) {
+            default: class Local {}
+        }
+        namespace Outer.Inner {
+            function nested() { class Local {} }
+            export class Visible {}
+            class Hidden {}
+            class Later {}
+            export { Later };
+        }
+        export class After {}
+    "#;
+    let mut builder = GraphBuilder::new(metadata());
+    extract_file("src/scope-exports.ts", source, &mut builder).unwrap();
+    let graph = builder.finish().unwrap();
+    assert!(graph.diagnostics.is_empty());
+    assert_eq!(graph.nodes.len(), 7);
+    assert_eq!(graph.nodes.iter().filter(|n| n.name == "Local").count(), 3);
+    for name in ["Visible", "Later", "After"] {
+        let declaration = node(&graph, NodeKind::Class, name, "src/scope-exports.ts");
+        assert_eq!(
+            declaration
+                .metadata
+                .as_ref()
+                .and_then(|m| m.get("exported")),
+            Some(&Value::Bool(true))
+        );
+    }
+    let hidden = node(&graph, NodeKind::Class, "Hidden", "src/scope-exports.ts");
+    assert!(hidden.metadata.is_none());
+    assert_eq!(
+        hidden.id,
+        GraphBuilder::node_id(
+            NodeKind::Class,
+            "src/scope-exports.ts",
+            &["Outer", "Inner"],
+            "Hidden"
+        )
+        .unwrap()
+    );
+    let after = node(&graph, NodeKind::Class, "After", "src/scope-exports.ts");
+    assert_eq!(
+        after.id,
+        GraphBuilder::node_id(NodeKind::Class, "src/scope-exports.ts", &[], "After").unwrap()
+    );
+}
+
+#[test]
 fn re_exports_do_not_mark_local_declarations_as_exported() {
     let mut builder = GraphBuilder::new(metadata());
     extract_file(
