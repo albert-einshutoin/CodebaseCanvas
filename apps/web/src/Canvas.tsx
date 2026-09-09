@@ -106,17 +106,20 @@ export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
     });
     cyRef.current = cy;
 
-    const handleNodeTap: cytoscape.EventHandler = event => {
-      cy.elements().unselect();
-      event.target.select();
+    const handleNodeSelect: cytoscape.EventHandler = event => {
       onSelectRef.current(event.target.id());
+    };
+
+    const handleNodeUnselect: cytoscape.EventHandler = event => {
+      if (!event.target.cy().nodes(':selected').length) onSelectRef.current(null);
     };
     const handleBackgroundTap: cytoscape.EventHandler = event => {
       if (event.target !== cy) return;
       cy.elements().unselect();
       onSelectRef.current(null);
     };
-    cy.on('tap', 'node', handleNodeTap);
+    cy.on('select', 'node', handleNodeSelect);
+    cy.on('unselect', 'node', handleNodeUnselect);
     cy.on('tap', handleBackgroundTap);
 
     const resizeObserver = new ResizeObserver(() => cy.resize());
@@ -124,7 +127,8 @@ export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
 
     return () => {
       resizeObserver.disconnect();
-      cy.removeListener('tap', 'node', handleNodeTap);
+      cy.removeListener('select', 'node', handleNodeSelect);
+      cy.removeListener('unselect', 'node', handleNodeUnselect);
       cy.removeListener('tap', handleBackgroundTap);
       cy.destroy();
       cyRef.current = null;
