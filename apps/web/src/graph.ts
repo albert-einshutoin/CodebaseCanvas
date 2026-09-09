@@ -170,3 +170,41 @@ export const SystemGraphSchema = WireGraphSchema.superRefine((graph, ctx) => {
   const error = semanticError(graph);
   if (error) ctx.addIssue({ code: 'custom', message: error });
 });
+
+export type GraphImportResult =
+  | { ok: true; graph: SystemGraph }
+  | { ok: false; message: string; details: string[] };
+
+function validationDetails(issues: readonly { path: PropertyKey[]; message: string }[]): string[] {
+  const details = issues.slice(0, 5).map(issue => {
+    const path = issue.path.map(part => String(part)).join('.');
+    if (path === 'schemaVersion') return 'Unsupported schema version (expected 0.1).';
+    return path ? `${path}: ${issue.message}` : issue.message;
+  });
+  if (issues.length > details.length) details.push(`Additional validation errors: ${issues.length - details.length}.`);
+  return details;
+}
+
+export function parseGraphText(text: string): GraphImportResult {
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    return { ok: false, message: 'Unable to open this graph.', details: ['The selected file is not valid JSON.'] };
+  }
+
+  const parsed = SystemGraphSchema.safeParse(value);
+  if (!parsed.success) {
+    return { ok: false, message: 'Unable to open this graph.', details: validationDetails(parsed.error.issues) };
+  }
+  return { ok: true, graph: parsed.data };
+}
+
+export async function readGraphFile(file: Pick<Blob, 'arrayBuffer'>): Promise<GraphImportResult> {
+  try {
+    const bytes = await file.arrayBuffer();
+    return parseGraphText(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+  } catch {
+    return { ok: false, message: 'Unable to open this graph.', details: ['The selected file could not be read as UTF-8.'] };
+  }
+}

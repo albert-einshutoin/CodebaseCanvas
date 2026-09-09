@@ -5,9 +5,9 @@ AI が生成・変更するコードを、人間が理解できる構造の地�
 
 ## 現在の状態
 
-Issue #2 の開発基盤に、#3 の SystemGraph v0.1 型・検証・契約テストを追加しています。
+Issue #2 の開発基盤に、#3 の SystemGraph v0.1 型・検証・契約テストと、#19 のローカル graph 選択を追加しています。
 Rust のビルドと React/Vite の起動画面、#4 の NestJS fixture と手定義の期待 graph が利用できます。
-リポジトリ解析、graph 生成、ファイル選択、Canvas はまだ実装していません。
+リポジトリ解析、graph 生成、Canvas はまだ実装していません。
 内蔵 LLM、バックエンド、認証、データベースはありません。
 
 目標とするデータの流れは次のとおりです。
@@ -20,7 +20,7 @@ Rust のビルドと React/Vite の起動画面、#4 の NestJS fixture と手�
   → Canvas・根拠確認・Context コピー
 ```
 
-解析と graph データはローカルに留め、サーバーへアップロードしない設計です。
+解析と graph データはローカルに留め、サーバーへアップロードしない設計です。Web UI は選択した JSON をブラウザメモリで検証し、保存や送信を行いません。
 Cloudflare による静的配信は #28 で実装します。
 
 ## セットアップ
@@ -89,9 +89,9 @@ Issue #6 の discovery API (`codebasecanvas_analyzer::discovery::discover`) は�
 Rust と Web はソースコードを共有せず、正規 JSON graph を境界とします。
 
 解析パイプライン完成後は `codebasecanvas analyze <repo>` で
-`<repo>/.codebasecanvas/graph.json` を生成し、Web の「Choose graph.json」で選択する予定です。
-graph は解析時点の snapshot なので、ソース変更後には再解析と再選択が必要です。
-現時点でこの手順を実行して graph を得ることはできません。
+`<repo>/.codebasecanvas/graph.json` を生成し、Web の「Choose graph.json」で選択します。
+現段階では CLI の graph 生成が未実装のため、手定義 fixture など既存の v0.1 JSON を使って取込を確認できます。
+graph は解析時点の snapshot なので、ソース変更後には CLI を再実行してファイルを再選択してください。
 
 ## 設計文書
 

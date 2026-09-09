@@ -18,3 +18,56 @@ h1 {
   overflow-wrap: anywhere;
   line-height: 1.2;
 }
+
+label {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+input {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.message {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+}
+
+.message h2 {
+  margin-top: 0;
+}
+
+.error {
+  color: #b42318;
+}
+
+.success {
+  color: #067647;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error {
+    color: #fda29b;
+  }
+
+  .success {
+    color: #6ce9a6;
+  }
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+}
+
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin: 0;
+}

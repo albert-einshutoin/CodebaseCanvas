@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import cases from '../../../contracts/cases.json';
-import { SystemGraphSchema, canonicalId } from './graph';
+import { SystemGraphSchema, canonicalId, parseGraphText, readGraphFile } from './graph';
 
 describe('shared wire contract', () => {
   it('accepts and preserves the complete graph', () => {
@@ -39,4 +39,44 @@ describe('shared wire contract', () => {
       expect(canonicalId(vector.tag, ...vector.parts)).toBe(vector.expected);
     });
   }
+});
+
+describe('local graph import', () => {
+  it('reads and validates a graph file in memory', async () => {
+    const result = await readGraphFile(new Blob([JSON.stringify(cases.graph)]));
+
+    expect(result).toEqual({ ok: true, graph: cases.graph });
+  });
+
+  it('rejects malformed UTF-8 instead of replacing bytes in graph strings', async () => {
+    const graph = structuredClone(cases.graph);
+    graph.metadata.analyzerVersion = 'UTF8_MARKER';
+    const [before, after] = JSON.stringify(graph).split('UTF8_MARKER');
+    const result = await readGraphFile(new Blob([before, new Uint8Array([0xff]), after]));
+    expect(result.ok).toBe(false);
+  });
+
+  it('reports malformed JSON without exposing a parser dump', () => {
+    expect(parseGraphText('{')).toEqual({
+      ok: false,
+      message: 'Unable to open this graph.',
+      details: ['The selected file is not valid JSON.'],
+    });
+  });
+
+  it('reports schema and semantic validation errors', () => {
+    const future = structuredClone(cases.graph);
+    future.schemaVersion = '0.2';
+    expect(parseGraphText(JSON.stringify(future))).toMatchObject({
+      ok: false,
+      details: ['Unsupported schema version (expected 0.1).'],
+    });
+
+    const dangling = structuredClone(cases.graph);
+    dangling.edges[0].to = 'class:missing';
+    expect(parseGraphText(JSON.stringify(dangling))).toMatchObject({
+      ok: false,
+      details: ['Dangling edge: ' + dangling.edges[0].id],
+    });
+  });
 });
