@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import { GraphCanvas } from './Canvas';
 import { readGraphFile, type SystemGraph } from './graph';
 
 type ImportState =
@@ -11,6 +12,7 @@ type ImportState =
 
 function App() {
   const [state, setState] = useState<ImportState>({ kind: 'idle' });
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const importSequence = useRef(0);
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -20,6 +22,7 @@ function App() {
 
     const sequence = ++importSequence.current;
     setState({ kind: 'loading', fileName: file.name });
+    setSelectedNodeId(null);
     input.value = '';
     const result = await readGraphFile(file);
     if (sequence !== importSequence.current) return;
@@ -28,8 +31,12 @@ function App() {
       : { kind: 'error', fileName: file.name, message: result.message, details: result.details });
   }
 
+  const selectedNode = state.kind === 'loaded'
+    ? state.graph.nodes.find(node => node.id === selectedNodeId)
+    : undefined;
+
   return (
-    <main>
+    <main className={state.kind === 'loaded' ? 'wide' : undefined}>
       <p>開発プレビュー</p>
       <h1>CodebaseCanvas</h1>
       <h2>Open a local CodebaseCanvas graph</h2>
@@ -56,16 +63,22 @@ function App() {
         </section>
       )}
       {state.kind === 'loaded' && (
-        <section className="message success" role="status">
-          <h2>Graph loaded and validated</h2>
-          <p>{state.fileName} is kept in browser memory. Rendering is not implemented yet.</p>
-          <dl>
-            <dt>Schema</dt><dd>{state.graph.schemaVersion}</dd>
-            <dt>Nodes</dt><dd>{state.graph.nodes.length}</dd>
-            <dt>Edges</dt><dd>{state.graph.edges.length}</dd>
-            <dt>Diagnostics</dt><dd>{state.graph.diagnostics.length}</dd>
-          </dl>
-        </section>
+        <>
+          <section className="message success" role="status">
+            <h2>Graph loaded and validated</h2>
+            <p>{state.fileName} is kept in browser memory.</p>
+            <dl>
+              <dt>Schema</dt><dd>{state.graph.schemaVersion}</dd>
+              <dt>Nodes</dt><dd>{state.graph.nodes.length}</dd>
+              <dt>Edges</dt><dd>{state.graph.edges.length}</dd>
+              <dt>Diagnostics</dt><dd>{state.graph.diagnostics.length}</dd>
+            </dl>
+          </section>
+          <p className="selection-status" aria-live="polite">
+            {selectedNode ? `Selected: [${selectedNode.kind}] ${selectedNode.name}` : 'Select a node to see its kind and name.'}
+          </p>
+          <GraphCanvas graph={state.graph} onSelect={setSelectedNodeId} />
+        </>
       )}
     </main>
   );

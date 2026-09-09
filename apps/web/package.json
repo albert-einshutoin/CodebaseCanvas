@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "cytoscape": "3.34.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "4.5.4"
