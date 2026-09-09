@@ -43,9 +43,17 @@ describe('shared wire contract', () => {
 
 describe('local graph import', () => {
   it('reads and validates a graph file in memory', async () => {
-    const result = await readGraphFile({ text: async () => JSON.stringify(cases.graph) });
+    const result = await readGraphFile(new Blob([JSON.stringify(cases.graph)]));
 
     expect(result).toEqual({ ok: true, graph: cases.graph });
+  });
+
+  it('rejects malformed UTF-8 instead of replacing bytes in graph strings', async () => {
+    const graph = structuredClone(cases.graph);
+    graph.metadata.analyzerVersion = 'UTF8_MARKER';
+    const [before, after] = JSON.stringify(graph).split('UTF8_MARKER');
+    const result = await readGraphFile(new Blob([before, new Uint8Array([0xff]), after]));
+    expect(result.ok).toBe(false);
   });
 
   it('reports malformed JSON without exposing a parser dump', () => {

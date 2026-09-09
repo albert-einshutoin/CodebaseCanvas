@@ -200,10 +200,11 @@ export function parseGraphText(text: string): GraphImportResult {
   return { ok: true, graph: parsed.data };
 }
 
-export async function readGraphFile(file: Pick<Blob, 'text'>): Promise<GraphImportResult> {
+export async function readGraphFile(file: Pick<Blob, 'arrayBuffer'>): Promise<GraphImportResult> {
   try {
-    return parseGraphText(await file.text());
+    const bytes = await file.arrayBuffer();
+    return parseGraphText(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
   } catch {
-    return { ok: false, message: 'Unable to open this graph.', details: ['The selected file could not be read.'] };
+    return { ok: false, message: 'Unable to open this graph.', details: ['The selected file could not be read as UTF-8.'] };
   }
 }
