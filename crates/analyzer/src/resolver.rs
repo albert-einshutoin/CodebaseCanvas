@@ -661,7 +661,8 @@ fn resolve_target(
     if !is_external_specifier(&raw.specifier) {
         return unresolved(UnresolvedReason::BoundaryViolation);
     }
-    if config.bare {
+    // Validated explicit node: identities cannot be redirected by repository aliases.
+    if config.bare && !raw.specifier.starts_with("node:") {
         return unresolved(UnresolvedReason::UnsupportedConfig);
     }
     if raw.unsupported {

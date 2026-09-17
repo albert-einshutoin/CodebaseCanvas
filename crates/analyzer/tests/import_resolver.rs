@@ -409,40 +409,135 @@ fn merged_binding_is_unresolved_in_both_declaration_orders() {
 
 #[test]
 fn node_named_imports_keep_identity_and_only_used_consumer_edges() {
-    use codebasecanvas_analyzer::{EdgeKind, GraphBuilder, NodeKind};
-    let repo = Repo::new();
-    repo.put("main.ts", "import {readFile as syncRead, unused} from 'node:fs'; import {readFile as asyncRead} from 'node:fs/promises'; class C { run(){return [syncRead, asyncRead];} }");
-    let r = repo.resolve();
-    for (local, original) in [("syncRead", "node:fs"), ("asyncRead", "node:fs/promises")] {
-        let i = r
+    use codebasecanvas_analyzer::{EdgeKind, GraphBuilder, NodeKind, resolver::UnresolvedReason};
+    for (config, relative_blocked) in [
+        ("", false),
+        (r#"{"compilerOptions":{"baseUrl":"."}}"#, false),
+        (r#"{"compilerOptions":{"paths":{"@/*":["./*"]}}}"#, false),
+        (r#"{"extends":"./base.json"}"#, true),
+        (r#"{"references":[{"path":"./project"}]}"#, true),
+        (
+            r#"{"compilerOptions":{"rootDirs":["src","generated"]}}"#,
+            true,
+        ),
+        (
+            r#"{"compilerOptions":{"moduleSuffixes":[".native",""]}}"#,
+            true,
+        ),
+    ] {
+        let repo = Repo::new();
+        if !config.is_empty() {
+            repo.put("tsconfig.json", config);
+        }
+        repo.put("service.ts", "export class Service {}");
+        repo.put("main.ts", "import {readFile as syncRead, unused} from 'node:fs'; import {readFile as asyncRead} from 'node:fs/promises'; import type {Stats} from 'node:fs'; import {Service} from './service'; import {Other} from 'pkg'; import Default from 'node:fs'; import * as NS from 'node:fs'; import 'node:fs'; import {bad} from 'node:/fs'; class C { value: Stats; run(){return [syncRead, asyncRead, Service, Other, Default, NS, bad];} }");
+        let r = repo.resolve();
+        let g = graph(&RepositoryRoot::open(&repo.0).unwrap());
+        let imports: Vec<_> = g
+            .edges
+            .iter()
+            .filter(|e| e.kind == EdgeKind::Imports)
+            .collect();
+        for (local, original, exported) in [
+            ("syncRead", "node:fs", "readFile"),
+            ("asyncRead", "node:fs/promises", "readFile"),
+            ("Stats", "node:fs", "Stats"),
+        ] {
+            let i = r
+                .imports()
+                .iter()
+                .find(|i| i.local_name.as_deref() == Some(local))
+                .unwrap();
+            assert!(
+                matches!(&i.resolution, Resolution::ExternalSymbol{specifier,exported_name,..} if specifier==original && exported_name==exported),
+                "{config}: {i:?}"
+            );
+            assert_eq!(i.type_only, local == "Stats");
+        }
+        let owner = GraphBuilder::node_id(NodeKind::Class, "main.ts", &[], "C").unwrap();
+        let consumer = GraphBuilder::method_id(&owner, "instance", "run");
+        let mut expected = std::collections::BTreeSet::from([
+            (
+                consumer.clone(),
+                GraphBuilder::external_id("node:fs", "readFile"),
+            ),
+            (
+                consumer.clone(),
+                GraphBuilder::external_id("node:fs/promises", "readFile"),
+            ),
+            (owner, GraphBuilder::external_id("node:fs", "Stats")),
+        ]);
+        let binding = |name| {
+            &r.imports()
+                .iter()
+                .find(|i| i.local_name.as_deref() == Some(name))
+                .unwrap()
+                .resolution
+        };
+        let relative =
+            GraphBuilder::node_id(NodeKind::Class, "service.ts", &[], "Service").unwrap();
+        if relative_blocked {
+            assert_eq!(
+                binding("Service"),
+                &Resolution::Unresolved {
+                    reason: UnresolvedReason::UnsupportedConfig
+                }
+            );
+        } else {
+            assert!(matches!(binding("Service"),Resolution::LocalSymbol{id,..} if id==&relative));
+            expected.insert((consumer.clone(), relative));
+        }
+        if config.is_empty() {
+            assert!(matches!(
+                binding("Other"),
+                Resolution::ExternalSymbol { .. }
+            ));
+            expected.insert((consumer, GraphBuilder::external_id("pkg", "Other")));
+        } else {
+            assert_eq!(
+                binding("Other"),
+                &Resolution::Unresolved {
+                    reason: UnresolvedReason::UnsupportedConfig
+                }
+            );
+            assert!(
+                r.diagnostics()
+                    .iter()
+                    .any(|d| d.file.as_deref() == Some("tsconfig.json")
+                        && d.code == "TS_IMPORT_UNSUPPORTEDCONFIG")
+            );
+        }
+        assert_eq!(
+            binding("bad"),
+            &Resolution::Unresolved {
+                reason: UnresolvedReason::BoundaryViolation
+            }
+        );
+        for i in r
             .imports()
             .iter()
-            .find(|i| i.local_name.as_deref() == Some(local))
-            .unwrap();
+            .filter(|i| matches!(i.local_name.as_deref(), Some("Default" | "NS") | None))
+        {
+            assert_eq!(
+                i.resolution,
+                Resolution::Unresolved {
+                    reason: UnresolvedReason::UnsupportedImport
+                }
+            );
+        }
+        assert_eq!(
+            imports
+                .iter()
+                .map(|e| (e.from.clone(), e.to.clone()))
+                .collect::<std::collections::BTreeSet<_>>(),
+            expected
+        );
         assert!(
-            matches!(&i.resolution, Resolution::ExternalSymbol{specifier, exported_name, ..} if specifier == original && exported_name == "readFile")
+            !g.nodes
+                .iter()
+                .any(|n| n.id == GraphBuilder::external_id("node:fs", "unused"))
         );
     }
-    let g = graph(&RepositoryRoot::open(&repo.0).unwrap());
-    let owner = GraphBuilder::node_id(NodeKind::Class, "main.ts", &[], "C").unwrap();
-    let consumer = GraphBuilder::method_id(&owner, "instance", "run");
-    let edges: Vec<_> = g
-        .edges
-        .iter()
-        .filter(|e| e.kind == EdgeKind::Imports)
-        .collect();
-    assert_eq!(edges.len(), 2);
-    for original in ["node:fs", "node:fs/promises"] {
-        let target = GraphBuilder::external_id(original, "readFile");
-        assert!(edges.iter().any(|e| e.from == consumer
-            && e.to == target
-            && e.id == GraphBuilder::edge_id(&consumer, EdgeKind::Imports, &target)));
-    }
-    assert!(
-        !g.nodes
-            .iter()
-            .any(|n| n.id == GraphBuilder::external_id("node:fs", "unused"))
-    );
 }
 
 #[test]
