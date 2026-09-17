@@ -229,7 +229,7 @@ fn is_source(name: &str) -> bool {
     (name.ends_with(".ts") || name.ends_with(".tsx")) && !name.ends_with(".d.ts")
 }
 
-fn logical_excluded(path: &Path) -> bool {
+pub(crate) fn logical_excluded(path: &Path) -> bool {
     path.components().any(|component| {
         component
             .as_os_str()

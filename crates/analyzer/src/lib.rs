@@ -5,6 +5,7 @@ use std::collections::{HashMap, HashSet};
 
 pub mod discovery;
 pub mod graph_builder;
+pub mod resolver;
 pub mod typescript;
 pub use graph_builder::GraphBuilder;
 

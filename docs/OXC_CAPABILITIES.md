@@ -91,3 +91,45 @@ sourceとの手照合結果:
 fixtureと固定commitの構文・semantic・通常relative resolver能力は取得できました。runtime class tokenはconstructor type syntaxとvalue-import bindingとしてのみ確認し、runtime instanceやprovider実装を推論しません。これは解析精度、Canvas理解速度、production Graphの合格証明ではありません。
 
 dynamic dispatch、runtime-generated provider、factory return、deep TypeScript type reasoningはunknown/unsupportedとして後続で扱い、TypeScript fallbackは追加しません。今後、必要能力・root内情報・Oxc APIのいずれかを取得できなくなった場合は広域fallbackで成功扱いせずgate未完了とし、recognizer拡張を止めてscope/技術選定を再検討します。
+
+## #13 shared import resolver（production部品、pipeline未接続）
+
+`resolver::ImportResolver::analyze(&RepositoryRoot)` はparserのmodule recordとsemanticのSymbolIdを照合する。一致する綴りを他fileから探すfallbackはない。返り値はsnapshot内のimport/reference findingsであり、完成したSystemGraphではない。
+
+| 対象 | #13の範囲 |
+|---|---|
+| relative named import / `as` alias | root内の `.ts` / `.tsx`、省略拡張子・directory indexをOxc resolverで解決。named class/interfaceまたは同じfileのexport-list aliasへ対応 |
+| 同名symbol / shadowing | ReferenceId→SymbolId→import bindingで照合。canonical IDは既存GraphBuilderと宣言抽出のlexical scope規則を共有 |
+| 宣言マージ | 同じSymbolIdの複数宣言は一意に選ばず、そのbindingだけUnresolved + export位置のDiagnostic。class/interfaceの順序でtargetを変えない |
+| type-only | import type、specifier type、export typeを`ImportFinding.type_only`に保持。LocalSymbolは宣言kindも保持。value importやExternalSymbolであることもruntime classの証明にはしない |
+| external named import | `node:fs` / `node:fs/promises`を含む元specifier + export名をcanonical external IDに使用。外部specifier検証をrepository path検証から分離し、Node実行・URL取得はしない。package rootは別フィールドで保持し、subpath同士を統合しない。package source/metadataを読まない |
+| default / namespace / side-effect import | 元specifier・bindingを保持しUnresolved + Diagnostic。利用解析は未対応 |
+| re-export（単段を含む） | 未対応。`import { A } from "./a"; export { A };`も下流importerの有無によらずexport位置のDiagnosticを保持し、下流はUnresolved。Oxcがnamed importのlocal形式をindirect entryへ変換する場合も、import元ではなくexport entryのspanを使用する。同じfile内の宣言のexport-list aliasは引き続き対応。多段barrelは辿らない |
+| tsconfig paths/baseUrl | 解決は未対応。通常bare packageはUnresolvedとし、通常relative importは従来どおり解決する |
+| tsconfig extends/references/rootDirs/moduleSuffixes | 未評価の設定でrelative lookupが変わり得るため、relative/通常bare packageともUnresolved + Diagnostic。通常の.tsへconfirmed edgeを出さない。継承先configは読まず、設定解決を実装しない |
+| JS/JSON module、NodeNext `.js`→`.ts`置換、dynamic import、CommonJS、type推論 | 未対応。dynamic import/CommonJSは静的ES import APIの対象外 |
+
+source/configを読む前にRepositoryRootでcanonical containmentを確認する。Oxc resolverのfilesystemにも同じ境界とdiscoveryの除外規則を適用し、root外・node_modulesのreadを拒否する。resolverのpackage.json祖先探索は無効なread（NotFound）として止める。unsupported configの参照先は読まない。snapshot中の他プロセスによるfilesystem変更の隔離は提供しない。
+
+後続Recognizerは同じsource snapshotのAST referenceのbyte offsetから取得する（文字列名だけでは照合しない）:
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+if let Some(reference) = resolver.at_reference(file, reference_span.start) {
+    let binding = resolver.import_for(reference);
+    // binding.type_only と resolution のkindを確認してからRecognizer固有の意味を判断。
+    // LocalSymbol / ExternalSymbol / Unresolved。外部importだけでruntime tokenと断定しない。
+}
+```
+
+`references()` はsource byte span/line、import元とtype-only、使用箇所のconsumer IDを保持する。top-level関数など契約にないconsumerはNoneのまま。anonymous classや表現不能なmethodもconsumerを捏造しない。named method内のnested functionにある使用はそのmethodのlexicalな使用として保持し、呼び出し対象の解決は行わない。
+
+`apply_imports(&mut GraphBuilder)` はgeneric宣言投入後に呼ぶ。実際の使用referenceに対してだけ`consumer --imports--> target`を追加し、external nodeもその時点で追加する。class decorator/field/constructorはclass、method内の使用はmethodがconsumerとなる。Evidenceは既存のresolver/confirmedで、静的なimport bindingの事実のみを示す。type-onlyをruntime関係へ変換せず、NestJS意味解析・call counter・正規graph metadataは生成しない。`analyze` CLIへの接続は#17のままであり、未実装エラーを変更していない。
+
+検証は`tests/import_resolver.rs`とresolver内filesystem test。手定義fixtureのimports edge集合と比較し、expected-graph.jsonは変更しない。テスト内のgraphは宣言/import projectionであり、完全解析の証拠ではない。#7の固定実repoprobeと#13 production APIの検証は区別する。
+
+固定版`oxc_resolver 11.24.3`の`TsConfig`はextends/paths/baseUrl/rootDirs等を保持するが、`CompilerOptions`にmoduleSuffixesはなく、未知fieldとして破棄する。そのため同じroot sourceを、Oxcが既に使う`json-strip-comments 3.1.2`とserde_jsonでも構造的に読み、moduleSuffixesの存在をtyped deserialization前に確認する。JSONCのcomment・trailing comma・BOM・escaped keyを扱い、文字列検索で設定の有無を判断しない。同依存を固定versionの直接依存として宣言したが、依存packageの追加・upgradeはない。
+
+回帰testは継承先/directのmoduleSuffixesでUnresolvedとimports edge不存在を確認し、設定なし・paths/baseUrlのみのrelative named/alias解決とfixture 43 importsを維持する。設定warningだけを成功条件にはしない。
+
+既存のspecifier検証を通過した明示的な`node:` named importは、paths/baseUrl/extends/references/rootDirs/moduleSuffixesのconfigガードから除外する。これは元specifier/export名の静的な外部identityであり、Node runtimeでの存在・動作・型定義解決を証明しない。不正specifierの拒否、default/namespace/副作用importの未対応判定、type-only保持、実consumerのみのedge生成は維持し、設定Diagnosticも削除しない。
