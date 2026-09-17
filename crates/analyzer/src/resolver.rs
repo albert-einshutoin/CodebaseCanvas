@@ -108,11 +108,22 @@ pub struct ReferenceFinding {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportResolver {
+    sources: BTreeMap<String, String>,
     imports: Vec<ImportFinding>,
     references: Vec<ReferenceFinding>,
     diagnostics: Vec<Diagnostic>,
 }
 impl ImportResolver {
+    /// Exact source snapshot used to establish semantic reference bindings.
+    pub fn sources(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.sources
+            .iter()
+            .map(|(file, source)| (file.as_str(), source.as_str()))
+    }
+    pub fn source(&self, file: &str) -> Option<&str> {
+        self.sources.get(file).map(String::as_str)
+    }
+
     pub fn imports(&self) -> &[ImportFinding] {
         &self.imports
     }
@@ -135,6 +146,7 @@ impl ImportResolver {
     pub fn analyze(root: &RepositoryRoot) -> Result<Self, String> {
         let discovered = discover(root)?;
         let mut result = Self {
+            sources: BTreeMap::new(),
             imports: vec![],
             references: vec![],
             diagnostics: discovered.diagnostics,
@@ -167,6 +179,7 @@ impl ImportResolver {
             let source = fs::read_to_string(path)
                 .map_err(|_| "resolver source cannot be read".to_owned())?;
             files.insert(file.clone(), parse_file(&file, &source));
+            result.sources.insert(file, source);
         }
         for (file, facts) in &files {
             result.diagnostics.extend(facts.diagnostics.clone());

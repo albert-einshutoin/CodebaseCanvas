@@ -133,3 +133,36 @@ if let Some(reference) = resolver.at_reference(file, reference_span.start) {
 回帰testは継承先/directのmoduleSuffixesでUnresolvedとimports edge不存在を確認し、設定なし・paths/baseUrlのみのrelative named/alias解決とfixture 43 importsを維持する。設定warningだけを成功条件にはしない。
 
 既存のspecifier検証を通過した明示的な`node:` named importは、paths/baseUrl/extends/references/rootDirs/moduleSuffixesのconfigガードから除外する。これは元specifier/export名の静的な外部identityであり、Node runtimeでの存在・動作・型定義解決を証明しない。不正specifierの拒否、default/namespace/副作用importの未対応判定、type-only保持、実consumerのみのedge生成は維持し、設定Diagnosticも削除しない。
+
+## #9 NestJS role分類（production部品、pipeline未接続）
+
+`nestjs_roles::extract_file`は#8の宣言抽出を再利用し、各classのdecoratorをすべて調べてから、Builderへの初回投入前にkindを確定する。`GraphBuilder.add_node`や矛盾検出は変更しない。classとserviceを別々に投入せず、canonical ID、file、lexical scope、method ID・所有edge、imports参照先、AST evidenceを維持する。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+resolver.apply_imports(&mut builder)?; // resolver診断もここで保持する
+let graph = builder.finish()?;        // 通常のSystemGraph validation
+```
+
+この入口はgenericな`typescript::extract_file`の代わりに使う。同じBuilderへgeneric classを先に投入してから分類するAPIではない。後続Recognizerも`resolver.source(file)`のASTと`at_reference(file, callee.span.start)`を使い、同一snapshotのbyte位置を照合する。snapshot保持でsourceの再読は不要になるが、`analyze`中の複数fileの同時更新を隔離するものではない。
+
+| 対象 | 対応・制約 |
+|---|---|
+| class宣言へ直接付いたnamed importのdecorator call | ReferenceId→SymbolIdを照合済みの#13 findingを使用。exact `@nestjs/common`、元export名、value import、ExternalSymbolを確認 |
+| import alias | local名によらずModule→module、Controller→controller、Injectable→service |
+| Injectableかつ宣言名がRepository末尾 | repository。decorator出現はnestjs/confirmed、名前の補助規則は別のnestjs/best_effort。AST/confirmedで推定を昇格させない |
+| 同一roleの複数decorator・無関係なdecoratorとの併存 | 一つのnodeへ分類。同じsnapshotの分類再適用はBuilderで重複排除 |
+| 異なるroleの競合 | 適用順によらずclassのまま、`NESTJS_ROLE_CONFLICT`。確認できたdecorator evidenceは保持。これはv0.1の分類制約でありNestJSコードの不正判定ではない |
+| 通常class・名前だけがService/Repository | classのまま。decoratorなしならrole診断なし |
+| 別module・別export・local/shadowed decorator | roleに採用しない。import referenceのないdecoratorは`NESTJS_ROLE_ORIGIN_UNKNOWN`（info）。綴りからimportを探さない |
+| type-only | 採用しない。findingがあれば`NESTJS_ROLE_TYPE_ONLY`、Oxcがvalue referenceを結び付けない場合は`ORIGIN_UNKNOWN`。aliasも同様 |
+| Unresolved・re-export | 採用しない。元のResolver診断を維持し、class位置の`NESTJS_ROLE_UNRESOLVED`で影響を示す。configガードを迂回しない |
+| namespace/member callee・call以外・wrapper | 展開しない。非identifier callee等は`NESTJS_ROLE_UNSUPPORTED`、local wrapperは`ORIGIN_UNKNOWN`。wrapper内部のimport referenceをroleとして採用しない |
+| decorator引数・継承・class expression・method decorator | class roleの根拠にしない。Controller pathやModule providers等の意味解析はしない |
+
+serviceはPoC上のInjectable分類であり、業務Serviceの責務、provider登録、Module所属、scope、runtime instance、DI成功を証明しない。Module membership、endpoint、DI、calls、Prisma、CLI pipelineは追加しない。本番`analyze`は#17まで非0・無書込のまま。
+
+`tests/nestjs_roles.rs`は独立入力の誤分類防止・競合・evidence・snapshot・identityと、fixtureの19宣言のcanonical ID→kindおよび43 importsのfrom/kind/toを手定義oracleに比較する。宣言/role/importの部分projectionであり、期待graph全体の完成やcall coverageを主張しない。oracleは更新しない。
