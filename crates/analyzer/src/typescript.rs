@@ -35,14 +35,14 @@ struct ClassContext {
 }
 
 #[derive(Default)]
-struct LexicalScope {
-    path: Vec<String>,
+pub(crate) struct LexicalScope {
+    pub(crate) path: Vec<String>,
     frames: Vec<bool>,
     next: usize,
 }
 
 impl LexicalScope {
-    fn enter(&mut self, flags: ScopeFlags) {
+    pub(crate) fn enter(&mut self, flags: ScopeFlags) {
         // Named namespaces already contribute their canonical name. All other
         // scopes use deterministic traversal identities, including future Oxc scopes.
         let named_namespace = flags.contains(ScopeFlags::TsModuleBlock)
@@ -55,7 +55,7 @@ impl LexicalScope {
         }
     }
 
-    fn leave(&mut self) {
+    pub(crate) fn leave(&mut self) {
         if self.frames.pop() == Some(true) {
             self.path.pop();
         }
@@ -470,7 +470,7 @@ fn export_name(name: &ModuleExportName<'_>) -> Option<String> {
     }
 }
 
-fn line_at(source: &str, offset: u32) -> u64 {
+pub(crate) fn line_at(source: &str, offset: u32) -> u64 {
     let bytes = source.as_bytes();
     let end = (offset as usize).min(bytes.len());
     let mut line = 1;
