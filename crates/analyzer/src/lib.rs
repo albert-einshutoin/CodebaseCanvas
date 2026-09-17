@@ -7,6 +7,7 @@ pub mod discovery;
 pub mod graph_builder;
 pub mod nestjs_modules;
 pub mod nestjs_roles;
+pub mod nestjs_routes;
 pub mod resolver;
 pub mod typescript;
 pub use graph_builder::GraphBuilder;
