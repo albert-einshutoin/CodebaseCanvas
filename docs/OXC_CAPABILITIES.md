@@ -166,3 +166,39 @@ let graph = builder.finish()?;        // 通常のSystemGraph validation
 serviceはPoC上のInjectable分類であり、業務Serviceの責務、provider登録、Module所属、scope、runtime instance、DI成功を証明しない。Module membership、endpoint、DI、calls、Prisma、CLI pipelineは追加しない。本番`analyze`は#17まで非0・無書込のまま。
 
 `tests/nestjs_roles.rs`は独立入力の誤分類防止・競合・evidence・snapshot・identityと、fixtureの19宣言のcanonical ID→kindおよび43 importsのfrom/kind/toを手定義oracleに比較する。宣言/role/importの部分projectionであり、期待graph全体の完成やcall coverageを主張しない。oracleは更新しない。
+
+## #10 静的Module構成（production部品、pipeline未接続）
+
+全snapshot fileの宣言・roleを投入した後、`nestjs_modules::analyze`で内部の`ModuleFindings`を集め、`apply`で構成edgeと表示parentを反映する。AST型やsource本文はwireへ出さない。#9のmodule分類済みnodeと、exact `@nestjs/common`のvalue importに解決したModule decorator callの両方を要求する。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+let modules = nestjs_modules::analyze(&resolver, &builder)?;
+modules.apply(&mut builder)?;
+resolver.apply_imports(&mut builder)?;
+let graph = builder.finish()?;
+```
+
+findingはModuleのcanonical ID、source byte位置、fieldごとのentry位置、解決した既存宣言IDまたは未対応理由、diagnosticsを保持する。exportsも同じentryとして保持するが構成edgeを追加しない。Module関係のevidenceはentry位置のnestjs/confirmed。Resolverの既存importsは実binding使用として独立に保持する。
+
+import entryは#13のfinding、同一fileのidentifierは同じsemantic解析のReferenceId→SymbolId→一意なclass宣言IDで解決する。同一file参照をimportとして捏造せず、scopeやfileの異なる同名classを名前検索で結ばない。interface、type-only、merged declaration、値alias伝播、外部dependency、不適切なrole kindは登録対象にしない。Resolverの設定・package・re-export対応は拡張しない。sourceは#9で保持した入力を再利用し、filesystem全体の原子的snapshotを保証しない。
+
+| 構文 | 対応・未対応範囲 |
+|---|---|
+| 直接の単一`@Module({...})` | imports/controllers/providers/exportsのstatic property、array literal、解決可能なidentifierに対応。空object・空array・省略は有効 |
+| imports | 既存moduleへdepends_on。containsやparentを作らない |
+| controllers / providers | controllersはcontroller、providersはservice/repository/generic classへcontains。登録を理由にkindを昇格しない |
+| exports | 位置・解決状態をfindingに保持。contains/importsを合成しない |
+| array内unsupported | forwardRef、dynamic call、spread、provider object、未解決identifierはentry単位にwarning。安全な兄弟entryを保持し、内部参照を構成関係へ昇格しない |
+| 宣言マージされた起点Module | source位置とcanonical IDは保持し、構成を推測せずunsupported_module_ambiguous診断を付ける。一意な参照targetからは引き続き除外する |
+| 複数Module call / object spread / computed key | metadata全体が未確定。構成は出さずwarning。object評価・上書き順の推測はしない |
+| 重複static property | 該当fieldを未確定とし、配列を合算しない。他fieldは保持 |
+| metadata変数・factory、非array field、getter/method | 未対応。該当metadataまたはfieldにwarning |
+| 無関係decorator・role競合 | Module構成を推測せず、構成用の追加警告も出さない。既存role/Resolver診断は保持 |
+
+Builderの`apply_module_composition`は存在するModuleをsourceとするcontains/depends_onだけを受け入れ、targetの存在・kindを再確認する。確定済みの全membership edgeからdistinct Module数を集計し、1所属だけparentIdを設定、0/複数では省略する。同じModuleの重複entryは所属数を増やさず、method parentやnode ID/kind/evidenceは維持する。通常のadd_node矛盾検出を緩めず、finishは従来どおりvalidationする。このparent規則は抽出できた静的membershipの表示規則であり、runtimeの全所属・instance共有の証明ではない。
+
+`tests/nestjs_modules.rs`でoracleのModule membership 9、Module依存2、unsupported_module_* 5診断を投影比較する。from/kind/to、entry evidence、診断code/file/line/relatedNodeId、該当parentを比較し、19宣言のkind、43 imports、17 method所有containsを維持する。Module診断にcallsのskippedCountを付けない。テスト内graphは部分projectionであり、57 nodes / 90 edgesの完成graphやcall coverageの証拠ではない。oracleは変更しない。本番analyzeは#17未接続の非0・無書込を維持し、routes/DI/calls/Prisma/runtimeコンテナを実装しない。
