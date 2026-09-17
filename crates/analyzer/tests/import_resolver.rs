@@ -153,9 +153,17 @@ fn fixture_import_edges_match_hand_defined_oracle() {
         g.edges
             .iter()
             .filter(|e| e.kind == EdgeKind::Imports)
-            .map(|e| e.id.clone())
+            .map(|e| {
+                (
+                    e.id.clone(),
+                    e.from.clone(),
+                    format!("{:?}", e.kind),
+                    e.to.clone(),
+                )
+            })
             .collect::<std::collections::BTreeSet<_>>()
     };
+    assert_eq!(edges(&expected).len(), 43);
     assert_eq!(edges(&actual), edges(&expected));
 }
 
@@ -349,4 +357,160 @@ fn repeated_side_effect_occurrences_and_unsupported_exports_stay_visible() {
         ]
     );
     assert_eq!(r.references().count(), 1);
+}
+
+#[test]
+fn merged_binding_is_unresolved_in_both_declaration_orders() {
+    use codebasecanvas_analyzer::resolver::UnresolvedReason;
+    for declarations in [
+        "export class Foo {}\nexport interface Foo { x: number }",
+        "export interface Foo { x: number }\nexport class Foo {}",
+    ] {
+        let repo = Repo::new();
+        repo.put("a.ts", &format!("{declarations}\nexport class Good {{}}"));
+        repo.put("main.ts", "import {Foo, Good} from './a'; import type {Foo as TypeFoo} from './a'; class C { x: TypeFoo; run(){ return [Foo, Good]; } }");
+        let r = repo.resolve();
+        for name in ["Foo", "TypeFoo"] {
+            let finding = r
+                .imports()
+                .iter()
+                .find(|i| i.local_name.as_deref() == Some(name))
+                .unwrap();
+            assert_eq!(
+                finding.resolution,
+                Resolution::Unresolved {
+                    reason: UnresolvedReason::UnsupportedExport
+                }
+            );
+            assert_eq!(finding.type_only, name == "TypeFoo");
+        }
+        assert!(
+            r.imports()
+                .iter()
+                .any(|i| i.local_name.as_deref() == Some("Good")
+                    && matches!(i.resolution, Resolution::LocalSymbol { .. }))
+        );
+        assert!(
+            r.diagnostics()
+                .iter()
+                .any(|d| d.file.as_deref() == Some("a.ts")
+                    && d.code == "TS_IMPORT_UNSUPPORTEDEXPORT")
+        );
+        let g = graph(&RepositoryRoot::open(&repo.0).unwrap());
+        assert_eq!(
+            g.edges
+                .iter()
+                .filter(|e| e.kind == codebasecanvas_analyzer::EdgeKind::Imports)
+                .count(),
+            1
+        );
+    }
+}
+
+#[test]
+fn node_named_imports_keep_identity_and_only_used_consumer_edges() {
+    use codebasecanvas_analyzer::{EdgeKind, GraphBuilder, NodeKind};
+    let repo = Repo::new();
+    repo.put("main.ts", "import {readFile as syncRead, unused} from 'node:fs'; import {readFile as asyncRead} from 'node:fs/promises'; class C { run(){return [syncRead, asyncRead];} }");
+    let r = repo.resolve();
+    for (local, original) in [("syncRead", "node:fs"), ("asyncRead", "node:fs/promises")] {
+        let i = r
+            .imports()
+            .iter()
+            .find(|i| i.local_name.as_deref() == Some(local))
+            .unwrap();
+        assert!(
+            matches!(&i.resolution, Resolution::ExternalSymbol{specifier, exported_name, ..} if specifier == original && exported_name == "readFile")
+        );
+    }
+    let g = graph(&RepositoryRoot::open(&repo.0).unwrap());
+    let owner = GraphBuilder::node_id(NodeKind::Class, "main.ts", &[], "C").unwrap();
+    let consumer = GraphBuilder::method_id(&owner, "instance", "run");
+    let edges: Vec<_> = g
+        .edges
+        .iter()
+        .filter(|e| e.kind == EdgeKind::Imports)
+        .collect();
+    assert_eq!(edges.len(), 2);
+    for original in ["node:fs", "node:fs/promises"] {
+        let target = GraphBuilder::external_id(original, "readFile");
+        assert!(edges.iter().any(|e| e.from == consumer
+            && e.to == target
+            && e.id == GraphBuilder::edge_id(&consumer, EdgeKind::Imports, &target)));
+    }
+    assert!(
+        !g.nodes
+            .iter()
+            .any(|n| n.id == GraphBuilder::external_id("node:fs", "unused"))
+    );
+}
+
+#[test]
+fn local_reexport_diagnostic_is_at_export_even_without_downstream() {
+    use codebasecanvas_analyzer::{EdgeKind, resolver::UnresolvedReason};
+    for downstream in [false, true] {
+        let repo = Repo::new();
+        repo.put("a.ts", "export class A {}");
+        repo.put("barrel.ts", "import {A} from './a';\nexport {A};");
+        if downstream {
+            repo.put(
+                "main.ts",
+                "import {A} from './barrel'; class C { run(){return A;} }",
+            );
+        }
+        let r = repo.resolve();
+        assert!(
+            r.diagnostics()
+                .iter()
+                .any(|d| d.file.as_deref() == Some("barrel.ts")
+                    && d.line == Some(2)
+                    && d.code == "TS_IMPORT_UNSUPPORTEDEXPORT")
+        );
+        if downstream {
+            assert!(r.imports().iter().any(|i| i.site.file == "main.ts"
+                && i.resolution
+                    == Resolution::Unresolved {
+                        reason: UnresolvedReason::UnsupportedExport
+                    }));
+        }
+        let g = graph(&RepositoryRoot::open(&repo.0).unwrap());
+        assert!(!g.edges.iter().any(|e| e.kind == EdgeKind::Imports));
+    }
+}
+
+#[test]
+fn external_validation_does_not_relax_repository_boundaries() {
+    use codebasecanvas_analyzer::resolver::UnresolvedReason;
+    for specifier in [
+        "node:",
+        "node:/fs",
+        "node:fs/../net",
+        "node:fs//promises",
+        "node:fs?x",
+        "node:@scope/pkg",
+        "https://example.test/mod",
+        "file:/tmp/x",
+        "C:/outside",
+        "/outside",
+        "pkg/../outside",
+        "pkg//x",
+        "pkg/%2e%2e/x",
+        "pkg/white space",
+        "#alias",
+    ] {
+        let repo = Repo::new();
+        repo.put(
+            "main.ts",
+            &format!("import {{A}} from '{specifier}'; class C {{run(){{return A;}}}}"),
+        );
+        let r = repo.resolve();
+        assert_eq!(
+            r.imports()[0].resolution,
+            Resolution::Unresolved {
+                reason: UnresolvedReason::BoundaryViolation
+            },
+            "{specifier}"
+        );
+    }
+    assert!(!codebasecanvas_analyzer::is_repository_path("node:fs"));
 }

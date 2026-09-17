@@ -100,10 +100,11 @@ dynamic dispatch、runtime-generated provider、factory return、deep TypeScript
 |---|---|
 | relative named import / `as` alias | root内の `.ts` / `.tsx`、省略拡張子・directory indexをOxc resolverで解決。named class/interfaceまたは同じfileのexport-list aliasへ対応 |
 | 同名symbol / shadowing | ReferenceId→SymbolId→import bindingで照合。canonical IDは既存GraphBuilderと宣言抽出のlexical scope規則を共有 |
+| 宣言マージ | 同じSymbolIdの複数宣言は一意に選ばず、そのbindingだけUnresolved + export位置のDiagnostic。class/interfaceの順序でtargetを変えない |
 | type-only | import type、specifier type、export typeを`ImportFinding.type_only`に保持。LocalSymbolは宣言kindも保持。value importやExternalSymbolであることもruntime classの証明にはしない |
-| external named import | 元specifier + export名をcanonical external IDに使用。package rootは別フィールドで保持し、subpath同士を統合しない。package source/metadataを読まない |
+| external named import | `node:fs` / `node:fs/promises`を含む元specifier + export名をcanonical external IDに使用。外部specifier検証をrepository path検証から分離し、Node実行・URL取得はしない。package rootは別フィールドで保持し、subpath同士を統合しない。package source/metadataを読まない |
 | default / namespace / side-effect import | 元specifier・bindingを保持しUnresolved + Diagnostic。利用解析は未対応 |
-| re-export（単段を含む） | 未対応。export元位置のDiagnosticと、import側のUnresolvedを保持。多段barrelは辿らない |
+| re-export（単段を含む） | 未対応。`import { A } from "./a"; export { A };`も下流importerの有無によらずexport位置のDiagnosticを保持し、下流はUnresolved。Oxcがnamed importのlocal形式をindirect entryへ変換する場合も、import元ではなくexport entryのspanを使用する。同じfile内の宣言のexport-list aliasは引き続き対応。多段barrelは辿らない |
 | tsconfig paths/baseUrl/extends/references | root configだけをOxcのJSONC parserで読み、直接参照の境界を確認。解決は未対応。これらがある場合bare specifierをexternalと決めつけずUnresolvedにする。通常relative importは独立して解決 |
 | JS/JSON module、NodeNext `.js`→`.ts`置換、dynamic import、CommonJS、type推論 | 未対応。dynamic import/CommonJSは静的ES import APIの対象外 |
 

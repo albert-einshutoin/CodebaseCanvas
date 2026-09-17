@@ -358,14 +358,17 @@ impl Collector<'_> {
         let symbol = symbol?;
         let scope: Vec<_> = self.scope.path.iter().map(String::as_str).collect();
         let id = GraphBuilder::node_id(kind, self.file, &scope, name).ok()?;
-        self.declarations.insert(
-            symbol,
-            Declaration {
-                id: id.clone(),
-                site: SourceSite::new(self.file, self.source, span),
-                kind,
-            },
-        );
+        // Merged symbols have no unique declaration in this model, regardless of order.
+        if self.scoping.symbol_redeclarations(symbol).is_empty() {
+            self.declarations.insert(
+                symbol,
+                Declaration {
+                    id: id.clone(),
+                    site: SourceSite::new(self.file, self.source, span),
+                    kind,
+                },
+            );
+        }
         Some(id)
     }
 }
@@ -516,6 +519,18 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
                 &UnresolvedReason::ParseIncomplete,
             ));
         }
+        if symbol.is_some_and(|symbol| {
+            !scoping.symbol_redeclarations(symbol).is_empty()
+                || facts
+                    .imports
+                    .iter()
+                    .any(|import| import.symbol == Some(symbol))
+        }) {
+            facts.diagnostics.push(diagnostic(
+                &SourceSite::new(file, source, exported.span),
+                &UnresolvedReason::UnsupportedExport,
+            ));
+        }
         // A real export of a function/variable is distinct from a missing export.
         let declaration = symbol.and_then(|symbol| collector.declarations.get(&symbol));
         facts.exports.insert(
@@ -531,7 +546,7 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
     {
         if let Some(request) = &entry.module_request {
             facts.reexports.push((
-                SourceSite::new(file, source, request.span),
+                SourceSite::new(file, source, entry.span),
                 request.name.to_string(),
             ));
         }
@@ -564,6 +579,26 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
 
 fn is_relative(specifier: &str) -> bool {
     specifier.starts_with("./") || specifier.starts_with("../")
+}
+// External identities are not repository paths and never trigger filesystem reads.
+fn is_external_specifier(specifier: &str) -> bool {
+    let name = if let Some(name) = specifier.strip_prefix("node:") {
+        if !name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '/'))
+        {
+            return false;
+        }
+        name
+    } else {
+        specifier
+    };
+    !name.is_empty()
+        && !name.starts_with('#')
+        && !name
+            .chars()
+            .any(|c| c.is_control() || c.is_whitespace() || matches!(c, ':' | '\\' | '?' | '%'))
+        && name.split('/').all(|part| !matches!(part, "" | "." | ".."))
 }
 fn resolve_target(
     root: &RepositoryRoot,
@@ -620,7 +655,7 @@ fn resolve_target(
             }),
         };
     }
-    if !crate::is_repository_path(&raw.specifier) || raw.specifier.starts_with('#') {
+    if !is_external_specifier(&raw.specifier) {
         return unresolved(UnresolvedReason::BoundaryViolation);
     }
     if config {
