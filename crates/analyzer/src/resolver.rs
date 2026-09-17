@@ -108,6 +108,8 @@ pub struct ReferenceFinding {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportResolver {
+    local_references: BTreeMap<(String, u32), (String, NodeKind)>,
+    declarations: BTreeMap<(String, u32), String>,
     sources: BTreeMap<String, String>,
     imports: Vec<ImportFinding>,
     references: Vec<ReferenceFinding>,
@@ -115,6 +117,14 @@ pub struct ImportResolver {
 }
 impl ImportResolver {
     /// Exact source snapshot used to establish semantic reference bindings.
+    pub(crate) fn local_reference(&self, file: &str, start: u32) -> Option<&(String, NodeKind)> {
+        self.local_references.get(&(file.to_owned(), start))
+    }
+    pub(crate) fn declaration_at(&self, file: &str, start: u32) -> Option<&str> {
+        self.declarations
+            .get(&(file.to_owned(), start))
+            .map(String::as_str)
+    }
     pub fn sources(&self) -> impl Iterator<Item = (&str, &str)> {
         self.sources
             .iter()
@@ -147,6 +157,8 @@ impl ImportResolver {
         let discovered = discover(root)?;
         let mut result = Self {
             sources: BTreeMap::new(),
+            local_references: BTreeMap::new(),
+            declarations: BTreeMap::new(),
             imports: vec![],
             references: vec![],
             diagnostics: discovered.diagnostics,
@@ -183,6 +195,19 @@ impl ImportResolver {
         }
         for (file, facts) in &files {
             result.diagnostics.extend(facts.diagnostics.clone());
+            for decl in facts.declarations.values() {
+                result
+                    .declarations
+                    .insert((file.clone(), decl.site.start), decl.id.clone());
+            }
+            for reference in &facts.references {
+                if let Some(decl) = facts.declarations.get(&reference.symbol) {
+                    result.local_references.insert(
+                        (file.clone(), reference.site.start),
+                        (decl.id.clone(), decl.kind),
+                    );
+                }
+            }
             for (site, specifier) in &facts.reexports {
                 let reason = if is_relative(specifier)
                     && checked_request(&filesystem, file, specifier).is_err()
@@ -343,6 +368,7 @@ struct RawReference {
 }
 #[derive(Default)]
 struct FileFacts {
+    declarations: HashMap<SymbolId, Declaration>,
     imports: Vec<RawImport>,
     references: Vec<RawReference>,
     exports: BTreeMap<String, Option<(Declaration, bool)>>,
@@ -586,6 +612,7 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
             }
         }
     }
+    facts.declarations = collector.declarations;
     facts.imports.sort_by_key(|i| i.site.start);
     facts
 }

@@ -5,6 +5,7 @@ use std::collections::{HashMap, HashSet};
 
 pub mod discovery;
 pub mod graph_builder;
+pub mod nestjs_modules;
 pub mod nestjs_roles;
 pub mod resolver;
 pub mod typescript;
