@@ -66,6 +66,12 @@ pub(crate) fn classify(
             continue;
         };
         let binding = resolver.import_for(reference);
+        let role = match binding.exported_name.as_str() {
+            "Module" => NodeKind::Module,
+            "Controller" => NodeKind::Controller,
+            "Injectable" => NodeKind::Service,
+            _ => continue,
+        };
         if let Resolution::Unresolved { .. } = &binding.resolution {
             // Keep the resolver's import-site reason; add only class-scoped impact.
             diagnostics.push(report(
@@ -77,12 +83,6 @@ pub(crate) fn classify(
         if binding.specifier != "@nestjs/common" {
             continue;
         }
-        let role = match binding.exported_name.as_str() {
-            "Module" => NodeKind::Module,
-            "Controller" => NodeKind::Controller,
-            "Injectable" => NodeKind::Service,
-            _ => continue,
-        };
         if binding.type_only {
             diagnostics.push(report(
                 "TYPE_ONLY",

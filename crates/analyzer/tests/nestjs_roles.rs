@@ -292,3 +292,91 @@ fn type_only_aliases_have_class_scoped_unknowns_without_spelling_fallback() {
         );
     }
 }
+
+#[test]
+fn unresolved_custom_decorator_exports_do_not_add_role_diagnostics() {
+    for (exported, local) in [
+        ("Roles", "AccessRoles"),
+        ("Roles", "Injectable"),
+        ("Public", "Public"),
+    ] {
+        let repo = Repo::new(&format!(
+            "import {{ Injectable as Managed }} from '@nestjs/common';\nimport {{ {exported} as {local} }} from './roles';\n@Managed()\n@{local}()\nexport class AuthService {{}}"
+        ));
+        fs::write(
+            repo.0.join("roles.ts"),
+            format!("export function {exported}() {{ return (_target: Function) => {{}}; }}"),
+        )
+        .unwrap();
+        let r = repo.resolver();
+        let binding = r
+            .imports()
+            .iter()
+            .find(|i| i.specifier == "./roles")
+            .unwrap();
+        assert_eq!(binding.exported_name, exported);
+        assert!(matches!(
+            binding.resolution,
+            codebasecanvas_analyzer::resolver::Resolution::Unresolved { .. }
+        ));
+        let g = graph(&r, true);
+        let node = g.nodes.iter().find(|n| n.name == "AuthService").unwrap();
+        assert_eq!(node.kind, NodeKind::Service);
+        assert!(
+            node.evidence
+                .iter()
+                .any(|e| e.source == EvidenceSource::Ast)
+        );
+        assert!(
+            node.evidence
+                .iter()
+                .any(|e| e.source == EvidenceSource::Nestjs
+                    && e.confidence == Confidence::Confirmed
+                    && e.line == Some(3))
+        );
+        assert!(
+            r.diagnostics()
+                .iter()
+                .any(|d| d.code == "TS_IMPORT_UNSUPPORTEDEXPORT")
+        );
+        assert!(r.diagnostics().iter().all(|d| g.diagnostics.contains(d)));
+        assert!(
+            !g.diagnostics
+                .iter()
+                .any(|d| d.code == "NESTJS_ROLE_UNRESOLVED"),
+            "{exported} as {local}: {:?}",
+            g.diagnostics
+        );
+    }
+}
+
+#[test]
+fn unresolved_reexported_role_keeps_class_scoped_diagnostic() {
+    let repo = Repo::new(
+        "import { Injectable as Managed } from './barrel';\n@Managed() export class AuthService {}",
+    );
+    fs::write(
+        repo.0.join("barrel.ts"),
+        "export { Injectable } from '@nestjs/common';",
+    )
+    .unwrap();
+    let r = repo.resolver();
+    let g = graph(&r, true);
+    let node = g.nodes.iter().find(|n| n.name == "AuthService").unwrap();
+    assert_eq!(node.kind, NodeKind::Class);
+    assert!(
+        node.evidence
+            .iter()
+            .all(|e| e.source == EvidenceSource::Ast)
+    );
+    assert!(
+        g.diagnostics
+            .iter()
+            .any(|d| d.code == "NESTJS_ROLE_UNRESOLVED"
+                && d.related_node_id.as_ref() == Some(&node.id)
+                && d.file.as_deref() == Some("main.ts")
+                && d.line == Some(2))
+    );
+    assert!(!r.diagnostics().is_empty());
+    assert!(r.diagnostics().iter().all(|d| g.diagnostics.contains(d)));
+}
