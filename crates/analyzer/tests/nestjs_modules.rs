@@ -3,18 +3,26 @@ use codebasecanvas_analyzer::{
     GraphMetadata, NodeKind, SystemGraph, discovery::RepositoryRoot, nestjs_roles,
     resolver::ImportResolver,
 };
-use std::{collections::BTreeMap, fs, path::PathBuf};
+use std::{
+    collections::BTreeMap,
+    fs,
+    path::PathBuf,
+    sync::atomic::{AtomicU64, Ordering},
+};
+
+static NEXT_REPO: AtomicU64 = AtomicU64::new(0);
 
 struct Repo(PathBuf);
 impl Repo {
     fn new(source: &str) -> Self {
         let path = std::env::temp_dir().join(format!(
-            "canvas-roles-{}-{}",
+            "canvas-modules-{}-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
-                .as_nanos()
+                .as_nanos(),
+            NEXT_REPO.fetch_add(1, Ordering::Relaxed)
         ));
         fs::create_dir_all(&path).unwrap();
         fs::write(path.join("main.ts"), source).unwrap();
@@ -401,4 +409,41 @@ fn builder_rejects_bad_composition_and_keeps_normal_conflict_detection() {
         .unwrap();
     assert!(typescript::extract_file("main.ts", r.source("main.ts").unwrap(), &mut b).is_err());
     assert!(b.finish().is_err());
+}
+
+#[test]
+fn merged_module_origin_is_diagnosed_in_both_declaration_orders() {
+    for interface_first in [true, false] {
+        let interface = "interface FeatureModule { marker?: string; }\n";
+        let class = "@Module({ providers: [Service] })\nclass FeatureModule {}\n";
+        let source = format!(
+            "import {{ Module }} from '@nestjs/common';\nclass Service {{}}\n{}{}@Module({{ providers: [Service] }}) class OrdinaryModule {{}}\n",
+            if interface_first { interface } else { class },
+            if interface_first { class } else { interface },
+        );
+        let repo = Repo::new(&source);
+        let r = repo.resolver();
+        let g = graph(&r, true);
+        let module = node(&g, "FeatureModule");
+        let edges = composition_names(&g);
+        eprintln!(
+            "interface_first={interface_first}, node={:?}, edges={edges:?}, diagnostics={:?}",
+            module.kind, g.diagnostics
+        );
+        assert_eq!(module.kind, NodeKind::Module);
+        assert_eq!(edges, [("OrdinaryModule".into(), "Service".into())].into());
+        let diagnostics: Vec<_> = g
+            .diagnostics
+            .iter()
+            .filter(|d| d.related_node_id.as_deref() == Some(&module.id))
+            .collect();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].code, "unsupported_module_ambiguous");
+        assert_eq!(diagnostics[0].file.as_deref(), Some("main.ts"));
+        assert_eq!(
+            diagnostics[0].line,
+            Some(if interface_first { 4 } else { 3 })
+        );
+        assert_eq!(g, graph(&r, true));
+    }
 }

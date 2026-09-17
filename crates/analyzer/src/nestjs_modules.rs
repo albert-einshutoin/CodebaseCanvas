@@ -174,6 +174,9 @@ impl Collector<'_> {
             code: code.into(),
             severity: Severity::Warning,
             message: match code {
+                "unsupported_module_ambiguous" => {
+                    "Merged module declaration has no unique composition origin."
+                }
                 "unsupported_module_forward_ref" => "forwardRef module reference is not expanded.",
                 "unsupported_module_dynamic" => "Dynamic module invocation is not expanded.",
                 "unsupported_module_spread" => "Array spread is not expanded.",
@@ -276,10 +279,10 @@ impl Collector<'_> {
 }
 impl<'a> Visit<'a> for Collector<'_> {
     fn visit_class(&mut self, class: &Class<'a>) {
-        if let Some(id) = self.resolver.declaration_at(self.file, class.span.start)
+        if let Some(declaration) = self.resolver.declaration_at(self.file, class.span.start)
             && self
                 .builder
-                .node(id)
+                .node(&declaration.id)
                 .is_some_and(|n| n.kind == NodeKind::Module)
         {
             let calls: Vec<_> = class
@@ -294,12 +297,14 @@ impl<'a> Visit<'a> for Collector<'_> {
                 .collect();
             if !calls.is_empty() {
                 let mut finding = ModuleFinding {
-                    module_id: id.into(),
+                    module_id: declaration.id.clone(),
                     site: self.site(calls[0].span),
                     entries: vec![],
                     diagnostics: vec![],
                 };
-                if calls.len() != 1 {
+                if declaration.ambiguous {
+                    self.diagnostic(&mut finding, class.span, "unsupported_module_ambiguous");
+                } else if calls.len() != 1 {
                     self.diagnostic(&mut finding, class.span, "unsupported_module_metadata");
                 } else {
                     let call = calls[0];

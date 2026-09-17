@@ -193,6 +193,7 @@ import entryは#13のfinding、同一fileのidentifierは同じsemantic解析の
 | controllers / providers | controllersはcontroller、providersはservice/repository/generic classへcontains。登録を理由にkindを昇格しない |
 | exports | 位置・解決状態をfindingに保持。contains/importsを合成しない |
 | array内unsupported | forwardRef、dynamic call、spread、provider object、未解決identifierはentry単位にwarning。安全な兄弟entryを保持し、内部参照を構成関係へ昇格しない |
+| 宣言マージされた起点Module | source位置とcanonical IDは保持し、構成を推測せずunsupported_module_ambiguous診断を付ける。一意な参照targetからは引き続き除外する |
 | 複数Module call / object spread / computed key | metadata全体が未確定。構成は出さずwarning。object評価・上書き順の推測はしない |
 | 重複static property | 該当fieldを未確定とし、配列を合算しない。他fieldは保持 |
 | metadata変数・factory、非array field、getter/method | 未対応。該当metadataまたはfieldにwarning |

@@ -106,10 +106,16 @@ pub struct ReferenceFinding {
     // Kept with the reference so file/offset lookups never re-resolve a spelling.
     import: ImportFinding,
 }
+// Source declarations remain observable even when their symbol cannot be resolved uniquely.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct DeclarationSite {
+    pub id: String,
+    pub ambiguous: bool,
+}
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportResolver {
     local_references: BTreeMap<(String, u32), (String, NodeKind)>,
-    declarations: BTreeMap<(String, u32), String>,
+    declarations: BTreeMap<(String, u32), DeclarationSite>,
     sources: BTreeMap<String, String>,
     imports: Vec<ImportFinding>,
     references: Vec<ReferenceFinding>,
@@ -120,10 +126,8 @@ impl ImportResolver {
     pub(crate) fn local_reference(&self, file: &str, start: u32) -> Option<&(String, NodeKind)> {
         self.local_references.get(&(file.to_owned(), start))
     }
-    pub(crate) fn declaration_at(&self, file: &str, start: u32) -> Option<&str> {
-        self.declarations
-            .get(&(file.to_owned(), start))
-            .map(String::as_str)
+    pub(crate) fn declaration_at(&self, file: &str, start: u32) -> Option<&DeclarationSite> {
+        self.declarations.get(&(file.to_owned(), start))
     }
     pub fn sources(&self) -> impl Iterator<Item = (&str, &str)> {
         self.sources
@@ -148,9 +152,13 @@ impl ImportResolver {
     }
     /// Byte offset must come from this snapshot's source, not a name search.
     pub fn at_reference(&self, file: &str, start: u32) -> Option<&ReferenceFinding> {
+        // Lower bound preserves the previous first-match behavior for equal keys.
+        let index = self
+            .references
+            .partition_point(|r| (r.site.file.as_str(), r.site.start) < (file, start));
         self.references
-            .iter()
-            .find(|r| r.site.file == file && r.site.start == start)
+            .get(index)
+            .filter(|r| r.site.file == file && r.site.start == start)
     }
 
     pub fn analyze(root: &RepositoryRoot) -> Result<Self, String> {
@@ -195,10 +203,10 @@ impl ImportResolver {
         }
         for (file, facts) in &files {
             result.diagnostics.extend(facts.diagnostics.clone());
-            for decl in facts.declarations.values() {
+            for (start, declaration) in &facts.declaration_sites {
                 result
                     .declarations
-                    .insert((file.clone(), decl.site.start), decl.id.clone());
+                    .insert((file.clone(), *start), declaration.clone());
             }
             for reference in &facts.references {
                 if let Some(decl) = facts.declarations.get(&reference.symbol) {
@@ -369,6 +377,7 @@ struct RawReference {
 #[derive(Default)]
 struct FileFacts {
     declarations: HashMap<SymbolId, Declaration>,
+    declaration_sites: BTreeMap<u32, DeclarationSite>,
     imports: Vec<RawImport>,
     references: Vec<RawReference>,
     exports: BTreeMap<String, Option<(Declaration, bool)>>,
@@ -384,6 +393,7 @@ struct Collector<'s> {
     consumers: Vec<Option<String>>,
     classes: Vec<Option<String>>,
     declarations: HashMap<SymbolId, Declaration>,
+    declaration_sites: BTreeMap<u32, DeclarationSite>,
     references: Vec<RawReference>,
 }
 impl Collector<'_> {
@@ -397,8 +407,16 @@ impl Collector<'_> {
         let symbol = symbol?;
         let scope: Vec<_> = self.scope.path.iter().map(String::as_str).collect();
         let id = GraphBuilder::node_id(kind, self.file, &scope, name).ok()?;
-        // Merged symbols have no unique declaration in this model, regardless of order.
-        if self.scoping.symbol_redeclarations(symbol).is_empty() {
+        let ambiguous = !self.scoping.symbol_redeclarations(symbol).is_empty();
+        self.declaration_sites.insert(
+            span.start,
+            DeclarationSite {
+                id: id.clone(),
+                ambiguous,
+            },
+        );
+        // Merged symbols have no unique reference target, regardless of declaration order.
+        if !ambiguous {
             self.declarations.insert(
                 symbol,
                 Declaration {
@@ -523,6 +541,7 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
         consumers: vec![],
         classes: vec![],
         declarations: HashMap::new(),
+        declaration_sites: BTreeMap::new(),
         references: vec![],
     };
     collector.visit_program(&parsed.program);
@@ -613,6 +632,7 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
         }
     }
     facts.declarations = collector.declarations;
+    facts.declaration_sites = collector.declaration_sites;
     facts.imports.sort_by_key(|i| i.site.start);
     facts
 }
@@ -953,5 +973,63 @@ mod tests {
             );
         }
         fs::remove_dir_all(base).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod reference_lookup_tests {
+    use super::*;
+
+    #[test]
+    fn duplicate_reference_keys_keep_first_match() {
+        let path =
+            std::env::temp_dir().join(format!("reference-duplicates-{}", std::process::id()));
+        fs::create_dir_all(&path).unwrap();
+        fs::write(
+            path.join("main.ts"),
+            "import {Token} from 'pkg'; class C { value = Token; }",
+        )
+        .unwrap();
+        let mut resolver = ImportResolver::analyze(&RepositoryRoot::open(&path).unwrap()).unwrap();
+        fs::remove_dir_all(&path).unwrap();
+        let first = resolver.references[0].clone();
+        let mut duplicate = first.clone();
+        duplicate.consumer_id = None;
+        resolver.references.insert(1, duplicate);
+        assert_eq!(
+            resolver.at_reference(&first.site.file, first.site.start),
+            Some(&first)
+        );
+        assert_eq!(resolver.references().count(), 2);
+    }
+
+    #[test]
+    fn merged_declaration_sites_are_retained_but_not_reference_targets() {
+        for (index, declarations) in [
+            "@Module({providers:[Service]}) class FeatureModule {} interface FeatureModule {}",
+            "interface FeatureModule {} @Module({providers:[Service]}) class FeatureModule {}",
+        ]
+        .iter()
+        .enumerate()
+        {
+            let path =
+                std::env::temp_dir().join(format!("module-sites-{}-{index}", std::process::id()));
+            fs::create_dir_all(&path).unwrap();
+            let source = format!(
+                "import {{Module}} from '@nestjs/common'; class Service {{}} {declarations}"
+            );
+            fs::write(path.join("main.ts"), &source).unwrap();
+            let resolver = ImportResolver::analyze(&RepositoryRoot::open(&path).unwrap()).unwrap();
+            let start = source.find("@Module").unwrap() as u32;
+            let site = resolver.declaration_at("main.ts", start).unwrap();
+            assert!(site.ambiguous);
+            assert_eq!(
+                site.id,
+                GraphBuilder::node_id(NodeKind::Class, "main.ts", &[], "FeatureModule").unwrap()
+            );
+            let facts = parse_file("main.ts", &source);
+            assert!(!facts.declarations.values().any(|d| d.id == site.id));
+            fs::remove_dir_all(&path).unwrap();
+        }
     }
 }

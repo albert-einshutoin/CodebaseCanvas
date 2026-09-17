@@ -696,3 +696,44 @@ fn paths_and_base_url_alone_preserve_relative_resolution() {
         }
     }
 }
+
+#[test]
+fn exact_reference_lookup_matches_linear_search_across_files_and_byte_offsets() {
+    let repo = Repo::new();
+    let source = "import {Token} from 'pkg'; import type {Port} from 'ports';\n// 日本語\nclass Consumer { value: Port; run() { return [Token, Token]; } }";
+    repo.put("a.ts", source);
+    repo.put("z.ts", source);
+    let r = repo.resolve();
+    let references: Vec<_> = r.references().collect();
+    assert!(!references.is_empty());
+    assert!(
+        references
+            .windows(2)
+            .all(|w| (&w[0].site.file, w[0].site.start) < (&w[1].site.file, w[1].site.start))
+    );
+    for file in ["", "a.ts", "m.ts", "z.ts", "zz.ts"] {
+        for start in 0..=source.len() as u32 + 1 {
+            assert_eq!(
+                r.at_reference(file, start),
+                references
+                    .iter()
+                    .copied()
+                    .find(|r| r.site.file == file && r.site.start == start)
+            );
+        }
+    }
+    let start = source.find("return [Token").unwrap() as u32 + 8;
+    assert!(source[..start as usize].chars().count() < start as usize);
+    for file in ["a.ts", "z.ts"] {
+        let reference = r.at_reference(file, start).unwrap();
+        assert_eq!(reference.site.file, file);
+        assert!(reference.consumer_id.is_some());
+        assert!(!r.import_for(reference).type_only);
+    }
+    assert!(
+        references
+            .iter()
+            .any(|reference| r.import_for(reference).type_only)
+    );
+    assert_eq!(references, r.references().collect::<Vec<_>>());
+}
