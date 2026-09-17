@@ -607,7 +607,7 @@ fn resolve_target(
     files: &BTreeMap<String, FileFacts>,
     file: &str,
     raw: &RawImport,
-    config: bool,
+    config: ConfigImpact,
 ) -> Resolution {
     let unresolved = |reason| Resolution::Unresolved { reason };
     if files[file].failed || (raw.local.is_some() && raw.symbol.is_none()) {
@@ -616,6 +616,9 @@ fn resolve_target(
     if is_relative(&raw.specifier) {
         if checked_request(filesystem, file, &raw.specifier).is_err() {
             return unresolved(UnresolvedReason::BoundaryViolation);
+        }
+        if config.relative {
+            return unresolved(UnresolvedReason::UnsupportedConfig);
         }
         // Keep denied filesystem probes observable even for repeated unresolved requests.
         resolver.clear_cache();
@@ -658,7 +661,7 @@ fn resolve_target(
     if !is_external_specifier(&raw.specifier) {
         return unresolved(UnresolvedReason::BoundaryViolation);
     }
-    if config {
+    if config.bare {
         return unresolved(UnresolvedReason::UnsupportedConfig);
     }
     if raw.unsupported {
@@ -781,27 +784,55 @@ fn checked_request(
     )
 }
 
+#[derive(Clone, Copy, Default)]
+struct ConfigImpact {
+    bare: bool,
+    relative: bool,
+}
+
 fn check_config(
     root: &RepositoryRoot,
     filesystem: &RootFileSystem,
     file: Option<&str>,
     diagnostics: &mut Vec<Diagnostic>,
-) -> Result<bool, String> {
+) -> Result<ConfigImpact, String> {
     let Some(file) = file else {
-        return Ok(false);
+        return Ok(ConfigImpact::default());
     };
     let path = root.resolve(file)?;
     let source =
         fs::read_to_string(&path).map_err(|_| "resolver config cannot be read".to_owned())?;
     let site = SourceSite::new(file, &source, Span::new(0, 0));
+    // Oxc 11.24.3 drops moduleSuffixes during typed deserialization. Inspect
+    // the same JSONC structurally before that information is lost.
+    let mut json = source.trim_start_matches('\u{feff}').as_bytes().to_vec();
+    json_strip_comments::strip_slice(&mut json)
+        .map_err(|_| "resolver config cannot be parsed".to_owned())?;
+    let raw: serde_json::Value = if json.iter().all(u8::is_ascii_whitespace) {
+        serde_json::json!({})
+    } else {
+        serde_json::from_slice(&json).map_err(|_| "resolver config cannot be parsed".to_owned())?
+    };
+    let module_suffixes = raw
+        .get("compilerOptions")
+        .and_then(serde_json::Value::as_object)
+        .is_some_and(|options| options.contains_key("moduleSuffixes"));
     let config = TsConfig::parse(true, &path, &path, source)
         .map_err(|_| "resolver config cannot be parsed".to_owned())?;
-    let unsupported = config.extends.is_some()
+    // Unevaluated inherited/project settings can change relative lookup too.
+    // paths/baseUrl alone affect bare specifiers, not the supported relative lookup.
+    let relative = config.extends.is_some()
         || !config.references.is_empty()
-        || config.compiler_options.base_url.is_some()
-        || config.compiler_options.paths.is_some();
-    if !unsupported {
-        return Ok(false);
+        || config.compiler_options.root_dirs.is_some()
+        || module_suffixes;
+    let impact = ConfigImpact {
+        relative,
+        bare: relative
+            || config.compiler_options.base_url.is_some()
+            || config.compiler_options.paths.is_some(),
+    };
+    if !impact.bare {
+        return Ok(ConfigImpact::default());
     }
     // Do not follow unsupported config chains. Validate their direct path
     // boundaries without reading referenced configs or sources.
@@ -848,7 +879,7 @@ fn check_config(
             UnresolvedReason::UnsupportedConfig
         },
     ));
-    Ok(true)
+    Ok(impact)
 }
 
 #[cfg(all(test, unix))]

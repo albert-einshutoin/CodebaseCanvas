@@ -105,7 +105,8 @@ dynamic dispatch、runtime-generated provider、factory return、deep TypeScript
 | external named import | `node:fs` / `node:fs/promises`を含む元specifier + export名をcanonical external IDに使用。外部specifier検証をrepository path検証から分離し、Node実行・URL取得はしない。package rootは別フィールドで保持し、subpath同士を統合しない。package source/metadataを読まない |
 | default / namespace / side-effect import | 元specifier・bindingを保持しUnresolved + Diagnostic。利用解析は未対応 |
 | re-export（単段を含む） | 未対応。`import { A } from "./a"; export { A };`も下流importerの有無によらずexport位置のDiagnosticを保持し、下流はUnresolved。Oxcがnamed importのlocal形式をindirect entryへ変換する場合も、import元ではなくexport entryのspanを使用する。同じfile内の宣言のexport-list aliasは引き続き対応。多段barrelは辿らない |
-| tsconfig paths/baseUrl/extends/references | root configだけをOxcのJSONC parserで読み、直接参照の境界を確認。解決は未対応。これらがある場合bare specifierをexternalと決めつけずUnresolvedにする。通常relative importは独立して解決 |
+| tsconfig paths/baseUrl | 解決は未対応。bare specifierはUnresolvedとし、通常relative importは従来どおり解決する |
+| tsconfig extends/references/rootDirs/moduleSuffixes | 未評価の設定でrelative lookupが変わり得るため、relative/bareともUnresolved + Diagnostic。通常の.tsへconfirmed edgeを出さない。継承先configは読まず、設定解決を実装しない |
 | JS/JSON module、NodeNext `.js`→`.ts`置換、dynamic import、CommonJS、type推論 | 未対応。dynamic import/CommonJSは静的ES import APIの対象外 |
 
 source/configを読む前にRepositoryRootでcanonical containmentを確認する。Oxc resolverのfilesystemにも同じ境界とdiscoveryの除外規則を適用し、root外・node_modulesのreadを拒否する。resolverのpackage.json祖先探索は無効なread（NotFound）として止める。unsupported configの参照先は読まない。snapshot中の他プロセスによるfilesystem変更の隔離は提供しない。
@@ -126,3 +127,7 @@ if let Some(reference) = resolver.at_reference(file, reference_span.start) {
 `apply_imports(&mut GraphBuilder)` はgeneric宣言投入後に呼ぶ。実際の使用referenceに対してだけ`consumer --imports--> target`を追加し、external nodeもその時点で追加する。class decorator/field/constructorはclass、method内の使用はmethodがconsumerとなる。Evidenceは既存のresolver/confirmedで、静的なimport bindingの事実のみを示す。type-onlyをruntime関係へ変換せず、NestJS意味解析・call counter・正規graph metadataは生成しない。`analyze` CLIへの接続は#17のままであり、未実装エラーを変更していない。
 
 検証は`tests/import_resolver.rs`とresolver内filesystem test。手定義fixtureのimports edge集合と比較し、expected-graph.jsonは変更しない。テスト内のgraphは宣言/import projectionであり、完全解析の証拠ではない。#7の固定実repoprobeと#13 production APIの検証は区別する。
+
+固定版`oxc_resolver 11.24.3`の`TsConfig`はextends/paths/baseUrl/rootDirs等を保持するが、`CompilerOptions`にmoduleSuffixesはなく、未知fieldとして破棄する。そのため同じroot sourceを、Oxcが既に使う`json-strip-comments 3.1.2`とserde_jsonでも構造的に読み、moduleSuffixesの存在をtyped deserialization前に確認する。JSONCのcomment・trailing comma・BOM・escaped keyを扱い、文字列検索で設定の有無を判断しない。同依存を固定versionの直接依存として宣言したが、依存packageの追加・upgradeはない。
+
+回帰testは継承先/directのmoduleSuffixesでUnresolvedとimports edge不存在を確認し、設定なし・paths/baseUrlのみのrelative named/alias解決とfixture 43 importsを維持する。設定warningだけを成功条件にはしない。

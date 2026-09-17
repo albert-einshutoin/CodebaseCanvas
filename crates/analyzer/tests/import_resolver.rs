@@ -514,3 +514,90 @@ fn external_validation_does_not_relax_repository_boundaries() {
     }
     assert!(!codebasecanvas_analyzer::is_repository_path("node:fs"));
 }
+
+fn suffix_repo(config: &str) -> Repo {
+    let repo = Repo::new();
+    repo.put("tsconfig.json", config);
+    repo.put(
+        "tsconfig.base.json",
+        r#"{"compilerOptions":{"module":"commonjs","moduleSuffixes":[".native",""]}}"#,
+    );
+    repo.put("service.ts", "export class Service {}");
+    repo.put("service.native.ts", "export class Service {}");
+    repo.put("main.ts", "import { Service } from './service'; export class Consumer { run() { return new Service(); } }");
+    repo
+}
+
+fn assert_suffixes_unresolved(config: &str) {
+    use codebasecanvas_analyzer::{EdgeKind, resolver::UnresolvedReason};
+    let repo = suffix_repo(config);
+    let resolver = repo.resolve();
+    let graph = graph(&RepositoryRoot::open(&repo.0).unwrap());
+    let edges: Vec<_> = graph
+        .edges
+        .iter()
+        .filter(|e| e.kind == EdgeKind::Imports)
+        .collect();
+    assert!(matches!(
+        resolver.imports()[0].resolution,
+        Resolution::Unresolved {
+            reason: UnresolvedReason::UnsupportedConfig
+        }
+    ));
+    assert!(
+        resolver.diagnostics().iter().any(
+            |d| d.code == "TS_IMPORT_UNSUPPORTEDCONFIG" && d.file.as_deref() == Some("main.ts")
+        )
+    );
+    assert!(edges.is_empty());
+}
+
+#[test]
+fn inherited_module_suffixes_do_not_confirm_default_target() {
+    assert_suffixes_unresolved(r#"{"extends":"./tsconfig.base.json"}"#);
+}
+
+#[test]
+fn direct_module_suffixes_do_not_confirm_default_target() {
+    for config in [
+        r#"{"compilerOptions":{"module":"commonjs","moduleSuffixes":[".native",""]}}"#,
+        "\u{feff}{ // JSONC\n \"compilerOptions\": {\"\\u006doduleSuffixes\": [\".native\", \"\",],},}",
+    ] {
+        assert_suffixes_unresolved(config);
+    }
+}
+
+#[test]
+fn paths_and_base_url_alone_preserve_relative_resolution() {
+    use codebasecanvas_analyzer::{EdgeKind, GraphBuilder, NodeKind, resolver::UnresolvedReason};
+    for config in [
+        "{}",
+        r#"{/* moduleSuffixes is not configured */}"#,
+        r#"{"compilerOptions":{"baseUrl":"."}}"#,
+        r#"{"compilerOptions":{"paths":{"@/*":["./*"]}}}"#,
+        r#"{"compilerOptions":{"baseUrl":".","paths":{"@/*":["./*"]}}}"#,
+    ] {
+        let repo = suffix_repo(config);
+        repo.put("main.ts", "import {Service as Alias} from './service'; import {Client} from 'pkg'; export class Consumer { run(){ return [new Alias(), Client]; } }");
+        let resolver = repo.resolve();
+        let target = GraphBuilder::node_id(NodeKind::Class, "service.ts", &[], "Service").unwrap();
+        assert!(
+            matches!(&resolver.imports()[0].resolution, Resolution::LocalSymbol{id,..} if id==&target)
+        );
+        let graph = graph(&RepositoryRoot::open(&repo.0).unwrap());
+        assert!(
+            graph
+                .edges
+                .iter()
+                .any(|e| e.kind == EdgeKind::Imports && e.to == target)
+        );
+        if config.contains("compilerOptions") {
+            assert!(matches!(
+                resolver.imports()[1].resolution,
+                Resolution::Unresolved {
+                    reason: UnresolvedReason::UnsupportedConfig
+                }
+            ));
+        }
+    }
+}
