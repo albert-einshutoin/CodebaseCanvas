@@ -140,7 +140,7 @@ fn candidate(export: &str, controller: bool) -> bool {
         http_method(export).is_some()
             || matches!(
                 export,
-                "All" | "Head" | "Options" | "RequestMapping" | "Version"
+                "All" | "Head" | "Options" | "RequestMapping" | "Version" | "Sse"
             )
     }
 }

@@ -579,3 +579,99 @@ fn type_only_unknown_does_not_capture_shadowed_or_foreign_decorators() {
     );
     assert!(route_diagnostics(&g).is_empty());
 }
+
+#[test]
+fn sse_is_scoped_unsupported_and_keeps_health() {
+    for decorator in ["Sse('events')", "Sse()", "Stream('events')"] {
+        let repo = Repo::new(&format!(
+            "import {{Controller,Sse,Sse as Stream,Get}} from '@nestjs/common';\n@Controller() class C {{\n@{decorator}\nevents() {{}}\n@Get('health') health() {{}}\n}}"
+        ));
+        let g = graph(&repo.resolver(), true);
+        assert_eq!(routes(&g), ["GET /health".into()].into());
+        let controller = GraphBuilder::node_id(NodeKind::Controller, "main.ts", &[], "C").unwrap();
+        let handler = GraphBuilder::method_id(&controller, "instance", "events");
+        assert!(g.nodes.iter().any(|n| n.id == handler));
+        let diagnostics = route_diagnostics(&g);
+        eprintln!(
+            "{decorator}: endpoints={:?}, route diagnostics={diagnostics:?}",
+            routes(&g)
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].code, "unsupported_route_configuration");
+        assert_eq!(
+            diagnostics[0].related_node_id.as_deref(),
+            Some(handler.as_str())
+        );
+        assert_eq!(diagnostics[0].file.as_deref(), Some("main.ts"));
+        assert_eq!(diagnostics[0].line, Some(3));
+        assert_eq!(diagnostics[0].skipped_count, None);
+    }
+}
+
+#[test]
+fn sse_get_coexistence_skips_only_affected_handler_in_both_orders() {
+    for decorators in ["@Get() @Sse()", "@Sse() @Get()"] {
+        let repo = Repo::new(&format!(
+            "import {{Controller,Sse,Get}} from '@nestjs/common';\n@Controller() class C {{\n{decorators} events() {{}}\n@Get('health') health() {{}}\n}}"
+        ));
+        let g = graph(&repo.resolver(), true);
+        assert_eq!(routes(&g), ["GET /health".into()].into());
+        assert_eq!(route_diagnostics(&g).len(), 1);
+        assert_eq!(
+            route_diagnostics(&g)[0].code,
+            "unsupported_route_configuration"
+        );
+        check_diagnostics(&g);
+    }
+}
+
+#[test]
+fn sse_provenance_and_unknowns_do_not_guess() {
+    let repo = Repo::new(
+        "import {Controller,Get,Sse as Stream} from '@nestjs/common';\n\
+         import {Sse as Foreign} from 'other'; import {Roles as Sse} from 'custom';\n\
+         import type {Sse as Typed} from '@nestjs/common';\n\
+         import {Sse as Indirect} from './barrel';\n\
+         @Controller() class C {\n\
+         @Foreign() @Get('foreign') foreign() {}\n\
+         @Sse() @Get('alias') alias() {}\n\
+         @Typed() typed() {}\n\
+         @Indirect() indirect() {}\n\
+         }\n\
+         function inner() { const Stream = () => () => {};\n\
+         @Controller() class Local { @Stream() @Get('shadow') shadow() {} } }",
+    );
+    fs::write(
+        repo.0.join("barrel.ts"),
+        "export {Sse} from '@nestjs/common';",
+    )
+    .unwrap();
+    let r = repo.resolver();
+    let g = graph(&r, true);
+    assert_eq!(
+        routes(&g),
+        [
+            "GET /foreign".into(),
+            "GET /alias".into(),
+            "GET /shadow".into()
+        ]
+        .into()
+    );
+    let diagnostics = route_diagnostics(&g);
+    assert_eq!(diagnostics.len(), 2);
+    let controller = GraphBuilder::node_id(NodeKind::Controller, "main.ts", &[], "C").unwrap();
+    for (name, line) in [("typed", 8), ("indirect", 9)] {
+        let handler = GraphBuilder::method_id(&controller, "instance", name);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.code == "unsupported_route_origin"
+                    && d.related_node_id.as_deref() == Some(handler.as_str())
+                    && d.file.as_deref() == Some("main.ts")
+                    && d.line == Some(line))
+        );
+    }
+    assert!(!r.diagnostics().is_empty());
+    assert!(r.diagnostics().iter().all(|d| g.diagnostics.contains(d)));
+    check_diagnostics(&g);
+}

@@ -229,7 +229,7 @@ let graph = builder.finish()?;
 | unknown | 未知prefixはController単位、未知method pathはそのhandlerだけ生成スキップ。定数/member/call/連結/array/template/options objectは評価しない |
 | handler | 対象Controllerの直接の通常instance implementation（asyncを含む）。既存method IDとparentを確認。static/constructor/accessor/field/計算不能名/継承を展開しない。overload署名からrouteを作らない |
 | 曖昧性 | merged Controllerはscoped診断。複数Controller callまたは同一methodの複数HTTP callは合算せず該当範囲を診断・スキップ |
-| 未対応設定 | 確認済みVersion/All/Head/Options/RequestMappingは診断・スキップ。namespace/wrapper/compositeは展開しない。任意custom decoratorの効果は証明しないが、単なる併存で直接確認済みrouteを失わない |
+| 未対応設定 | 確認済みVersion/All/Head/Options/RequestMapping/Sseは未対応設定として診断・生成スキップ（SseをGETへ変換しない）。namespace/wrapper/compositeは展開しない。任意custom decoratorの効果は証明しないが、単なる併存で直接確認済みrouteを失わない |
 | type-only | value reference不成立時はResolverのsemantic scopeで得たtype-only bindingの位置・元export・exact specifierからunknownだけを残す。local shadowや別packageを捕捉せず、出自やrouteの確定fallbackには使わない |
 
 Endpoint IDはHTTP method/path/handler IDを含み、同じpathでも異なるhandlerは別node。Controller→exposes→Endpoint→depends_on→Methodの親・metadata・所有関係を一致させる。既存Controller/methodを再作成せず、method親・Module membership・importsを変更しない。再適用は既存Builderの重複排除を使い、通常の矛盾検出とfinish validationを維持する。
