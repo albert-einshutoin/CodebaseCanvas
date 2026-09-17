@@ -115,6 +115,7 @@ pub(crate) struct DeclarationSite {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportResolver {
     local_references: BTreeMap<(String, u32), (String, NodeKind)>,
+    type_only_references: BTreeMap<(String, u32), usize>,
     declarations: BTreeMap<(String, u32), DeclarationSite>,
     sources: BTreeMap<String, String>,
     imports: Vec<ImportFinding>,
@@ -128,6 +129,13 @@ impl ImportResolver {
     }
     pub(crate) fn declaration_at(&self, file: &str, start: u32) -> Option<&DeclarationSite> {
         self.declarations.get(&(file.to_owned(), start))
+    }
+    /// Diagnostic-only lexical type binding at an unresolved value reference.
+    /// This must never establish a runtime decorator or create an import edge.
+    pub(crate) fn type_only_reference(&self, file: &str, start: u32) -> Option<&ImportFinding> {
+        self.type_only_references
+            .get(&(file.to_owned(), start))
+            .map(|index| &self.imports[*index])
     }
     pub fn sources(&self) -> impl Iterator<Item = (&str, &str)> {
         self.sources
@@ -166,6 +174,7 @@ impl ImportResolver {
         let mut result = Self {
             sources: BTreeMap::new(),
             local_references: BTreeMap::new(),
+            type_only_references: BTreeMap::new(),
             declarations: BTreeMap::new(),
             imports: vec![],
             references: vec![],
@@ -265,6 +274,15 @@ impl ImportResolver {
                         consumer_id: reference.consumer.clone(),
                         import: finding.clone(),
                     });
+                }
+                if finding.type_only {
+                    for (site, symbol) in &facts.missing_value_references {
+                        if Some(*symbol) == raw.symbol {
+                            result
+                                .type_only_references
+                                .insert((file.clone(), site.start), result.imports.len());
+                        }
+                    }
                 }
                 result.imports.push(finding);
             }
@@ -380,6 +398,7 @@ struct FileFacts {
     declaration_sites: BTreeMap<u32, DeclarationSite>,
     imports: Vec<RawImport>,
     references: Vec<RawReference>,
+    missing_value_references: Vec<(SourceSite, SymbolId)>,
     exports: BTreeMap<String, Option<(Declaration, bool)>>,
     reexports: Vec<(SourceSite, String)>,
     diagnostics: Vec<Diagnostic>,
@@ -395,6 +414,7 @@ struct Collector<'s> {
     declarations: HashMap<SymbolId, Declaration>,
     declaration_sites: BTreeMap<u32, DeclarationSite>,
     references: Vec<RawReference>,
+    missing_value_references: Vec<(SourceSite, SymbolId)>,
 }
 impl Collector<'_> {
     fn declaration(
@@ -491,14 +511,21 @@ impl<'a> Visit<'a> for Collector<'_> {
         self.consumers.pop();
     }
     fn visit_identifier_reference(&mut self, i: &IdentifierReference<'a>) {
-        if let Some(reference) = i.reference_id.get()
-            && let Some(symbol) = self.scoping.get_reference(reference).symbol_id()
-        {
+        let Some(reference_id) = i.reference_id.get() else {
+            return;
+        };
+        let reference = self.scoping.get_reference(reference_id);
+        if let Some(symbol) = reference.symbol_id() {
             self.references.push(RawReference {
                 site: SourceSite::new(self.file, self.source, i.span),
                 symbol,
                 consumer: self.consumers.last().cloned().flatten(),
             });
+        } else if let Some(symbol) = self.scoping.find_binding(reference.scope_id(), i.name) {
+            // A type-only import can be lexically visible but invalid as a value.
+            // Retain the exact scoped site for diagnostics, without resolving it.
+            self.missing_value_references
+                .push((SourceSite::new(self.file, self.source, i.span), symbol));
         }
     }
 }
@@ -543,9 +570,11 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
         declarations: HashMap::new(),
         declaration_sites: BTreeMap::new(),
         references: vec![],
+        missing_value_references: vec![],
     };
     collector.visit_program(&parsed.program);
     facts.references = collector.references;
+    facts.missing_value_references = collector.missing_value_references;
     for entry in &parsed.module_record.import_entries {
         let (exported, unsupported) = match &entry.import_name {
             ImportImportName::Name(n) => (n.name.to_string(), false),

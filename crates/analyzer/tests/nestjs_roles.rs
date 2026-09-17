@@ -3,22 +3,40 @@ use codebasecanvas_analyzer::{
     GraphMetadata, NodeKind, SystemGraph, discovery::RepositoryRoot, nestjs_roles,
     resolver::ImportResolver,
 };
-use std::{collections::BTreeMap, fs, path::PathBuf};
+use std::{
+    collections::BTreeMap,
+    fs, io,
+    path::PathBuf,
+    sync::atomic::{AtomicU64, Ordering},
+};
+
+static NEXT_REPO: AtomicU64 = AtomicU64::new(0);
 
 struct Repo(PathBuf);
 impl Repo {
     fn new(source: &str) -> Self {
-        let path = std::env::temp_dir().join(format!(
-            "canvas-roles-{}-{}",
-            std::process::id(),
+        Self::at_time(
+            source,
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
-                .as_nanos()
+                .as_nanos(),
+        )
+    }
+    fn at_time(source: &str, timestamp: u128) -> Self {
+        let path = std::env::temp_dir().join(format!(
+            "canvas-roles-{}-{timestamp}-{}",
+            std::process::id(),
+            NEXT_REPO.fetch_add(1, Ordering::Relaxed)
         ));
-        fs::create_dir_all(&path).unwrap();
-        fs::write(path.join("main.ts"), source).unwrap();
-        Self(path)
+        Self::create(path, source).unwrap()
+    }
+    fn create(path: PathBuf, source: &str) -> io::Result<Self> {
+        // Acquire ownership exclusively; never overwrite or remove a pre-existing directory.
+        fs::create_dir(&path)?;
+        let repo = Self(path);
+        fs::write(repo.0.join("main.ts"), source)?;
+        Ok(repo)
     }
     fn resolver(&self) -> ImportResolver {
         ImportResolver::analyze(&RepositoryRoot::open(&self.0).unwrap()).unwrap()
@@ -379,4 +397,42 @@ fn unresolved_reexported_role_keeps_class_scoped_diagnostic() {
     );
     assert!(!r.diagnostics().is_empty());
     assert!(r.diagnostics().iter().all(|d| g.diagnostics.contains(d)));
+}
+
+#[test]
+fn repo_same_timestamp_keeps_sources_and_cleanup_independent() {
+    let first = Repo::at_time("class First {}", 42);
+    let second = Repo::at_time("class Second {}", 42);
+    assert_ne!(first.0, second.0);
+    assert_eq!(
+        fs::read_to_string(first.0.join("main.ts")).unwrap(),
+        "class First {}"
+    );
+    assert_eq!(
+        fs::read_to_string(second.0.join("main.ts")).unwrap(),
+        "class Second {}"
+    );
+    let first_path = first.0.clone();
+    drop(first);
+    assert!(!first_path.exists());
+    assert_eq!(
+        fs::read_to_string(second.0.join("main.ts")).unwrap(),
+        "class Second {}"
+    );
+    let second_path = second.0.clone();
+    drop(second);
+    assert!(!second_path.exists());
+}
+
+#[test]
+fn repo_existing_directory_is_rejected_without_mutation() {
+    let owner = Repo::at_time("class Original {}", 42);
+    let error = Repo::create(owner.0.clone(), "class Overwritten {}")
+        .err()
+        .unwrap();
+    assert_eq!(error.kind(), io::ErrorKind::AlreadyExists);
+    assert_eq!(
+        fs::read_to_string(owner.0.join("main.ts")).unwrap(),
+        "class Original {}"
+    );
 }

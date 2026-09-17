@@ -202,3 +202,38 @@ import entryは#13のfinding、同一fileのidentifierは同じsemantic解析の
 Builderの`apply_module_composition`は存在するModuleをsourceとするcontains/depends_onだけを受け入れ、targetの存在・kindを再確認する。確定済みの全membership edgeからdistinct Module数を集計し、1所属だけparentIdを設定、0/複数では省略する。同じModuleの重複entryは所属数を増やさず、method parentやnode ID/kind/evidenceは維持する。通常のadd_node矛盾検出を緩めず、finishは従来どおりvalidationする。このparent規則は抽出できた静的membershipの表示規則であり、runtimeの全所属・instance共有の証明ではない。
 
 `tests/nestjs_modules.rs`でoracleのModule membership 9、Module依存2、unsupported_module_* 5診断を投影比較する。from/kind/to、entry evidence、診断code/file/line/relatedNodeId、該当parentを比較し、19宣言のkind、43 imports、17 method所有containsを維持する。Module診断にcallsのskippedCountを付けない。テスト内graphは部分projectionであり、57 nodes / 90 edgesの完成graphやcall coverageの証拠ではない。oracleは変更しない。本番analyzeは#17未接続の非0・無書込を維持し、routes/DI/calls/Prisma/runtimeコンテナを実装しない。
+
+## #11 宣言されたHTTP endpoint（production部品、pipeline未接続）
+
+Resolverが保持する同じsource入力から`nestjs_routes::analyze`で`RouteFindings`を収集し、`apply`で既存Builderへ投入する。全宣言・roleとModule構成の後に呼ぶ。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+nestjs_modules::analyze(&resolver, &builder)?.apply(&mut builder)?;
+let routes = nestjs_routes::analyze(&resolver, &builder)?;
+routes.apply(&mut builder)?;
+resolver.apply_imports(&mut builder)?;
+let graph = builder.finish()?;
+```
+
+`RouteFinding`はController/handlerのcanonical ID、HTTP method、prefix/pathと正規化path、Controller decorator・handler宣言・route decoratorのsource site、route evidenceを保持する。生成不可の理由は`RouteFindings.diagnostics`に既存Controller/handler（未分類ならclass）へ紐付ける。AST/source本文はwireへ渡さない。wireのendpointと2 edgeはoracleと同じroute decorator位置のnestjs/confirmed evidenceを持ち、exposes/handler edgeで元のController・methodと保持済み宣言evidenceを辿れる。
+
+| 対象 | 対応・制約 |
+|---|---|
+| 出自 | named importの使用位置から共有Resolverでexact @nestjs/common、元export、非type-only、ExternalSymbolを確認。alias対応。Unresolvedから確定しない |
+| Controller / HTTP | ControllerとGet/Post/Put/Patch/Deleteの直接call。引数なし、単一string literalのみ。Module未登録でも宣言routeを取得 |
+| path | prefix/pathを結合し先頭slash・連続slash・末尾slashだけ正規化。空segmentは/。大小文字、日本語、:idを維持。既存route validatorで検査し、空白trim・decode・dot解決はしない |
+| unknown | 未知prefixはController単位、未知method pathはそのhandlerだけ生成スキップ。定数/member/call/連結/array/template/options objectは評価しない |
+| handler | 対象Controllerの直接の通常instance implementation（asyncを含む）。既存method IDとparentを確認。static/constructor/accessor/field/計算不能名/継承を展開しない。overload署名からrouteを作らない |
+| 曖昧性 | merged Controllerはscoped診断。複数Controller callまたは同一methodの複数HTTP callは合算せず該当範囲を診断・スキップ |
+| 未対応設定 | 確認済みVersion/All/Head/Options/RequestMapping/Sseは未対応設定として診断・生成スキップ（SseをGETへ変換しない）。namespace/wrapper/compositeは展開しない。任意custom decoratorの効果は証明しないが、単なる併存で直接確認済みrouteを失わない |
+| type-only | value reference不成立時はResolverのsemantic scopeで得たtype-only bindingの位置・元export・exact specifierからunknownだけを残す。local shadowや別packageを捕捉せず、出自やrouteの確定fallbackには使わない |
+
+Endpoint IDはHTTP method/path/handler IDを含み、同じpathでも異なるhandlerは別node。Controller→exposes→Endpoint→depends_on→Methodの親・metadata・所有関係を一致させる。既存Controller/methodを再作成せず、method親・Module membership・importsを変更しない。再適用は既存Builderの重複排除を使い、通常の矛盾検出とfinish validationを維持する。
+
+`tests/nestjs_routes.rs`はoracleの6 endpointと12 route edgeをID、metadata、parent、source位置、evidenceまで全件比較する。既存19宣言kind、9 membership、2 Module依存、5 Module診断と位置、43 imports、17 method所有edgeも比較し、fixtureは書き換えない。独立入力で出自・scope・unknown・handler制約・同一path別handler・merged Controller・source保持・順序入替・再適用を確認する。
+
+これはController/route decoratorが宣言したpathであり、実際の公開URL、runtime route table、到達可能性、handler実行やServiceへの実行経路の証明ではない。global prefix/RouterModuleを探索しない。wildcard等のruntime pattern意味論、DI/calls/Prisma、UI、#17 pipelineは対象外。本番analyzeの非0・無書込境界を維持する。プロセス内source保持はrepository全体の原子的snapshotや自動同期ではない。
