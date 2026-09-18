@@ -237,3 +237,44 @@ Endpoint IDはHTTP method/path/handler IDを含み、同じpathでも異なるha
 `tests/nestjs_routes.rs`はoracleの6 endpointと12 route edgeをID、metadata、parent、source位置、evidenceまで全件比較する。既存19宣言kind、9 membership、2 Module依存、5 Module診断と位置、43 imports、17 method所有edgeも比較し、fixtureは書き換えない。独立入力で出自・scope・unknown・handler制約・同一path別handler・merged Controller・source保持・順序入替・再適用を確認する。
 
 これはController/route decoratorが宣言したpathであり、実際の公開URL、runtime route table、到達可能性、handler実行やServiceへの実行経路の証明ではない。global prefix/RouterModuleを探索しない。wildcard等のruntime pattern意味論、DI/calls/Prisma、UI、#17 pipelineは対象外。本番analyzeの非0・無書込境界を維持する。プロセス内source保持はrepository全体の原子的snapshotや自動同期ではない。
+
+## #12 Constructor requested class token（production部品、pipeline未接続）
+
+`nestjs_di::analyze`はResolverの保持sourceを読み、Graphを変更せず`DiFindings`を収集する。各parameter findingはconsumerのcanonical ID、0始まりの順番、byte span/file/line、解決先IDまたは診断code、parameter位置のevidenceを保持する。適用時は既存consumerのkind/fileとtargetのclass-like kindを再確認し、`add_edge`と`finish`の既存契約検査へ渡す。不足node・constructor method nodeを生成しない。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+nestjs_modules::analyze(&resolver, &builder)?.apply(&mut builder)?;
+nestjs_routes::analyze(&resolver, &builder)?.apply(&mut builder)?;
+let di = nestjs_di::analyze(&resolver, &builder)?;
+di.apply(&mut builder)?;
+resolver.apply_imports(&mut builder)?;
+let graph = builder.finish()?;
+```
+
+全宣言・roleの初回投入はDI収集より先に必要。Module・routes・imports適用との順序依存はなく、上記を通常の接続順とする。Module未登録でも確認済みconstructorの要求は保持する。例として`constructor(private readonly users: UsersService) {}`はconsumer → UsersServiceの`injects`を生成し、metadataは`{"semantics":"requested_token"}`、evidenceはparameter位置の`nestjs/confirmed`となる。
+
+| 対象 | 根拠と境界 |
+|---|---|
+| consumer | #9でmodule/controller/service/repositoryに分類された同じsource位置の宣言。wireはgeneric classも許すが、DIのconsumerへは昇格しない。merged consumerはscoped診断 |
+| constructor | 直接宣言された一意なimplementationだけ。overload署名、通常method、factory、別classのparameterを混ぜない。空constructorは有効。constructorなしから継承・super経由の要求の不存在を主張しない |
+| parameter | 通常形とpublic/private/protected/readonly付きpropertyはOxc 0.148の同じ`FormalParameter`。decorators/type_annotation/initializerを直接参照する。restは`FormalParameters.rest`の別slotとして診断する |
+| local class token | 単純identifier型参照から`at_reference`/`import_for`、または同一fileの`local_reference`によるsemantic bindingを使用。named import aliasを元bindingで解決。type-positionだけでimport typeとは判定しない |
+| class値の根拠 | Resolverの宣言siteにclass ASTの非declare、非ambient contextを保持。declare namespace（入れ子を含む）、external module、global augmentation、`.d.ts`のclassは値の根拠にしない。merged symbolは一意な参照先にしない。通常のabstract classは値tokenとして対応するがinstantiate可能とは主張しない |
+| tokenのrole | @Injectableは不要。既存canonical IDとclass値の両方を要求する。interface/type alias/generic shadowing/値alias/未解決/曖昧参照はedgeなし |
+| 未対応型・形 | union/intersection/array/typeof/qualified/import type/型引数付き参照/型なし、default/rest/分割代入はparameter単位で診断。安全な兄弟を維持する |
+| explicit Inject | exact @nestjs/common・元export名・value binding・ExternalSymbolで確認。aliasを含むstring/symbol/class/forwardRef/空引数/非callの指定を展開せず`unsupported_di_custom_token`。型注釈へのfallbackなし |
+| その他decorator | 確認できたNestJS decorator（Optional等）は`unsupported_di_decorator`、foreign/shadow/wrapper/type-only等の未確認出自は`unsupported_di_decorator_origin`。いずれもPoC対象外でありNestJSとして不正とは判定しない。class-levelの確認済みDependenciesはconstructor全体を診断。任意custom decorator内部を解析しない |
+| external | ExternalSymbolはclass性の根拠ではないため`unsupported_di_external`。package/name allowlistやroot外/node_modules読込は追加せず、既存imports node/edgeを維持 |
+| provider override | useClass/useValue/useFactory/useExistingを解釈しない。要求tokenは登録表現と独立。#10のprovider診断を維持し、実装先edgeやcallsを追加しない |
+
+診断優先順位はconsumer/constructorの曖昧性→class-level Dependencies→consumer class値、parameter内では明示Inject→未確認出自→その他decorator→parameter形→型構文→参照のinterface→type-only binding/export→解決状態→class値の順。export interfaceもOxc上type-onlyになるため、interfaceを具体的な理由として先に報告する。importされたdeclare classのtype-only exportはtype-only診断、同一fileのdeclare classはclass値診断になる。#11の`type_only_reference`はDIの確定やimports追加に使用しない。
+
+同一consumer/tokenの複数parameterはBuilderが1 edgeに統合し、異なる行のevidenceを保持する。同じ行などwire上同一のevidenceは既存規則で統合する。順番は内部findingだけに保持し、edge ID/metadataへ入れない。再適用でもedge/evidenceは同じになるが、Diagnosticは既存Builderの追記仕様に従う（再適用分の診断も追記）。診断はparameter file/lineと既存consumer IDに紐付き、calls用skippedCountを持たない。
+
+`tests/nestjs_di.rs`はoracleのinjects 5件をID/from/kind/to/metadata/evidenceまで、DI診断3件をcode/file/line/relatedNodeIdまで投影比較する。既存の宣言kind、Module構成11 edge/5診断、endpoint 6/route 12 edge、imports 43、method所有17、UsersServiceの複数所属とparent省略を保持する。独立入力でidentity、抽象class、ambient・shadowing、unsupported、4 provider override、保持source、部分成功、順序入替、再適用、適用時の既存node検査を確認する。oracle・wire・依存は変更しない。
+
+confirmedが示すのは対応構文で確認したsource-levelのtoken要求だけ。Module可視性、provider登録成功、実装選択、instance生成、compiler metadata出力、runtime注入成功は証明しない。property injection、継承展開、calls/Prisma、UI、#17本番pipelineは対象外。本番analyzeの非0・無書込境界を維持する。calls未生成の確認は#14の呼出解析・unknown件数の完了証拠ではない。
