@@ -8,7 +8,8 @@ use crate::{
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Class, ClassType, IdentifierReference, MethodDefinition, MethodDefinitionKind,
-    TSInterfaceDeclaration, TSNamespaceDeclaration,
+    TSExternalModuleDeclaration, TSGlobalDeclaration, TSInterfaceDeclaration,
+    TSNamespaceDeclaration,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -111,6 +112,7 @@ pub struct ReferenceFinding {
 pub(crate) struct DeclarationSite {
     pub id: String,
     pub ambiguous: bool,
+    pub class_value: bool,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportResolver {
@@ -136,6 +138,11 @@ impl ImportResolver {
         self.type_only_references
             .get(&(file.to_owned(), start))
             .map(|index| &self.imports[*index])
+    }
+    pub(crate) fn is_class_value(&self, id: &str) -> bool {
+        self.declarations
+            .values()
+            .any(|d| d.id == id && d.class_value && !d.ambiguous)
     }
     pub fn sources(&self) -> impl Iterator<Item = (&str, &str)> {
         self.sources
@@ -411,6 +418,7 @@ struct Collector<'s> {
     scope: LexicalScope,
     consumers: Vec<Option<String>>,
     classes: Vec<Option<String>>,
+    ambient: bool,
     declarations: HashMap<SymbolId, Declaration>,
     declaration_sites: BTreeMap<u32, DeclarationSite>,
     references: Vec<RawReference>,
@@ -433,6 +441,7 @@ impl Collector<'_> {
             DeclarationSite {
                 id: id.clone(),
                 ambiguous,
+                class_value: false,
             },
         );
         // Merged symbols have no unique reference target, regardless of declaration order.
@@ -457,9 +466,24 @@ impl<'a> Visit<'a> for Collector<'_> {
         self.scope.leave();
     }
     fn visit_ts_namespace_declaration(&mut self, n: &TSNamespaceDeclaration<'a>) {
+        let ambient = self.ambient;
+        self.ambient |= n.declare;
         self.scope.path.push(n.id.name.to_string());
         walk::walk_ts_namespace_declaration(self, n);
         self.scope.path.pop();
+        self.ambient = ambient;
+    }
+    fn visit_ts_external_module_declaration(&mut self, n: &TSExternalModuleDeclaration<'a>) {
+        let ambient = self.ambient;
+        self.ambient = true;
+        walk::walk_ts_external_module_declaration(self, n);
+        self.ambient = ambient;
+    }
+    fn visit_ts_global_declaration(&mut self, n: &TSGlobalDeclaration<'a>) {
+        let ambient = self.ambient;
+        self.ambient = true;
+        walk::walk_ts_global_declaration(self, n);
+        self.ambient = ambient;
     }
     fn visit_class(&mut self, c: &Class<'a>) {
         let id = if c.r#type == ClassType::ClassDeclaration {
@@ -474,6 +498,9 @@ impl<'a> Visit<'a> for Collector<'_> {
         } else {
             None
         };
+        if let Some(declaration) = self.declaration_sites.get_mut(&c.span.start) {
+            declaration.class_value = !c.declare && !self.ambient;
+        }
         self.classes.push(id.clone());
         self.consumers.push(id);
         walk::walk_class(self, c);
@@ -567,6 +594,7 @@ fn parse_file(file: &str, source: &str) -> FileFacts {
         scope: LexicalScope::default(),
         consumers: vec![],
         classes: vec![],
+        ambient: file.ends_with(".d.ts"),
         declarations: HashMap::new(),
         declaration_sites: BTreeMap::new(),
         references: vec![],
@@ -1059,6 +1087,49 @@ mod reference_lookup_tests {
             let facts = parse_file("main.ts", &source);
             assert!(!facts.declarations.values().any(|d| d.id == site.id));
             fs::remove_dir_all(&path).unwrap();
+        }
+    }
+}
+
+#[cfg(test)]
+mod class_value_tests {
+    use super::*;
+
+    #[test]
+    fn class_value_requires_nonambient_source_and_restores_namespace_context() {
+        for (file, source, values) in [
+            (
+                "main.ts",
+                "abstract class Abstract {} declare class Ambient {} class Concrete {}",
+                vec![true, false, true],
+            ),
+            ("main.d.ts", "class Ambient {}", vec![false]),
+            (
+                "main.ts",
+                "declare namespace N { namespace Inner { class Ambient {} } } namespace M { class Concrete {} }",
+                vec![false, true],
+            ),
+            (
+                "main.ts",
+                "declare module 'pkg' { class Ambient {} } class Concrete {}",
+                vec![false, true],
+            ),
+            (
+                "main.ts",
+                "declare global { class Ambient {} } class Concrete {}",
+                vec![false, true],
+            ),
+        ] {
+            let facts = parse_file(file, source);
+            assert_eq!(
+                facts
+                    .declaration_sites
+                    .values()
+                    .map(|d| d.class_value)
+                    .collect::<Vec<_>>(),
+                values,
+                "{source}"
+            );
         }
     }
 }
