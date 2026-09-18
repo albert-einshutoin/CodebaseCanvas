@@ -1,0 +1,30 @@
+import cytoscape from 'cytoscape';
+import { expect, it } from 'vitest';
+import expected from '../../../examples/nestjs-sample/expected-graph.json';
+import { SystemGraphSchema } from './graph';
+import { graphToCytoscapeElements } from './graphCanvasAdapter';
+import { updateCanvasElements } from './canvasLayout';
+import { directMethods } from './canvasState';
+
+it('incremental Show/Hide preserves existing elements, coordinates and viewport without invoking layout', () => {
+  const graph = SystemGraphSchema.parse(expected);
+  const cy = cytoscape({ headless: true, elements: graphToCytoscapeElements(graph) });
+  const owner = graph.nodes.find(n => n.name === 'UsersService')!;
+  const node = cy.getElementById(owner.id);
+  node.position({ x: 500, y: 300 });
+  cy.zoom(1.5); cy.pan({ x: 45, y: 60 });
+  let layouts = 0;
+  cy.on('layoutstart', () => { layouts++; });
+  updateCanvasElements(cy, graphToCytoscapeElements(graph, owner.id));
+  expect(cy.getElementById(owner.id)[0]).toBe(node[0]);
+  expect(cy.zoom()).toBe(1.5);
+  expect(cy.pan()).toEqual({ x: 45, y: 60 });
+  const added = directMethods(graph, owner.id).map(m => cy.getElementById(m.id));
+  expect(added.every(n => n.position().x > 500 && n.position().y === 350)).toBe(true);
+  updateCanvasElements(cy, graphToCytoscapeElements(graph));
+  expect(cy.nodes()).toHaveLength(40);
+  expect(cy.edges()).toHaveLength(56);
+  expect(cy.getElementById(owner.id)[0]).toBe(node[0]);
+  expect(layouts).toBe(0);
+  cy.destroy();
+});
