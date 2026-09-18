@@ -17,8 +17,8 @@ export function relationshipLabel(edge: GraphEdge, from: GraphNode, to: GraphNod
   switch (edge.kind) {
     case 'injects': return incoming ? 'Requested by' : 'Requests token';
     case 'contains': return to.kind === 'method' ? 'Lexical ownership' : 'Module registration / membership';
-    case 'depends_on': return from.kind === 'endpoint' ? 'Declared handler' : 'Module import';
-    case 'calls': return 'Static call target';
+    case 'depends_on': return from.kind === 'endpoint' ? (incoming ? 'Handler for endpoint' : 'Declared handler') : 'Module import';
+    case 'calls': return incoming ? 'Statically called by' : 'Static call target';
     case 'imports': return 'Import binding use';
     default: return edge.kind;
   }

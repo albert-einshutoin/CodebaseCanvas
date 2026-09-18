@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fixture from '../../../examples/nestjs-sample/expected-graph.json';
 import { SystemGraphSchema } from './graph';
-import { nodeDetails } from './nodeDetails';
+import { nodeDetails, sortedEvidence } from './nodeDetails';
 
 const graph = SystemGraphSchema.parse(fixture);
 const node = (name: string) => graph.nodes.find(n => n.name === name)!;
@@ -94,4 +94,39 @@ it('labels static/instance methods and rejects invalid source/evidence/endpoint 
   ]) {
     const g = structuredClone(graph); mutate(g); expect(SystemGraphSchema.safeParse(g).success).toBe(false);
   }
+});
+
+it.each([
+  ['calls', 'Static call target', 'Statically called by'],
+  ['depends_on', 'Declared handler', 'Handler for endpoint'],
+  ['injects', 'Requests token', 'Requested by'],
+])('pairs %s labels with the exact edge direction and navigation target in each section', (kind, outgoingLabel, incomingLabel) => {
+  const before = JSON.stringify(graph);
+  const edges = graph.edges.filter(edge => edge.kind === kind);
+  expect(edges.length).toBeGreaterThan(0);
+  for (const edge of edges) {
+    const moduleImport = kind === 'depends_on' && graph.nodes.find(n => n.id === edge.from)!.kind === 'module';
+    for (const incoming of [false, true]) {
+      const selectedId = incoming ? edge.to : edge.from;
+      const otherId = incoming ? edge.from : edge.to;
+      const label = moduleImport ? 'Module import' : incoming ? incomingLabel : outgoingLabel;
+      const d = nodeDetails(graph, selectedId)!;
+      const row = (incoming ? d.incoming : d.outgoing).find(row => row.edge.id === edge.id)!;
+      expect(row).toBeDefined();
+      expect({ label: row.label, otherId: row.other.id, edge: row.edge }).toEqual({
+        label, otherId, edge: { ...edge, evidence: sortedEvidence(edge.evidence) },
+      });
+      const html = renderToStaticMarkup(createElement(NodeDetails, {
+        graph, details: d, expandedOwnerId: null, onNavigate: () => {}, onClose: () => {},
+      }));
+      const section = html.split(`<section><h3>${incoming ? 'Incoming' : 'Outgoing'} relationships</h3>`)[1]?.split('</section>')[0];
+      expect(section).toBeDefined();
+      // Restrict the label/button assertion to the row containing this canonical edge ID.
+      const renderedRow = section!.split('<li><strong>').slice(1).find(part => part.includes(`<p>${edge.id}</p>`));
+      expect(renderedRow).toBeDefined();
+      expect(renderedRow!.split('</button>')[0]).toContain(`${label}</strong><button`);
+      expect(renderedRow!.split('</button>')[0]).toContain(`<small>${otherId}</small>`);
+    }
+  }
+  expect(JSON.stringify(graph)).toBe(before);
 });
