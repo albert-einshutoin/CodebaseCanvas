@@ -664,3 +664,155 @@ fn apply_rechecks_existing_nodes_and_consumer_kind() {
     assert!(findings.apply(&mut b).is_err());
     assert!(injects(&b.finish().unwrap()).is_empty());
 }
+
+#[test]
+fn unresolved_dependencies_alias_blocks_only_affected_consumer() {
+    for decorators in [
+        "@Injectable()\n@Needs(SelectedToken)",
+        "@Needs(SelectedToken)\n@Injectable()",
+    ] {
+        let source = format!(
+            "import {{ Injectable }} from '@nestjs/common';\nimport {{ Dependencies as Needs }} from './barrel';\nclass WrittenType {{}}\nclass SelectedToken {{}}\n{decorators}\nclass Consumer {{ constructor(value: WrittenType) {{}} }}\n@Injectable()\nclass Healthy {{ constructor(value: WrittenType) {{}} }}"
+        );
+        let repo = Repo::new(&source);
+        repo.write(
+            "barrel.ts",
+            "export { Dependencies } from '@nestjs/common';",
+        );
+        let r = repo.resolver();
+        let binding = r
+            .imports()
+            .iter()
+            .find(|b| b.local_name.as_deref() == Some("Needs"))
+            .unwrap();
+        assert_eq!(binding.exported_name, "Dependencies");
+        assert!(matches!(
+            binding.resolution,
+            codebasecanvas_analyzer::resolver::Resolution::Unresolved { .. }
+        ));
+        let findings = nestjs_di::analyze(&r, &builder(&r)).unwrap();
+        let g = graph(&r);
+        eprintln!(
+            "binding={binding:?}\nfindings={findings:?}\nedges={:?}\nresolver diagnostics={:?}\ndi diagnostics={:?}",
+            injects(&g),
+            r.diagnostics(),
+            di_codes(&g)
+        );
+        let consumer = id("main.ts", &[], "Consumer");
+        assert!(!injects(&g).iter().any(|e| e.from == consumer));
+        assert!(
+            !findings
+                .parameters
+                .iter()
+                .any(|p| p.consumer_id == consumer)
+        );
+        assert!(
+            g.diagnostics
+                .iter()
+                .any(|d| d.code == "unsupported_di_dependencies_origin"
+                    && d.related_node_id.as_ref() == Some(&consumer)
+                    && d.file.as_deref() == Some("main.ts")
+                    && d.line == Some(5))
+        );
+        assert_eq!(injects(&g).len(), 1);
+        assert_eq!(injects(&g)[0].from, id("main.ts", &[], "Healthy"));
+        assert_eq!(injects(&g)[0].to, id("main.ts", &[], "WrittenType"));
+        assert!(!r.diagnostics().is_empty());
+        assert!(r.diagnostics().iter().all(|d| g.diagnostics.contains(d)));
+    }
+}
+
+#[test]
+fn dependencies_candidates_use_original_export_and_semantic_scope() {
+    for (imports, decorator, code) in [
+        (
+            "import {Dependencies} from '@nestjs/common';",
+            "Dependencies",
+            Some("unsupported_di_dependencies"),
+        ),
+        (
+            "import {Dependencies as Needs} from '@nestjs/common';",
+            "Needs",
+            Some("unsupported_di_dependencies"),
+        ),
+        (
+            "import type {Dependencies as Needs} from '@nestjs/common';",
+            "Needs",
+            Some("unsupported_di_dependencies_origin"),
+        ),
+        (
+            "import {type Dependencies as Needs} from '@nestjs/common';",
+            "Needs",
+            Some("unsupported_di_dependencies_origin"),
+        ),
+        (
+            "import type {Dependencies as Needs} from './barrel';",
+            "Needs",
+            Some("unsupported_di_dependencies_origin"),
+        ),
+        (
+            "import {Roles as Dependencies} from './barrel';",
+            "Dependencies",
+            None,
+        ),
+        (
+            "import {Dependencies} from 'foreign';",
+            "Dependencies",
+            None,
+        ),
+        (
+            "function Dependencies(...args: any[]) { return (...args: any[]) => {}; }",
+            "Dependencies",
+            None,
+        ),
+    ] {
+        for reverse in [false, true] {
+            let decorators = if reverse {
+                format!("@{decorator}(SelectedToken)\n@Injectable()")
+            } else {
+                format!("@Injectable()\n@{decorator}(SelectedToken)")
+            };
+            let repo = Repo::new(&format!(
+                "import {{Injectable}} from '@nestjs/common'; {imports}\nclass WrittenType {{}} class SelectedToken {{}}\n{decorators}\nclass Consumer {{constructor(value: WrittenType) {{}}}}\n@Injectable() class Healthy {{constructor(value: WrittenType) {{}}}}"
+            ));
+            repo.write(
+                "barrel.ts",
+                "export {Dependencies, Roles} from '@nestjs/common';",
+            );
+            let g = graph(&repo.resolver());
+            let consumer = id("main.ts", &[], "Consumer");
+            assert_eq!(
+                injects(&g).iter().any(|e| e.from == consumer),
+                code.is_none(),
+                "{imports}"
+            );
+            assert!(
+                !injects(&g)
+                    .iter()
+                    .any(|e| e.to == id("main.ts", &[], "SelectedToken"))
+            );
+            assert_eq!(
+                di_codes(&g),
+                code.into_iter().collect::<Vec<_>>(),
+                "{imports}"
+            );
+            assert!(
+                injects(&g)
+                    .iter()
+                    .any(|e| e.from == id("main.ts", &[], "Healthy")
+                        && e.to == id("main.ts", &[], "WrittenType"))
+            );
+        }
+    }
+    for import in [
+        "import {Dependencies} from '@nestjs/common';",
+        "import type {Dependencies} from '@nestjs/common';",
+    ] {
+        let repo = Repo::new(&format!(
+            "import {{Injectable}} from '@nestjs/common'; {import} class WrittenType {{}} function scope(Dependencies: any) {{ @Injectable() @Dependencies() class Consumer {{constructor(value: WrittenType) {{}}}} }}"
+        ));
+        let g = graph(&repo.resolver());
+        assert_eq!(injects(&g).len(), 1);
+        assert!(di_codes(&g).is_empty());
+    }
+}

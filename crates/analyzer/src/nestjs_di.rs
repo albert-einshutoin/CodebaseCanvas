@@ -118,6 +118,35 @@ impl Collector<'_> {
                 if specifier == "@nestjs/common" && exported_name == &b.exported_name))
         .then_some(b.exported_name.as_str())
     }
+    fn dependencies(&self, decorators: &[Decorator<'_>]) -> Option<&'static str> {
+        if decorators
+            .iter()
+            .any(|d| self.origin(d) == Some("Dependencies"))
+        {
+            return Some("unsupported_di_dependencies");
+        }
+        let unknown = decorators.iter().any(|d| {
+            let expr = match &d.expression {
+                Expression::CallExpression(call) => &call.callee,
+                expr => expr,
+            };
+            let Expression::Identifier(id) = expr else {
+                return false;
+            };
+            let binding = self
+                .resolver
+                .at_reference(self.file, id.span.start)
+                .map(|reference| self.resolver.import_for(reference))
+                .or_else(|| self.resolver.type_only_reference(self.file, id.span.start));
+            // An unresolved original export remains a candidate, never proof of NestJS origin.
+            binding.is_some_and(|b| {
+                b.exported_name == "Dependencies"
+                    && (b.specifier == "@nestjs/common"
+                        || matches!(b.resolution, Resolution::Unresolved { .. }))
+            })
+        });
+        unknown.then_some("unsupported_di_dependencies_origin")
+    }
     fn decorators(&self, decorators: &[Decorator<'_>]) -> Option<&'static str> {
         if decorators.iter().any(|d| self.origin(d) == Some("Inject")) {
             Some("unsupported_di_custom_token")
@@ -207,6 +236,9 @@ impl Collector<'_> {
             "unsupported_di_decorator_origin" => {
                 "Parameter decorator origin is unverified; type annotation is not a fallback."
             }
+            "unsupported_di_dependencies_origin" => {
+                "Class-level Dependencies candidate has unverified origin; constructor type annotations are not a fallback."
+            }
             "unsupported_di_dependencies" => {
                 "Class-level Dependencies token specification is not expanded."
             }
@@ -293,12 +325,8 @@ impl<'a> Visit<'a> for Collector<'_> {
                 .collect();
             let blocked = if declaration.ambiguous || constructors.len() > 1 {
                 Some("unsupported_di_ambiguous")
-            } else if class
-                .decorators
-                .iter()
-                .any(|d| self.origin(d) == Some("Dependencies"))
-            {
-                Some("unsupported_di_dependencies")
+            } else if let Some(code) = self.dependencies(&class.decorators) {
+                Some(code)
             } else if !declaration.class_value {
                 Some("unsupported_di_class_value")
             } else {

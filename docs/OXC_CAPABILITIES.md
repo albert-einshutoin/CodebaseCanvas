@@ -267,14 +267,23 @@ let graph = builder.finish()?;
 | tokenのrole | @Injectableは不要。既存canonical IDとclass値の両方を要求する。interface/type alias/generic shadowing/値alias/未解決/曖昧参照はedgeなし |
 | 未対応型・形 | union/intersection/array/typeof/qualified/import type/型引数付き参照/型なし、default/rest/分割代入はparameter単位で診断。安全な兄弟を維持する |
 | explicit Inject | exact @nestjs/common・元export名・value binding・ExternalSymbolで確認。aliasを含むstring/symbol/class/forwardRef/空引数/非callの指定を展開せず`unsupported_di_custom_token`。型注釈へのfallbackなし |
-| その他decorator | 確認できたNestJS decorator（Optional等）は`unsupported_di_decorator`、foreign/shadow/wrapper/type-only等の未確認出自は`unsupported_di_decorator_origin`。いずれもPoC対象外でありNestJSとして不正とは判定しない。class-levelの確認済みDependenciesはconstructor全体を診断。任意custom decorator内部を解析しない |
+| その他decorator | 確認できたNestJS decorator（Optional等）は`unsupported_di_decorator`、foreign/shadow/wrapper/type-only等の未確認出自は`unsupported_di_decorator_origin`。いずれもPoC対象外でありNestJSとして不正とは判定しない。class-levelの確認済みDependenciesはconstructor全体を診断。元export名がDependenciesで出自未確定の候補もconstructorをスキップし、`unsupported_di_dependencies_origin`を残す。任意custom decorator内部を解析しない |
 | external | ExternalSymbolはclass性の根拠ではないため`unsupported_di_external`。package/name allowlistやroot外/node_modules読込は追加せず、既存imports node/edgeを維持 |
 | provider override | useClass/useValue/useFactory/useExistingを解釈しない。要求tokenは登録表現と独立。#10のprovider診断を維持し、実装先edgeやcallsを追加しない |
 
-診断優先順位はconsumer/constructorの曖昧性→class-level Dependencies→consumer class値、parameter内では明示Inject→未確認出自→その他decorator→parameter形→型構文→参照のinterface→type-only binding/export→解決状態→class値の順。export interfaceもOxc上type-onlyになるため、interfaceを具体的な理由として先に報告する。importされたdeclare classのtype-only exportはtype-only診断、同一fileのdeclare classはclass値診断になる。#11の`type_only_reference`はDIの確定やimports追加に使用しない。
+診断優先順位はconsumer/constructorの曖昧性→class-level Dependencies（正規を優先、次に出自未確認候補）→consumer class値、parameter内では明示Inject→未確認出自→その他decorator→parameter形→型構文→参照のinterface→type-only binding/export→解決状態→class値の順。export interfaceもOxc上type-onlyになるため、interfaceを具体的な理由として先に報告する。importされたdeclare classのtype-only exportはtype-only診断、同一fileのdeclare classはclass値診断になる。#11の`type_only_reference`はDIの確定やimports追加に使用しない。
 
 同一consumer/tokenの複数parameterはBuilderが1 edgeに統合し、異なる行のevidenceを保持する。同じ行などwire上同一のevidenceは既存規則で統合する。順番は内部findingだけに保持し、edge ID/metadataへ入れない。再適用でもedge/evidenceは同じになるが、Diagnosticは既存Builderの追記仕様に従う（再適用分の診断も追記）。診断はparameter file/lineと既存consumer IDに紐付き、calls用skippedCountを持たない。
 
 `tests/nestjs_di.rs`はoracleのinjects 5件をID/from/kind/to/metadata/evidenceまで、DI診断3件をcode/file/line/relatedNodeIdまで投影比較する。既存の宣言kind、Module構成11 edge/5診断、endpoint 6/route 12 edge、imports 43、method所有17、UsersServiceの複数所属とparent省略を保持する。独立入力でidentity、抽象class、ambient・shadowing、unsupported、4 provider override、保持source、部分成功、順序入替、再適用、適用時の既存node検査を確認する。oracle・wire・依存は変更しない。
 
 confirmedが示すのは対応構文で確認したsource-levelのtoken要求だけ。Module可視性、provider登録成功、実装選択、instance生成、compiler metadata出力、runtime注入成功は証明しない。property injection、継承展開、calls/Prisma、UI、#17本番pipelineは対象外。本番analyzeの非0・無書込境界を維持する。calls未生成の確認は#14の呼出解析・unknown件数の完了証拠ではない。
+
+
+### #12 Dependenciesの出自未確認候補
+
+class-level decoratorは使用位置のbindingと元export名で判定する。`Dependencies as Needs`のre-export未対応によるUnresolvedは、非候補の証拠ではない。正規のexact @nestjs/common value bindingは従来の`unsupported_di_dependencies`、元export名Dependenciesでexact packageのtype-only等またはUnresolvedの候補は`unsupported_di_dependencies_origin`として、constructor型注釈へfallbackしない。正規候補が複数decorator中にあればその診断を優先し、decorator順序で結果を変えない。
+
+既存`type_only_reference`はこのunknown診断だけに使用し、NestJS出自・token・importsを確定しない。別exportの`Roles as Dependencies`、出自が確認できるforeign、local/shadow bindingは正規Dependenciesにしない。local名の全体検索やnamespace/re-export/wrapper解決は追加しない。未解決候補はNestJS由来だと断定せず、class側の問題として既存consumer ID/file/lineに紐付ける。
+
+`unresolved_dependencies_alias_blocks_only_affected_consumer`は単回applyでConsumerのDI finding・edgeがなく、Healthy→WrittenTypeだけが残り、Resolver診断が保持されることを確認する。`dependencies_candidates_use_original_export_and_semantic_scope`は直接/alias/type-only/別export/foreign/shadowと順序入替を確認する。既存fixture projectionとBuilderの診断追記仕様は変更しない。
