@@ -79,3 +79,23 @@ it('retains ancestors without inventing membership for shared providers', () => 
   expect(restricted.filter(e => e.data.kind === 'contains').map(e => e.data.id)).toEqual([membership.id]);
   expect(restricted.filter(e => e.group === 'edges').every(e => [shared.id, membership.from].includes(e.data.source!) && [shared.id, membership.from].includes(e.data.target!))).toBe(true);
 });
+
+it('explicit navigation expands only the method owner, focuses repeatedly and rejects stale/missing targets', () => {
+  let state = transitionCanvasState(graph, initialCanvasState(4), { type: 'show', id: a });
+  const method = directMethods(graph, b)[0];
+  state = transitionCanvasState(graph, state, { type: 'navigate', id: method.id, generation: 4 });
+  expect(state.expandedOwnerId).toBe(b);
+  expect(state.selectedNodeId).toBe(method.id);
+  expect(state.focusRequest).toEqual({ id: method.id, generation: 4, sequence: 1 });
+  const repeated = transitionCanvasState(graph, state, { type: 'navigate', id: method.id, generation: 4 });
+  expect(repeated.focusRequest?.sequence).toBe(2);
+  const visible = transitionCanvasState(graph, repeated, { type: 'navigate', id: a, generation: 4 });
+  expect(visible.expandedOwnerId).toBe(b);
+  expect(transitionCanvasState(graph, state, { type: 'navigate', id: a, generation: 3 })).toBe(state);
+  expect(transitionCanvasState(graph, state, { type: 'navigate', id: 'missing', generation: 4 })).toBe(state);
+  const closed = transitionCanvasState(graph, state, { type: 'select', id: null });
+  expect(closed.expandedOwnerId).toBe(b);
+  expect(closed.focusRequest).toBeNull();
+  expect(transitionCanvasState(graph, state, { type: 'hide' }).selectedNodeId).toBe(b);
+  expect(transitionCanvasState(graph, state, { type: 'reset', generation: 5 })).toEqual(initialCanvasState(5));
+});

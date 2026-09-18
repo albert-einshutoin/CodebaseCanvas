@@ -87,6 +87,13 @@ function idParts(id: string): [string, string[]] | undefined {
     return [tag, hex.map(p => new TextDecoder('utf-8', {fatal: true, ignoreBOM: true}).decode(Uint8Array.from(p.match(/../g)!, b => parseInt(b, 16))))];
   } catch { return; }
 }
+/** Read only discriminators already checked by the canonical identity validator. */
+export function nodeIdentityDetails(node: GraphNode): { methodKind?: string; specifier?: string } {
+  const identity = idParts(node.id);
+  if (node.kind === 'method' && identity?.[0] === 'method') return { methodKind: identity[1][1] };
+  if (node.kind === 'external_dependency' && identity?.[0] === 'external') return { specifier: identity[1][0] };
+  return {};
+}
 const classLike = (kind: string) => ['module', 'controller', 'service', 'repository', 'class'].includes(kind);
 const declaration = (kind: string) => classLike(kind) || kind === 'interface' || kind === 'method';
 const route = (path: string) => path.startsWith('/') && (path === '/' || (!path.endsWith('/') && path.slice(1).split('/').every(p => p !== '' && p !== '.' && p !== '..')))
