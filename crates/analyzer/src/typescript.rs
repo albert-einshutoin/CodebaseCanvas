@@ -2,7 +2,8 @@
 //!
 //! This module only records syntax that Oxc can establish directly: named class
 //! and interface declarations, named class methods, and their source evidence.
-//! NestJS roles, imports, calls, and type inference belong to later recognizers.
+//! Optional NestJS roles are determined before insertion by `nestjs_roles`.
+//! Imports, calls, and type inference are separate recognizers.
 
 use crate::{
     Confidence, Diagnostic, EdgeKind, Evidence, EvidenceSource, GraphBuilder, GraphEdge, GraphNode,
@@ -35,14 +36,14 @@ struct ClassContext {
 }
 
 #[derive(Default)]
-struct LexicalScope {
-    path: Vec<String>,
+pub(crate) struct LexicalScope {
+    pub(crate) path: Vec<String>,
     frames: Vec<bool>,
     next: usize,
 }
 
 impl LexicalScope {
-    fn enter(&mut self, flags: ScopeFlags) {
+    pub(crate) fn enter(&mut self, flags: ScopeFlags) {
         // Named namespaces already contribute their canonical name. All other
         // scopes use deterministic traversal identities, including future Oxc scopes.
         let named_namespace = flags.contains(ScopeFlags::TsModuleBlock)
@@ -55,7 +56,7 @@ impl LexicalScope {
         }
     }
 
-    fn leave(&mut self) {
+    pub(crate) fn leave(&mut self) {
         if self.frames.pop() == Some(true) {
             self.path.pop();
         }
@@ -156,6 +157,7 @@ struct Collector<'a> {
     file: &'a str,
     source: &'a str,
     exported: &'a BTreeSet<(Vec<String>, String)>,
+    resolver: Option<&'a crate::resolver::ImportResolver>,
     scope: LexicalScope,
     classes: Vec<Option<ClassContext>>,
     nodes: BTreeMap<String, GraphNode>,
@@ -169,6 +171,7 @@ impl<'a> Collector<'a> {
             file,
             source,
             exported,
+            resolver: None,
             scope: LexicalScope::default(),
             classes: Vec::new(),
             nodes: BTreeMap::new(),
@@ -290,7 +293,7 @@ impl<'a> Collector<'a> {
             id: node_id.clone(),
             qualified_name: self.qualified_name(&name),
         };
-        self.add_node(GraphNode {
+        let mut node = GraphNode {
             id: node_id,
             kind: NodeKind::Class,
             name,
@@ -301,7 +304,18 @@ impl<'a> Collector<'a> {
             parent_id: None,
             evidence: vec![self.evidence(class.span)],
             metadata: self.declaration_metadata(self.is_exported(id.name.as_str())),
-        });
+        };
+        if let Some(resolver) = self.resolver {
+            crate::nestjs_roles::classify(
+                class,
+                self.file,
+                self.source,
+                resolver,
+                &mut node,
+                &mut self.diagnostics,
+            );
+        }
+        self.add_node(node);
         Some(context)
     }
 
@@ -412,6 +426,15 @@ pub fn extract_file(
     source: &str,
     builder: &mut GraphBuilder,
 ) -> Result<ExtractionSummary, String> {
+    extract(file, source, None, builder)
+}
+
+pub(crate) fn extract(
+    file: &str,
+    source: &str,
+    resolver: Option<&crate::resolver::ImportResolver>,
+    builder: &mut GraphBuilder,
+) -> Result<ExtractionSummary, String> {
     if !is_repository_path(file) {
         return Err("source file must be repository-relative".to_owned());
     }
@@ -444,6 +467,7 @@ pub fn extract_file(
     let mut exports = ExportCollector::default();
     exports.visit_program(&parsed.program);
     let mut collector = Collector::new(file, source, &exports.exported);
+    collector.resolver = resolver;
     collector.visit_program(&parsed.program);
     let summary = ExtractionSummary {
         nodes: collector.nodes.len(),
@@ -470,7 +494,7 @@ fn export_name(name: &ModuleExportName<'_>) -> Option<String> {
     }
 }
 
-fn line_at(source: &str, offset: u32) -> u64 {
+pub(crate) fn line_at(source: &str, offset: u32) -> u64 {
     let bytes = source.as_bytes();
     let end = (offset as usize).min(bytes.len());
     let mut line = 1;

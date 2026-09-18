@@ -91,3 +91,199 @@ sourceとの手照合結果:
 fixtureと固定commitの構文・semantic・通常relative resolver能力は取得できました。runtime class tokenはconstructor type syntaxとvalue-import bindingとしてのみ確認し、runtime instanceやprovider実装を推論しません。これは解析精度、Canvas理解速度、production Graphの合格証明ではありません。
 
 dynamic dispatch、runtime-generated provider、factory return、deep TypeScript type reasoningはunknown/unsupportedとして後続で扱い、TypeScript fallbackは追加しません。今後、必要能力・root内情報・Oxc APIのいずれかを取得できなくなった場合は広域fallbackで成功扱いせずgate未完了とし、recognizer拡張を止めてscope/技術選定を再検討します。
+
+## #13 shared import resolver（production部品、pipeline未接続）
+
+`resolver::ImportResolver::analyze(&RepositoryRoot)` はparserのmodule recordとsemanticのSymbolIdを照合する。一致する綴りを他fileから探すfallbackはない。返り値はsnapshot内のimport/reference findingsであり、完成したSystemGraphではない。
+
+| 対象 | #13の範囲 |
+|---|---|
+| relative named import / `as` alias | root内の `.ts` / `.tsx`、省略拡張子・directory indexをOxc resolverで解決。named class/interfaceまたは同じfileのexport-list aliasへ対応 |
+| 同名symbol / shadowing | ReferenceId→SymbolId→import bindingで照合。canonical IDは既存GraphBuilderと宣言抽出のlexical scope規則を共有 |
+| 宣言マージ | 同じSymbolIdの複数宣言は一意に選ばず、そのbindingだけUnresolved + export位置のDiagnostic。class/interfaceの順序でtargetを変えない |
+| type-only | import type、specifier type、export typeを`ImportFinding.type_only`に保持。LocalSymbolは宣言kindも保持。value importやExternalSymbolであることもruntime classの証明にはしない |
+| external named import | `node:fs` / `node:fs/promises`を含む元specifier + export名をcanonical external IDに使用。外部specifier検証をrepository path検証から分離し、Node実行・URL取得はしない。package rootは別フィールドで保持し、subpath同士を統合しない。package source/metadataを読まない |
+| default / namespace / side-effect import | 元specifier・bindingを保持しUnresolved + Diagnostic。利用解析は未対応 |
+| re-export（単段を含む） | 未対応。`import { A } from "./a"; export { A };`も下流importerの有無によらずexport位置のDiagnosticを保持し、下流はUnresolved。Oxcがnamed importのlocal形式をindirect entryへ変換する場合も、import元ではなくexport entryのspanを使用する。同じfile内の宣言のexport-list aliasは引き続き対応。多段barrelは辿らない |
+| tsconfig paths/baseUrl | 解決は未対応。通常bare packageはUnresolvedとし、通常relative importは従来どおり解決する |
+| tsconfig extends/references/rootDirs/moduleSuffixes | 未評価の設定でrelative lookupが変わり得るため、relative/通常bare packageともUnresolved + Diagnostic。通常の.tsへconfirmed edgeを出さない。継承先configは読まず、設定解決を実装しない |
+| JS/JSON module、NodeNext `.js`→`.ts`置換、dynamic import、CommonJS、type推論 | 未対応。dynamic import/CommonJSは静的ES import APIの対象外 |
+
+source/configを読む前にRepositoryRootでcanonical containmentを確認する。Oxc resolverのfilesystemにも同じ境界とdiscoveryの除外規則を適用し、root外・node_modulesのreadを拒否する。resolverのpackage.json祖先探索は無効なread（NotFound）として止める。unsupported configの参照先は読まない。snapshot中の他プロセスによるfilesystem変更の隔離は提供しない。
+
+後続Recognizerは同じsource snapshotのAST referenceのbyte offsetから取得する（文字列名だけでは照合しない）:
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+if let Some(reference) = resolver.at_reference(file, reference_span.start) {
+    let binding = resolver.import_for(reference);
+    // binding.type_only と resolution のkindを確認してからRecognizer固有の意味を判断。
+    // LocalSymbol / ExternalSymbol / Unresolved。外部importだけでruntime tokenと断定しない。
+}
+```
+
+`references()` はsource byte span/line、import元とtype-only、使用箇所のconsumer IDを保持する。top-level関数など契約にないconsumerはNoneのまま。anonymous classや表現不能なmethodもconsumerを捏造しない。named method内のnested functionにある使用はそのmethodのlexicalな使用として保持し、呼び出し対象の解決は行わない。
+
+`apply_imports(&mut GraphBuilder)` はgeneric宣言投入後に呼ぶ。実際の使用referenceに対してだけ`consumer --imports--> target`を追加し、external nodeもその時点で追加する。class decorator/field/constructorはclass、method内の使用はmethodがconsumerとなる。Evidenceは既存のresolver/confirmedで、静的なimport bindingの事実のみを示す。type-onlyをruntime関係へ変換せず、NestJS意味解析・call counter・正規graph metadataは生成しない。`analyze` CLIへの接続は#17のままであり、未実装エラーを変更していない。
+
+検証は`tests/import_resolver.rs`とresolver内filesystem test。手定義fixtureのimports edge集合と比較し、expected-graph.jsonは変更しない。テスト内のgraphは宣言/import projectionであり、完全解析の証拠ではない。#7の固定実repoprobeと#13 production APIの検証は区別する。
+
+固定版`oxc_resolver 11.24.3`の`TsConfig`はextends/paths/baseUrl/rootDirs等を保持するが、`CompilerOptions`にmoduleSuffixesはなく、未知fieldとして破棄する。そのため同じroot sourceを、Oxcが既に使う`json-strip-comments 3.1.2`とserde_jsonでも構造的に読み、moduleSuffixesの存在をtyped deserialization前に確認する。JSONCのcomment・trailing comma・BOM・escaped keyを扱い、文字列検索で設定の有無を判断しない。同依存を固定versionの直接依存として宣言したが、依存packageの追加・upgradeはない。
+
+回帰testは継承先/directのmoduleSuffixesでUnresolvedとimports edge不存在を確認し、設定なし・paths/baseUrlのみのrelative named/alias解決とfixture 43 importsを維持する。設定warningだけを成功条件にはしない。
+
+既存のspecifier検証を通過した明示的な`node:` named importは、paths/baseUrl/extends/references/rootDirs/moduleSuffixesのconfigガードから除外する。これは元specifier/export名の静的な外部identityであり、Node runtimeでの存在・動作・型定義解決を証明しない。不正specifierの拒否、default/namespace/副作用importの未対応判定、type-only保持、実consumerのみのedge生成は維持し、設定Diagnosticも削除しない。
+
+## #9 NestJS role分類（production部品、pipeline未接続）
+
+`nestjs_roles::extract_file`は#8の宣言抽出を再利用し、各classのdecoratorをすべて調べてから、Builderへの初回投入前にkindを確定する。`GraphBuilder.add_node`や矛盾検出は変更しない。classとserviceを別々に投入せず、canonical ID、file、lexical scope、method ID・所有edge、imports参照先、AST evidenceを維持する。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+resolver.apply_imports(&mut builder)?; // resolver診断もここで保持する
+let graph = builder.finish()?;        // 通常のSystemGraph validation
+```
+
+この入口はgenericな`typescript::extract_file`の代わりに使う。同じBuilderへgeneric classを先に投入してから分類するAPIではない。後続Recognizerも`resolver.source(file)`のASTと`at_reference(file, callee.span.start)`を使い、同一snapshotのbyte位置を照合する。snapshot保持でsourceの再読は不要になるが、`analyze`中の複数fileの同時更新を隔離するものではない。
+
+| 対象 | 対応・制約 |
+|---|---|
+| class宣言へ直接付いたnamed importのdecorator call | ReferenceId→SymbolIdを照合済みの#13 findingを使用。exact `@nestjs/common`、元export名、value import、ExternalSymbolを確認 |
+| import alias | local名によらずModule→module、Controller→controller、Injectable→service |
+| Injectableかつ宣言名がRepository末尾 | repository。decorator出現はnestjs/confirmed、名前の補助規則は別のnestjs/best_effort。AST/confirmedで推定を昇格させない |
+| 同一roleの複数decorator・無関係なdecoratorとの併存 | 一つのnodeへ分類。同じsnapshotの分類再適用はBuilderで重複排除 |
+| 異なるroleの競合 | 適用順によらずclassのまま、`NESTJS_ROLE_CONFLICT`。確認できたdecorator evidenceは保持。これはv0.1の分類制約でありNestJSコードの不正判定ではない |
+| 通常class・名前だけがService/Repository | classのまま。decoratorなしならrole診断なし |
+| 別module・別export・local/shadowed decorator | roleに採用しない。import referenceのないdecoratorは`NESTJS_ROLE_ORIGIN_UNKNOWN`（info）。綴りからimportを探さない |
+| type-only | 採用しない。findingがあれば`NESTJS_ROLE_TYPE_ONLY`、Oxcがvalue referenceを結び付けない場合は`ORIGIN_UNKNOWN`。aliasも同様 |
+| Unresolved・re-export | 採用しない。元のResolver診断を維持し、class位置の`NESTJS_ROLE_UNRESOLVED`で影響を示す。configガードを迂回しない |
+| namespace/member callee・call以外・wrapper | 展開しない。非identifier callee等は`NESTJS_ROLE_UNSUPPORTED`、local wrapperは`ORIGIN_UNKNOWN`。wrapper内部のimport referenceをroleとして採用しない |
+| decorator引数・継承・class expression・method decorator | class roleの根拠にしない。Controller pathやModule providers等の意味解析はしない |
+
+serviceはPoC上のInjectable分類であり、業務Serviceの責務、provider登録、Module所属、scope、runtime instance、DI成功を証明しない。Module membership、endpoint、DI、calls、Prisma、CLI pipelineは追加しない。本番`analyze`は#17まで非0・無書込のまま。
+
+`tests/nestjs_roles.rs`は独立入力の誤分類防止・競合・evidence・snapshot・identityと、fixtureの19宣言のcanonical ID→kindおよび43 importsのfrom/kind/toを手定義oracleに比較する。宣言/role/importの部分projectionであり、期待graph全体の完成やcall coverageを主張しない。oracleは更新しない。
+
+## #10 静的Module構成（production部品、pipeline未接続）
+
+全snapshot fileの宣言・roleを投入した後、`nestjs_modules::analyze`で内部の`ModuleFindings`を集め、`apply`で構成edgeと表示parentを反映する。AST型やsource本文はwireへ出さない。#9のmodule分類済みnodeと、exact `@nestjs/common`のvalue importに解決したModule decorator callの両方を要求する。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+let modules = nestjs_modules::analyze(&resolver, &builder)?;
+modules.apply(&mut builder)?;
+resolver.apply_imports(&mut builder)?;
+let graph = builder.finish()?;
+```
+
+findingはModuleのcanonical ID、source byte位置、fieldごとのentry位置、解決した既存宣言IDまたは未対応理由、diagnosticsを保持する。exportsも同じentryとして保持するが構成edgeを追加しない。Module関係のevidenceはentry位置のnestjs/confirmed。Resolverの既存importsは実binding使用として独立に保持する。
+
+import entryは#13のfinding、同一fileのidentifierは同じsemantic解析のReferenceId→SymbolId→一意なclass宣言IDで解決する。同一file参照をimportとして捏造せず、scopeやfileの異なる同名classを名前検索で結ばない。interface、type-only、merged declaration、値alias伝播、外部dependency、不適切なrole kindは登録対象にしない。Resolverの設定・package・re-export対応は拡張しない。sourceは#9で保持した入力を再利用し、filesystem全体の原子的snapshotを保証しない。
+
+| 構文 | 対応・未対応範囲 |
+|---|---|
+| 直接の単一`@Module({...})` | imports/controllers/providers/exportsのstatic property、array literal、解決可能なidentifierに対応。空object・空array・省略は有効 |
+| imports | 既存moduleへdepends_on。containsやparentを作らない |
+| controllers / providers | controllersはcontroller、providersはservice/repository/generic classへcontains。登録を理由にkindを昇格しない |
+| exports | 位置・解決状態をfindingに保持。contains/importsを合成しない |
+| array内unsupported | forwardRef、dynamic call、spread、provider object、未解決identifierはentry単位にwarning。安全な兄弟entryを保持し、内部参照を構成関係へ昇格しない |
+| 宣言マージされた起点Module | source位置とcanonical IDは保持し、構成を推測せずunsupported_module_ambiguous診断を付ける。一意な参照targetからは引き続き除外する |
+| 複数Module call / object spread / computed key | metadata全体が未確定。構成は出さずwarning。object評価・上書き順の推測はしない |
+| 重複static property | 該当fieldを未確定とし、配列を合算しない。他fieldは保持 |
+| metadata変数・factory、非array field、getter/method | 未対応。該当metadataまたはfieldにwarning |
+| 無関係decorator・role競合 | Module構成を推測せず、構成用の追加警告も出さない。既存role/Resolver診断は保持 |
+
+Builderの`apply_module_composition`は存在するModuleをsourceとするcontains/depends_onだけを受け入れ、targetの存在・kindを再確認する。確定済みの全membership edgeからdistinct Module数を集計し、1所属だけparentIdを設定、0/複数では省略する。同じModuleの重複entryは所属数を増やさず、method parentやnode ID/kind/evidenceは維持する。通常のadd_node矛盾検出を緩めず、finishは従来どおりvalidationする。このparent規則は抽出できた静的membershipの表示規則であり、runtimeの全所属・instance共有の証明ではない。
+
+`tests/nestjs_modules.rs`でoracleのModule membership 9、Module依存2、unsupported_module_* 5診断を投影比較する。from/kind/to、entry evidence、診断code/file/line/relatedNodeId、該当parentを比較し、19宣言のkind、43 imports、17 method所有containsを維持する。Module診断にcallsのskippedCountを付けない。テスト内graphは部分projectionであり、57 nodes / 90 edgesの完成graphやcall coverageの証拠ではない。oracleは変更しない。本番analyzeは#17未接続の非0・無書込を維持し、routes/DI/calls/Prisma/runtimeコンテナを実装しない。
+
+## #11 宣言されたHTTP endpoint（production部品、pipeline未接続）
+
+Resolverが保持する同じsource入力から`nestjs_routes::analyze`で`RouteFindings`を収集し、`apply`で既存Builderへ投入する。全宣言・roleとModule構成の後に呼ぶ。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+nestjs_modules::analyze(&resolver, &builder)?.apply(&mut builder)?;
+let routes = nestjs_routes::analyze(&resolver, &builder)?;
+routes.apply(&mut builder)?;
+resolver.apply_imports(&mut builder)?;
+let graph = builder.finish()?;
+```
+
+`RouteFinding`はController/handlerのcanonical ID、HTTP method、prefix/pathと正規化path、Controller decorator・handler宣言・route decoratorのsource site、route evidenceを保持する。生成不可の理由は`RouteFindings.diagnostics`に既存Controller/handler（未分類ならclass）へ紐付ける。AST/source本文はwireへ渡さない。wireのendpointと2 edgeはoracleと同じroute decorator位置のnestjs/confirmed evidenceを持ち、exposes/handler edgeで元のController・methodと保持済み宣言evidenceを辿れる。
+
+| 対象 | 対応・制約 |
+|---|---|
+| 出自 | named importの使用位置から共有Resolverでexact @nestjs/common、元export、非type-only、ExternalSymbolを確認。alias対応。Unresolvedから確定しない |
+| Controller / HTTP | ControllerとGet/Post/Put/Patch/Deleteの直接call。引数なし、単一string literalのみ。Module未登録でも宣言routeを取得 |
+| path | prefix/pathを結合し先頭slash・連続slash・末尾slashだけ正規化。空segmentは/。大小文字、日本語、:idを維持。既存route validatorで検査し、空白trim・decode・dot解決はしない |
+| unknown | 未知prefixはController単位、未知method pathはそのhandlerだけ生成スキップ。定数/member/call/連結/array/template/options objectは評価しない |
+| handler | 対象Controllerの直接の通常instance implementation（asyncを含む）。既存method IDとparentを確認。static/constructor/accessor/field/計算不能名/継承を展開しない。overload署名からrouteを作らない |
+| 曖昧性 | merged Controllerはscoped診断。複数Controller callまたは同一methodの複数HTTP callは合算せず該当範囲を診断・スキップ |
+| 未対応設定 | 確認済みVersion/All/Head/Options/RequestMapping/Sseは未対応設定として診断・生成スキップ（SseをGETへ変換しない）。namespace/wrapper/compositeは展開しない。任意custom decoratorの効果は証明しないが、単なる併存で直接確認済みrouteを失わない |
+| type-only | value reference不成立時はResolverのsemantic scopeで得たtype-only bindingの位置・元export・exact specifierからunknownだけを残す。local shadowや別packageを捕捉せず、出自やrouteの確定fallbackには使わない |
+
+Endpoint IDはHTTP method/path/handler IDを含み、同じpathでも異なるhandlerは別node。Controller→exposes→Endpoint→depends_on→Methodの親・metadata・所有関係を一致させる。既存Controller/methodを再作成せず、method親・Module membership・importsを変更しない。再適用は既存Builderの重複排除を使い、通常の矛盾検出とfinish validationを維持する。
+
+`tests/nestjs_routes.rs`はoracleの6 endpointと12 route edgeをID、metadata、parent、source位置、evidenceまで全件比較する。既存19宣言kind、9 membership、2 Module依存、5 Module診断と位置、43 imports、17 method所有edgeも比較し、fixtureは書き換えない。独立入力で出自・scope・unknown・handler制約・同一path別handler・merged Controller・source保持・順序入替・再適用を確認する。
+
+これはController/route decoratorが宣言したpathであり、実際の公開URL、runtime route table、到達可能性、handler実行やServiceへの実行経路の証明ではない。global prefix/RouterModuleを探索しない。wildcard等のruntime pattern意味論、DI/calls/Prisma、UI、#17 pipelineは対象外。本番analyzeの非0・無書込境界を維持する。プロセス内source保持はrepository全体の原子的snapshotや自動同期ではない。
+
+## #12 Constructor requested class token（production部品、pipeline未接続）
+
+`nestjs_di::analyze`はResolverの保持sourceを読み、Graphを変更せず`DiFindings`を収集する。各parameter findingはconsumerのcanonical ID、0始まりの順番、byte span/file/line、解決先IDまたは診断code、parameter位置のevidenceを保持する。適用時は既存consumerのkind/fileとtargetのclass-like kindを再確認し、`add_edge`と`finish`の既存契約検査へ渡す。不足node・constructor method nodeを生成しない。
+
+```rust,ignore
+let resolver = ImportResolver::analyze(&root)?;
+for (file, _) in resolver.sources() {
+    nestjs_roles::extract_file(file, &resolver, &mut builder)?;
+}
+nestjs_modules::analyze(&resolver, &builder)?.apply(&mut builder)?;
+nestjs_routes::analyze(&resolver, &builder)?.apply(&mut builder)?;
+let di = nestjs_di::analyze(&resolver, &builder)?;
+di.apply(&mut builder)?;
+resolver.apply_imports(&mut builder)?;
+let graph = builder.finish()?;
+```
+
+全宣言・roleの初回投入はDI収集より先に必要。Module・routes・imports適用との順序依存はなく、上記を通常の接続順とする。Module未登録でも確認済みconstructorの要求は保持する。例として`constructor(private readonly users: UsersService) {}`はconsumer → UsersServiceの`injects`を生成し、metadataは`{"semantics":"requested_token"}`、evidenceはparameter位置の`nestjs/confirmed`となる。
+
+| 対象 | 根拠と境界 |
+|---|---|
+| consumer | #9でmodule/controller/service/repositoryに分類された同じsource位置の宣言。wireはgeneric classも許すが、DIのconsumerへは昇格しない。merged consumerはscoped診断 |
+| constructor | 直接宣言された一意なimplementationだけ。overload署名、通常method、factory、別classのparameterを混ぜない。空constructorは有効。constructorなしから継承・super経由の要求の不存在を主張しない |
+| parameter | 通常形とpublic/private/protected/readonly付きpropertyはOxc 0.148の同じ`FormalParameter`。decorators/type_annotation/initializerを直接参照する。restは`FormalParameters.rest`の別slotとして診断する |
+| local class token | 単純identifier型参照から`at_reference`/`import_for`、または同一fileの`local_reference`によるsemantic bindingを使用。named import aliasを元bindingで解決。type-positionだけでimport typeとは判定しない |
+| class値の根拠 | Resolverの宣言siteにclass ASTの非declare、非ambient contextを保持。declare namespace（入れ子を含む）、external module、global augmentation、`.d.ts`のclassは値の根拠にしない。merged symbolは一意な参照先にしない。通常のabstract classは値tokenとして対応するがinstantiate可能とは主張しない |
+| tokenのrole | @Injectableは不要。既存canonical IDとclass値の両方を要求する。interface/type alias/generic shadowing/値alias/未解決/曖昧参照はedgeなし |
+| 未対応型・形 | union/intersection/array/typeof/qualified/import type/型引数付き参照/型なし、default/rest/分割代入はparameter単位で診断。安全な兄弟を維持する |
+| explicit Inject | exact @nestjs/common・元export名・value binding・ExternalSymbolで確認。aliasを含むstring/symbol/class/forwardRef/空引数/非callの指定を展開せず`unsupported_di_custom_token`。型注釈へのfallbackなし |
+| その他decorator | 確認できたNestJS decorator（Optional等）は`unsupported_di_decorator`、foreign/shadow/wrapper/type-only等の未確認出自は`unsupported_di_decorator_origin`。いずれもPoC対象外でありNestJSとして不正とは判定しない。class-levelの確認済みDependenciesはconstructor全体を診断。元export名がDependenciesで出自未確定の候補もconstructorをスキップし、`unsupported_di_dependencies_origin`を残す。任意custom decorator内部を解析しない |
+| external | ExternalSymbolはclass性の根拠ではないため`unsupported_di_external`。package/name allowlistやroot外/node_modules読込は追加せず、既存imports node/edgeを維持 |
+| provider override | useClass/useValue/useFactory/useExistingを解釈しない。要求tokenは登録表現と独立。#10のprovider診断を維持し、実装先edgeやcallsを追加しない |
+
+診断優先順位はconsumer/constructorの曖昧性→class-level Dependencies（正規を優先、次に出自未確認候補）→consumer class値、parameter内では明示Inject→未確認出自→その他decorator→parameter形→型構文→参照のinterface→type-only binding/export→解決状態→class値の順。export interfaceもOxc上type-onlyになるため、interfaceを具体的な理由として先に報告する。importされたdeclare classのtype-only exportはtype-only診断、同一fileのdeclare classはclass値診断になる。#11の`type_only_reference`はDIの確定やimports追加に使用しない。
+
+同一consumer/tokenの複数parameterはBuilderが1 edgeに統合し、異なる行のevidenceを保持する。同じ行などwire上同一のevidenceは既存規則で統合する。順番は内部findingだけに保持し、edge ID/metadataへ入れない。再適用でもedge/evidenceは同じになるが、Diagnosticは既存Builderの追記仕様に従う（再適用分の診断も追記）。診断はparameter file/lineと既存consumer IDに紐付き、calls用skippedCountを持たない。
+
+`tests/nestjs_di.rs`はoracleのinjects 5件をID/from/kind/to/metadata/evidenceまで、DI診断3件をcode/file/line/relatedNodeIdまで投影比較する。既存の宣言kind、Module構成11 edge/5診断、endpoint 6/route 12 edge、imports 43、method所有17、UsersServiceの複数所属とparent省略を保持する。独立入力でidentity、抽象class、ambient・shadowing、unsupported、4 provider override、保持source、部分成功、順序入替、再適用、適用時の既存node検査を確認する。oracle・wire・依存は変更しない。
+
+confirmedが示すのは対応構文で確認したsource-levelのtoken要求だけ。Module可視性、provider登録成功、実装選択、instance生成、compiler metadata出力、runtime注入成功は証明しない。property injection、継承展開、calls/Prisma、UI、#17本番pipelineは対象外。本番analyzeの非0・無書込境界を維持する。calls未生成の確認は#14の呼出解析・unknown件数の完了証拠ではない。
+
+
+### #12 Dependenciesの出自未確認候補
+
+class-level decoratorは使用位置のbindingと元export名で判定する。`Dependencies as Needs`のre-export未対応によるUnresolvedは、非候補の証拠ではない。正規のexact @nestjs/common value bindingは従来の`unsupported_di_dependencies`、元export名Dependenciesでexact packageのtype-only等またはUnresolvedの候補は`unsupported_di_dependencies_origin`として、constructor型注釈へfallbackしない。正規候補が複数decorator中にあればその診断を優先し、decorator順序で結果を変えない。
+
+既存`type_only_reference`はこのunknown診断だけに使用し、NestJS出自・token・importsを確定しない。別exportの`Roles as Dependencies`、出自が確認できるforeign、local/shadow bindingは正規Dependenciesにしない。local名の全体検索やnamespace/re-export/wrapper解決は追加しない。未解決候補はNestJS由来だと断定せず、class側の問題として既存consumer ID/file/lineに紐付ける。
+
+`unresolved_dependencies_alias_blocks_only_affected_consumer`は単回applyでConsumerのDI finding・edgeがなく、Healthy→WrittenTypeだけが残り、Resolver診断が保持されることを確認する。`dependencies_candidates_use_original_export_and_semantic_scope`は直接/alias/type-only/別export/foreign/shadowと順序入替を確認する。既存fixture projectionとBuilderの診断追記仕様は変更しない。

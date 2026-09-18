@@ -60,6 +60,77 @@ impl GraphBuilder {
         crate::canonical_id("edge", &[from, kind.wire(), to])
     }
 
+    pub(crate) fn node(&self, id: &str) -> Option<&GraphNode> {
+        self.nodes.get(id)
+    }
+
+    /// Apply confirmed module composition only, then derive display parents from
+    /// distinct membership edges. This does not change normal insertion or finish.
+    pub fn apply_module_composition(&mut self, edges: Vec<GraphEdge>) -> Result<(), String> {
+        use crate::{EdgeKind, NodeKind};
+        if let Some(error) = &self.first_error {
+            return Err(error.clone());
+        }
+        for edge in &edges {
+            let valid = self
+                .nodes
+                .get(&edge.from)
+                .is_some_and(|n| n.kind == NodeKind::Module)
+                && self.nodes.get(&edge.to).is_some_and(|n| match edge.kind {
+                    EdgeKind::Contains => matches!(
+                        n.kind,
+                        NodeKind::Controller
+                            | NodeKind::Service
+                            | NodeKind::Repository
+                            | NodeKind::Class
+                    ),
+                    EdgeKind::DependsOn => n.kind == NodeKind::Module,
+                    _ => false,
+                });
+            if !valid {
+                return self.fail("Invalid module composition target or relationship");
+            }
+        }
+        for edge in edges {
+            self.add_edge(edge)?;
+        }
+        let mut memberships: BTreeMap<String, std::collections::BTreeSet<String>> = BTreeMap::new();
+        for edge in self.edges.values() {
+            if edge.kind == EdgeKind::Contains
+                && self
+                    .nodes
+                    .get(&edge.from)
+                    .is_some_and(|n| n.kind == NodeKind::Module)
+                && self.nodes.get(&edge.to).is_some_and(|n| {
+                    matches!(
+                        n.kind,
+                        NodeKind::Controller
+                            | NodeKind::Service
+                            | NodeKind::Repository
+                            | NodeKind::Class
+                    )
+                })
+            {
+                memberships
+                    .entry(edge.to.clone())
+                    .or_default()
+                    .insert(edge.from.clone());
+            }
+        }
+        for node in self.nodes.values_mut() {
+            if matches!(
+                node.kind,
+                NodeKind::Controller | NodeKind::Service | NodeKind::Repository | NodeKind::Class
+            ) {
+                node.parent_id = memberships
+                    .get(&node.id)
+                    .filter(|owners| owners.len() == 1)
+                    .and_then(|owners| owners.first().cloned());
+            }
+        }
+        Ok(())
+    }
+
     pub fn add_node(&mut self, mut node: GraphNode) -> Result<(), String> {
         if let Some(error) = &self.first_error {
             return Err(error.clone());
