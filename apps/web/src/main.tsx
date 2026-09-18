@@ -69,8 +69,8 @@ function App() {
             <p>{state.fileName} is kept in browser memory.</p>
             <dl>
               <dt>Schema</dt><dd>{state.graph.schemaVersion}</dd>
-              <dt>Nodes</dt><dd>{state.graph.nodes.length}</dd>
-              <dt>Edges</dt><dd>{state.graph.edges.length}</dd>
+              <dt>Nodes in file</dt><dd>{state.graph.nodes.length}</dd>
+              <dt>Edges in file</dt><dd>{state.graph.edges.length}</dd>
               <dt>Diagnostics</dt><dd>{state.graph.diagnostics.length}</dd>
             </dl>
           </section>

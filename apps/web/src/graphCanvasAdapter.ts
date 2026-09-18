@@ -25,7 +25,7 @@ export function graphToCytoscapeElements(graph: SystemGraph): cytoscape.ElementD
         source: edge.from,
         target: edge.to,
         kind: edge.kind,
-        label: edge.kind,
+        label: edge.kind === 'injects' ? 'Requests token' : edge.kind,
       },
     }));
 

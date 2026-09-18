@@ -107,6 +107,8 @@ export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
     cyRef.current = cy;
 
     const handleNodeSelect: cytoscape.EventHandler = event => {
+      // Modifier keys can add selections even with Cytoscape's single selection mode.
+      cy.nodes(':selected').not(event.target).unselect();
       onSelectRef.current(event.target.id());
     };
 
