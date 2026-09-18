@@ -67,7 +67,7 @@ Module
 
 Avoid rendering every method by default.
 
-Methods should appear only after zooming in or selecting a class.
+Methods appear only after an explicit **Show methods** action on a class-like owner. Selection and zoom do not expand methods. At most one owner is expanded; **Hide methods** collapses it. See [Canvas behavior](CANVAS.md) for projection, layout, and lifecycle details.
 
 ## Milestone 4 — Context export
 

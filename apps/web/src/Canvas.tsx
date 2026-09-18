@@ -2,13 +2,15 @@ import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import { graphToCytoscapeElements } from './graphCanvasAdapter';
 import type { SystemGraph } from './graph';
+import { layoutCanvas, updateCanvasElements, fitPadding } from './canvasLayout';
 
 type GraphCanvasProps = {
   graph: SystemGraph;
   onSelect: (nodeId: string | null) => void;
+  selectedNodeId: string | null;
+  expandedOwnerId: string | null;
+  generation: number;
 };
-
-const fitPadding = 32;
 
 const style: cytoscape.StylesheetJson = [
   {
@@ -17,30 +19,19 @@ const style: cytoscape.StylesheetJson = [
       label: 'data(label)',
       'background-color': '#64748b',
       color: '#0f172a',
-      'font-size': '10px',
+      'font-size': '14px',
       'font-weight': 600,
       'text-wrap': 'wrap',
-      'text-max-width': '140px',
+      'text-max-width': '145px',
       'text-valign': 'center',
       'text-halign': 'center',
       shape: 'roundrectangle',
-      width: 'label',
-      height: 'label',
+      width: 155,
+      height: 64,
+      'text-overflow-wrap': 'anywhere',
       padding: '12px',
       'border-width': 1,
       'border-color': '#334155',
-    },
-  },
-  {
-    selector: ':parent',
-    style: {
-      'background-color': '#e2e8f0',
-      'background-opacity': 0.7,
-      'border-width': 2,
-      'border-color': '#94a3b8',
-      padding: '18px',
-      'text-valign': 'top',
-      'text-margin-y': 6,
     },
   },
   {
@@ -68,14 +59,29 @@ const style: cytoscape.StylesheetJson = [
     style: { shape: 'barrel', 'background-color': '#ddd6fe' },
   },
   {
+    selector: ':parent',
+    style: {
+      shape: 'roundrectangle',
+      'font-size': '18px',
+      'background-color': '#e2e8f0',
+      'background-opacity': 0.7,
+      'border-width': 2,
+      'border-color': '#94a3b8',
+      padding: '28px',
+      'text-valign': 'top',
+      'text-margin-y': -8,
+    },
+  },
+  { selector: 'node[kind = "module"]:parent', style: { 'font-size': '24px', 'border-width': 3, 'border-color': '#475569' } },
+  {
     selector: 'node:selected',
     style: { 'border-width': 4, 'border-color': '#0f172a' },
   },
   {
     selector: 'edge',
     style: {
-      label: 'data(label)',
-      color: '#475569',
+      label: '',
+      color: '#334155',
       'font-size': '8px',
       'curve-style': 'bezier',
       'line-color': '#94a3b8',
@@ -86,12 +92,15 @@ const style: cytoscape.StylesheetJson = [
       'text-background-padding': '2px',
     },
   },
+  { selector: 'edge.inspected', style: { label: 'data(label)', 'line-color': '#475569', 'width': 2 } },
 ];
 
-export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
+export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, generation }: GraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const onSelectRef = useRef(onSelect);
+  const syncing = useRef(false);
+  const previousGraph = useRef<{ graph: SystemGraph; generation: number } | null>(null);
   onSelectRef.current = onSelect;
 
   useEffect(() => {
@@ -107,12 +116,14 @@ export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
     cyRef.current = cy;
 
     const handleNodeSelect: cytoscape.EventHandler = event => {
+      if (syncing.current) return;
       // Modifier keys can add selections even with Cytoscape's single selection mode.
       cy.nodes(':selected').not(event.target).unselect();
       onSelectRef.current(event.target.id());
     };
 
     const handleNodeUnselect: cytoscape.EventHandler = event => {
+      if (syncing.current) return;
       if (!event.target.cy().nodes(':selected').length) onSelectRef.current(null);
     };
     const handleBackgroundTap: cytoscape.EventHandler = event => {
@@ -120,6 +131,12 @@ export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
       cy.elements().unselect();
       onSelectRef.current(null);
     };
+    const inspectEdge: cytoscape.EventHandler = event => event.target.addClass('inspected');
+    const clearEdge: cytoscape.EventHandler = event => {
+      if (!event.target.connectedNodes().some((node: cytoscape.NodeSingular) => node.selected())) event.target.removeClass('inspected');
+    };
+    cy.on('mouseover', 'edge', inspectEdge);
+    cy.on('mouseout', 'edge', clearEdge);
     cy.on('select', 'node', handleNodeSelect);
     cy.on('unselect', 'node', handleNodeUnselect);
     cy.on('tap', handleBackgroundTap);
@@ -133,6 +150,7 @@ export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
       cy.removeListener('unselect', 'node', handleNodeUnselect);
       cy.removeListener('tap', handleBackgroundTap);
       cy.destroy();
+      previousGraph.current = null;
       cyRef.current = null;
     };
   }, []);
@@ -141,19 +159,27 @@ export function GraphCanvas({ graph, onSelect }: GraphCanvasProps) {
     const cy = cyRef.current;
     if (!cy) return;
 
-    const elements = graphToCytoscapeElements(graph);
-    cy.elements().remove();
-    if (!elements.length) {
-      cy.reset();
-      onSelectRef.current(null);
-      return;
-    }
+    const initial = previousGraph.current?.graph !== graph || previousGraph.current.generation !== generation;
+    syncing.current = true;
+    try {
+      if (initial) { cy.elements().remove(); cy.reset(); }
+      updateCanvasElements(cy, graphToCytoscapeElements(graph, expandedOwnerId));
+      layoutCanvas(cy, initial);
+      previousGraph.current = { graph, generation };
+    } finally { syncing.current = false; }
+  }, [graph, generation, expandedOwnerId]);
 
-    cy.add(elements);
-    cy.layout({ name: 'breadthfirst', directed: true, fit: false, animate: false, padding: fitPadding }).run();
-    cy.fit(cy.elements(), fitPadding);
-    onSelectRef.current(null);
-  }, [graph]);
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    syncing.current = true;
+    try {
+      cy.nodes(':selected').not(cy.getElementById(selectedNodeId ?? '')).unselect();
+      if (selectedNodeId) cy.getElementById(selectedNodeId).select();
+      cy.edges().removeClass('inspected');
+      cy.nodes(':selected').connectedEdges().addClass('inspected');
+    } finally { syncing.current = false; }
+  }, [selectedNodeId, expandedOwnerId, graph, generation]);
 
   function zoomBy(factor: number) {
     const cy = cyRef.current;

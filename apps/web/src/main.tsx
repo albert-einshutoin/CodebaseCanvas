@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
 import { GraphCanvas } from './Canvas';
+import { directMethods, initialCanvasState, transitionCanvasState, type CanvasAction } from './canvasState';
 import { readGraphFile, type SystemGraph } from './graph';
 
 type ImportState =
@@ -12,7 +13,7 @@ type ImportState =
 
 function App() {
   const [state, setState] = useState<ImportState>({ kind: 'idle' });
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [canvasState, setCanvasState] = useState(() => initialCanvasState(0));
   const importSequence = useRef(0);
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -22,7 +23,7 @@ function App() {
 
     const sequence = ++importSequence.current;
     setState({ kind: 'loading', fileName: file.name });
-    setSelectedNodeId(null);
+    setCanvasState(initialCanvasState(sequence));
     input.value = '';
     const result = await readGraphFile(file);
     if (sequence !== importSequence.current) return;
@@ -32,8 +33,14 @@ function App() {
   }
 
   const selectedNode = state.kind === 'loaded'
-    ? state.graph.nodes.find(node => node.id === selectedNodeId)
+    ? state.graph.nodes.find(node => node.id === canvasState.selectedNodeId)
     : undefined;
+
+  const methods = state.kind === 'loaded' ? directMethods(state.graph, canvasState.selectedNodeId) : [];
+  const expandedOwner = state.kind === 'loaded' ? state.graph.nodes.find(node => node.id === canvasState.expandedOwnerId) : undefined;
+  function changeCanvas(action: CanvasAction) {
+    if (state.kind === 'loaded') setCanvasState(current => transitionCanvasState(state.graph, current, action));
+  }
 
   return (
     <main className={state.kind === 'loaded' ? 'wide' : undefined}>
@@ -77,7 +84,16 @@ function App() {
           <p className="selection-status" aria-live="polite">
             {selectedNode ? `Selected: [${selectedNode.kind}] ${selectedNode.name}` : 'Select a node to see its kind and name.'}
           </p>
-          <GraphCanvas graph={state.graph} onSelect={setSelectedNodeId} />
+          <div className="method-controls">
+            <span>{methods.length} directly owned methods in this snapshot</span>
+            <button type="button" disabled={!methods.length} aria-expanded={!!selectedNode && selectedNode.id === canvasState.expandedOwnerId}
+              onClick={() => selectedNode && changeCanvas({ type: 'show', id: selectedNode.id })}>Show methods</button>
+            {expandedOwner && <span className="expanded-owner">Methods shown: {expandedOwner.name}
+              <button type="button" aria-expanded={true} aria-label={`Hide methods of ${expandedOwner.name}`} onClick={() => changeCanvas({ type: 'hide' })}>Hide methods</button>
+            </span>}
+          </div>
+          <p className="canvas-legend">Frames follow declared parents. Shared / outside nodes stay outside Modules. Arrows show relations, not execution order. Select a node or hover an edge to read its relation.</p>
+          <GraphCanvas graph={state.graph} {...canvasState} onSelect={id => changeCanvas({ type: 'select', id })} />
         </>
       )}
     </main>
