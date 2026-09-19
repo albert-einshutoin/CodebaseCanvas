@@ -22,11 +22,13 @@ export function layoutCanvas(cy: cytoscape.Core, initial: boolean) {
 
 export function updateCanvasElements(cy: cytoscape.Core, elements: cytoscape.ElementDefinition[]) {
   const ids = new Set(elements.map(element => element.data.id));
+  const removed = cy.elements().filter(element => !ids.has(element.id()));
   const added = elements.filter(element => !cy.getElementById(element.data.id!).length);
+  if (!removed.length && !added.length) return false;
   // Read the owner position before it changes from a leaf to a compound node.
   const positions = new Map(cy.nodes().map(node => [node.id(), { ...node.position() }]));
   cy.batch(() => {
-    cy.elements().filter(element => !ids.has(element.id())).remove();
+    removed.remove();
     cy.add(added.map((element, index) => ({
       ...element,
       position: element.group === 'nodes' && element.data.parent
@@ -34,4 +36,5 @@ export function updateCanvasElements(cy: cytoscape.Core, elements: cytoscape.Ele
         : undefined,
     })));
   });
+  return true;
 }

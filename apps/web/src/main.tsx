@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import './style.css';
 import { NodeDetails } from './NodeDetailsPanel';
 import { nodeDetails } from './nodeDetails';
+import { CanvasControls } from './CanvasControls';
+import { projectView, directNeighborhood } from './canvasView';
 import { GraphCanvas } from './Canvas';
 import { directMethods, initialCanvasState, transitionCanvasState, type CanvasAction } from './canvasState';
 import { readGraphFile, type SystemGraph } from './graph';
@@ -35,6 +37,8 @@ function App() {
   }
 
   const graph = state.kind === 'loaded' ? state.graph : undefined;
+  const view = useMemo(() => graph ? projectView(graph, canvasState.enabledKinds, canvasState.expandedOwnerId) : undefined, [graph, canvasState.enabledKinds, canvasState.expandedOwnerId]);
+  const neighborhood = useMemo(() => graph && view ? directNeighborhood(graph, view.visibleIds, canvasState.neighborhoodAnchorId) : null, [graph, view, canvasState.neighborhoodAnchorId]);
   const details = useMemo(() => graph ? nodeDetails(graph, canvasState.selectedNodeId) : undefined, [graph, canvasState.selectedNodeId]);
 
   const selectedNode = state.kind === 'loaded'
@@ -86,6 +90,7 @@ function App() {
               <dt>Diagnostics</dt><dd>{state.graph.diagnostics.length}</dd>
             </dl>
           </section>
+          <CanvasControls graph={state.graph} state={canvasState} view={view!} neighborhood={neighborhood} onChange={changeCanvas} />
           <p className="selection-status" aria-live="polite">
             {selectedNode ? `Selected: [${selectedNode.kind}] ${selectedNode.name}` : 'Select a node to see its kind and name.'}
           </p>
@@ -93,14 +98,14 @@ function App() {
             <span>{methods.length} directly owned methods in this snapshot</span>
             <button type="button" disabled={!methods.length} aria-expanded={!!selectedNode && selectedNode.id === canvasState.expandedOwnerId}
               onClick={() => selectedNode && changeCanvas({ type: 'show', id: selectedNode.id })}>Show methods</button>
-            {expandedOwner && <span className="expanded-owner">Methods shown: {expandedOwner.name}
+            {expandedOwner && <span className="expanded-owner">{expandedOwner.kind !== 'method' && canvasState.enabledKinds.has(expandedOwner.kind) ? 'Methods shown' : 'Expansion target hidden by kind filter'}: {expandedOwner.name}
               <button type="button" aria-expanded={true} aria-label={`Hide methods of ${expandedOwner.name}`} onClick={() => changeCanvas({ type: 'hide' })}>Hide methods</button>
             </span>}
           </div>
           <p className="canvas-legend">Frames follow declared parents. Shared / outside nodes stay outside Modules. Arrows show relations, not execution order. Select a node or hover an edge to read its relation.</p>
           <div className="graph-workspace">
-            <GraphCanvas graph={state.graph} {...canvasState} onSelect={id => changeCanvas({ type: 'select', id })} />
-            <NodeDetails key={canvasState.selectedNodeId ?? 'unselected'} graph={state.graph} details={details} expandedOwnerId={canvasState.expandedOwnerId}
+            <GraphCanvas view={view!} neighborhood={neighborhood} graph={state.graph} {...canvasState} onSelect={id => changeCanvas({ type: 'select', id })} />
+            <NodeDetails key={canvasState.selectedNodeId ?? 'unselected'} graph={state.graph} details={details} visibleIds={view!.visibleIds}
               onClose={() => changeCanvas({ type: 'select', id: null })}
               onNavigate={id => changeCanvas({ type: 'navigate', id, generation: canvasState.generation })} />
           </div>

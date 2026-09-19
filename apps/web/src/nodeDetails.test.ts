@@ -65,7 +65,7 @@ it('renders escaped text, optional absence, UTC provenance and guarded database 
   n.metadata = { fields: [null, { name: '<script>alert(1)</script>', type: 'String' }, { name: 'x', type: {} }, 2], unused: { bad: '<img src=x>' } };
   copy.metadata.analyzedAt = '2026-09-19T01:02:03Z';
   const valid = SystemGraphSchema.parse(copy);
-  const html = renderToStaticMarkup(createElement(NodeDetails, { graph: valid, details: nodeDetails(valid, n.id), expandedOwnerId: null, onNavigate: () => {}, onClose: () => {} }));
+  const html = renderToStaticMarkup(createElement(NodeDetails, { graph: valid, details: nodeDetails(valid, n.id), visibleIds: new Set(graph.nodes.filter(n => n.kind !== 'method').map(n => n.id)), onNavigate: () => {}, onClose: () => {} }));
   expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
   expect(html).not.toContain('<script>');
   expect(html).not.toContain('[object Object]');
@@ -84,8 +84,8 @@ it('labels static/instance methods and rejects invalid source/evidence/endpoint 
   const methods = d.methods.filter(n => n.name === 'find');
   expect(methods).toHaveLength(2);
   expect(methods.map(n => nodeDetails(graph, n.id)!.methodKind).sort()).toEqual(['instance', 'static']);
-  const html = renderToStaticMarkup(createElement(NodeDetails, { graph, details: d, expandedOwnerId: null, onNavigate: () => {}, onClose: () => {} }));
-  expect(html).toContain('Show method on Canvas');
+  const html = renderToStaticMarkup(createElement(NodeDetails, { graph, details: d, visibleIds: new Set(graph.nodes.filter(n => n.kind !== 'method').map(n => n.id)), onNavigate: () => {}, onClose: () => {} }));
+  expect(html).toContain('Reveal &amp; go (show owner kind and expand method)');
   expect(html).toContain('(static)'); expect(html).toContain('(instance)');
   for (const mutate of [
     (g: typeof graph) => { g.nodes[0].evidence = []; },
@@ -117,7 +117,7 @@ it.each([
         label, otherId, edge: { ...edge, evidence: sortedEvidence(edge.evidence) },
       });
       const html = renderToStaticMarkup(createElement(NodeDetails, {
-        graph, details: d, expandedOwnerId: null, onNavigate: () => {}, onClose: () => {},
+        graph, details: d, visibleIds: new Set(graph.nodes.filter(n => n.kind !== 'method').map(n => n.id)), onNavigate: () => {}, onClose: () => {},
       }));
       const section = html.split(`<section><h3>${incoming ? 'Incoming' : 'Outgoing'} relationships</h3>`)[1]?.split('</section>')[0];
       expect(section).toBeDefined();

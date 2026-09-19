@@ -1,12 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import { graphToCytoscapeElements } from './graphCanvasAdapter';
+import { applyViewStyle, focusStyle } from './canvasFocus';
+import type { Neighborhood, ViewProjection } from './canvasView';
 import type { CanvasState } from './canvasState';
 import type { SystemGraph } from './graph';
 import { layoutCanvas, updateCanvasElements, fitPadding } from './canvasLayout';
 
 type GraphCanvasProps = {
   graph: SystemGraph;
+  view: ViewProjection;
+  neighborhood: Neighborhood;
   onSelect: (nodeId: string | null) => void;
   selectedNodeId: string | null;
   expandedOwnerId: string | null;
@@ -95,9 +99,11 @@ const style: cytoscape.StylesheetJson = [
     },
   },
   { selector: 'edge.inspected', style: { label: 'data(label)', 'line-color': '#475569', 'width': 2 } },
+  ...focusStyle,
 ];
 
-export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, generation, focusRequest }: GraphCanvasProps) {
+export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, generation, focusRequest, view, neighborhood }: GraphCanvasProps) {
+  const visibleKey = useMemo(() => JSON.stringify([...view.visibleIds].sort()), [view]);
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const onSelectRef = useRef(onSelect);
@@ -165,11 +171,12 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
     syncing.current = true;
     try {
       if (initial) { cy.elements().remove(); cy.reset(); }
-      updateCanvasElements(cy, graphToCytoscapeElements(graph, expandedOwnerId));
-      layoutCanvas(cy, initial);
+      const changed = updateCanvasElements(cy, graphToCytoscapeElements(graph, expandedOwnerId, view.visibleIds));
+      if (initial || changed) layoutCanvas(cy, initial);
       previousGraph.current = { graph, generation };
     } finally { syncing.current = false; }
-  }, [graph, generation, expandedOwnerId]);
+    // A kind toggle may change frame styling without changing the element set.
+  }, [graph, generation, visibleKey]);
 
   useEffect(() => {
     const cy = cyRef.current;
@@ -181,7 +188,12 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
       cy.edges().removeClass('inspected');
       cy.nodes(':selected').connectedEdges().addClass('inspected');
     } finally { syncing.current = false; }
-  }, [selectedNodeId, expandedOwnerId, graph, generation]);
+  }, [selectedNodeId, expandedOwnerId, graph, generation, view]);
+
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (cy) applyViewStyle(cy, view, neighborhood);
+  }, [view, neighborhood, graph, generation]);
 
   // Structural layout and controlled selection effects above finish synchronously first.
   useEffect(() => {
@@ -212,7 +224,7 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
         <button type="button" aria-label="Fit graph to screen" onClick={fitGraph}>Fit</button>
       </div>
       <div ref={containerRef} className="canvas-viewport" role="application" aria-label="Interactive code graph" />
-      {!graph.nodes.length && <p className="canvas-empty" role="status">This graph has no nodes to display.</p>}
+      {!view.visibleIds.size && <p className="canvas-empty" role="status">{graph.nodes.length ? 'No nodes match these filters. Reset kind filters to restore the view.' : 'This graph has no nodes to display.'}</p>}
     </section>
   );
 }

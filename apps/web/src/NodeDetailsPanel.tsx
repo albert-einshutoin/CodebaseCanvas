@@ -1,4 +1,5 @@
 import { nodeIdentityDetails, type Diagnostic, type Evidence, type GraphNode, type SystemGraph } from './graph';
+import { navigationLabel } from './canvasView';
 import type { NodeDetailsModel } from './nodeDetails';
 
 export function sourcePosition(value: { file?: string; line?: number; endLine?: number }) {
@@ -18,13 +19,12 @@ function Diagnostics({ items }: { items: Diagnostic[] }) {
   </li>)}</ul> : <p>No diagnostics recorded in this snapshot for this scope.</p>;
 }
 
-type Props = { details: NodeDetailsModel | undefined; graph: SystemGraph; expandedOwnerId: string | null; onNavigate: (id: string) => void; onClose: () => void };
-export function NodeDetails({ details: d, graph, expandedOwnerId, onNavigate, onClose }: Props) {
+type Props = { details: NodeDetailsModel | undefined; graph: SystemGraph; visibleIds: ReadonlySet<string>; onNavigate: (id: string) => void; onClose: () => void };
+export function NodeDetails({ details: d, graph, visibleIds, onNavigate, onClose }: Props) {
   function target(n: GraphNode) {
-    const hidden = n.kind === 'method' && n.parentId !== expandedOwnerId;
     const kind = nodeIdentityDetails(n).methodKind;
     return <button type="button" onClick={() => onNavigate(n.id)}>
-      {hidden ? 'Show method on Canvas' : 'Go to node'}: {n.name}{kind ? ` (${kind})` : ''} [{n.kind}]
+      {navigationLabel(n, visibleIds)}: {n.name}{kind ? ` (${kind})` : ''} [{n.kind}]
       <small>{n.id}</small>
     </button>;
   }
