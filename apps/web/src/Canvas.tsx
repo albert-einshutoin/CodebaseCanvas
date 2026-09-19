@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import { graphToCytoscapeElements } from './graphCanvasAdapter';
+import type { CanvasState } from './canvasState';
 import type { SystemGraph } from './graph';
 import { layoutCanvas, updateCanvasElements, fitPadding } from './canvasLayout';
 
@@ -10,6 +11,7 @@ type GraphCanvasProps = {
   selectedNodeId: string | null;
   expandedOwnerId: string | null;
   generation: number;
+  focusRequest: CanvasState['focusRequest'];
 };
 
 const style: cytoscape.StylesheetJson = [
@@ -95,7 +97,7 @@ const style: cytoscape.StylesheetJson = [
   { selector: 'edge.inspected', style: { label: 'data(label)', 'line-color': '#475569', 'width': 2 } },
 ];
 
-export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, generation }: GraphCanvasProps) {
+export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, generation, focusRequest }: GraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const onSelectRef = useRef(onSelect);
@@ -180,6 +182,14 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
       cy.nodes(':selected').connectedEdges().addClass('inspected');
     } finally { syncing.current = false; }
   }, [selectedNodeId, expandedOwnerId, graph, generation]);
+
+  // Structural layout and controlled selection effects above finish synchronously first.
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy || !focusRequest || focusRequest.generation !== generation) return;
+    const target = cy.getElementById(focusRequest.id);
+    if (target.length) cy.center(target);
+  }, [focusRequest, generation]);
 
   function zoomBy(factor: number) {
     const cy = cyRef.current;

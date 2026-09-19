@@ -141,3 +141,14 @@ dd {
 .method-controls button:disabled { cursor: default; }
 .expanded-owner { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; }
 .canvas-legend { font-size: 0.85rem; }
+
+.graph-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 23rem; gap: 1rem; align-items: start; }
+.node-details { box-sizing: border-box; height: max(34rem, 72vh); overflow: auto; overflow-wrap: anywhere; padding: 1rem; border: 1px solid #94a3b8; border-radius: 0.5rem; min-width: 0; }
+.node-details h2 { margin-top: 0.5rem; }
+.node-details ul { padding-left: 1.25rem; }
+.node-details li { margin-bottom: 0.75rem; }
+.node-details button { display: block; max-width: 100%; text-align: left; white-space: normal; overflow-wrap: anywhere; font: inherit; cursor: pointer; }
+.node-details small { display: block; font-size: 0.7rem; }
+.node-details summary { cursor: pointer; }
+.node-details button:focus-visible, .node-details summary:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+@media (max-width: 850px) { .graph-workspace { grid-template-columns: minmax(0, 1fr); } .node-details { height: 32rem; } }

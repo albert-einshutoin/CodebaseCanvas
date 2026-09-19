@@ -1,6 +1,8 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import { NodeDetails } from './NodeDetailsPanel';
+import { nodeDetails } from './nodeDetails';
 import { GraphCanvas } from './Canvas';
 import { directMethods, initialCanvasState, transitionCanvasState, type CanvasAction } from './canvasState';
 import { readGraphFile, type SystemGraph } from './graph';
@@ -31,6 +33,9 @@ function App() {
       ? { kind: 'loaded', fileName: file.name, graph: result.graph }
       : { kind: 'error', fileName: file.name, message: result.message, details: result.details });
   }
+
+  const graph = state.kind === 'loaded' ? state.graph : undefined;
+  const details = useMemo(() => graph ? nodeDetails(graph, canvasState.selectedNodeId) : undefined, [graph, canvasState.selectedNodeId]);
 
   const selectedNode = state.kind === 'loaded'
     ? state.graph.nodes.find(node => node.id === canvasState.selectedNodeId)
@@ -93,7 +98,12 @@ function App() {
             </span>}
           </div>
           <p className="canvas-legend">Frames follow declared parents. Shared / outside nodes stay outside Modules. Arrows show relations, not execution order. Select a node or hover an edge to read its relation.</p>
-          <GraphCanvas graph={state.graph} {...canvasState} onSelect={id => changeCanvas({ type: 'select', id })} />
+          <div className="graph-workspace">
+            <GraphCanvas graph={state.graph} {...canvasState} onSelect={id => changeCanvas({ type: 'select', id })} />
+            <NodeDetails key={canvasState.selectedNodeId ?? 'unselected'} graph={state.graph} details={details} expandedOwnerId={canvasState.expandedOwnerId}
+              onClose={() => changeCanvas({ type: 'select', id: null })}
+              onNavigate={id => changeCanvas({ type: 'navigate', id, generation: canvasState.generation })} />
+          </div>
         </>
       )}
     </main>
