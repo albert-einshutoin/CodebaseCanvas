@@ -7,7 +7,7 @@ export const sortedEvidence = (items: Evidence[]) => [...items].sort((a, b) => c
   JSON.stringify([a.file, a.line, a.endLine, a.source, a.confidence]),
   JSON.stringify([b.file, b.line, b.endLine, b.source, b.confidence]),
 ));
-const sortedDiagnostics = (items: Diagnostic[]) => [...items].sort((a, b) => compare(
+export const sortedDiagnostics = (items: Diagnostic[]) => [...items].sort((a, b) => compare(
   JSON.stringify([a.relatedNodeId, a.file, a.line, a.code, a.severity, a.message, a.skippedCount]),
   JSON.stringify([b.relatedNodeId, b.file, b.line, b.code, b.severity, b.message, b.skippedCount]),
 ));
