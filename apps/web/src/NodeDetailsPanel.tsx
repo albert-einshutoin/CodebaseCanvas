@@ -1,4 +1,5 @@
 import { nodeIdentityDetails, type Diagnostic, type Evidence, type GraphNode, type SystemGraph } from './graph';
+import { CopyContext } from './CopyContext';
 import { navigationLabel } from './canvasView';
 import type { NodeDetailsModel } from './nodeDetails';
 
@@ -45,6 +46,7 @@ export function NodeDetails({ details: d, graph, visibleIds, onNavigate, onClose
   return <aside className="node-details" aria-label="Node details">
     {!d ? <p>Select a node to inspect its definition, direct relationships and recorded evidence.</p> : <>
       <button type="button" onClick={onClose}>Close details / clear selection</button>
+      <CopyContext graph={graph} nodeId={d.node.id} />
       <h2>{d.node.name}</h2><p>Kind: {d.node.kind}{d.methodKind && ` (${d.methodKind})`}</p>
       {d.node.qualifiedName && <p>{d.node.qualifiedName}</p>}
       <p>{sourcePosition(d.node)}</p><details><summary>Canonical node ID</summary><code>{d.node.id}</code></details>

@@ -181,3 +181,6 @@ dd {
 .diagnostic-rows li { padding: 0.75rem 0; border-bottom: 1px solid #94a3b8; }
 .diagnostic-rows small { display: block; font-size: 0.75rem; }
 .confidence-legend { font-size: 0.9rem; }
+.copy-context { margin-block: 0.75rem; }
+.copy-context p { overflow-wrap: anywhere; }
+.copy-context textarea { display: block; box-sizing: border-box; width: 100%; max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; font: 0.8rem/1.5 monospace; }
