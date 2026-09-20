@@ -105,7 +105,7 @@ function App() {
           <p className="canvas-legend">Frames follow declared parents. Shared / outside nodes stay outside Modules. Arrows show relations, not execution order. Select a node or hover an edge to read its relation.</p>
           <div className="graph-workspace">
             <GraphCanvas view={view!} neighborhood={neighborhood} graph={state.graph} {...canvasState} onSelect={id => changeCanvas({ type: 'select', id })} />
-            <NodeDetails key={canvasState.selectedNodeId ?? 'unselected'} graph={state.graph} details={details} visibleIds={view!.visibleIds}
+            <NodeDetails key={JSON.stringify([canvasState.generation, canvasState.selectedNodeId])} graph={state.graph} details={details} visibleIds={view!.visibleIds}
               onClose={() => changeCanvas({ type: 'select', id: null })}
               onNavigate={id => changeCanvas({ type: 'navigate', id, generation: canvasState.generation })} />
           </div>
