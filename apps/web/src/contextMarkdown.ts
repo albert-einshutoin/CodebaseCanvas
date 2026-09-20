@@ -1,4 +1,4 @@
-import { nodeIdentityDetails, SystemGraphSchema, type Diagnostic, type GraphEdge, type GraphNode, type SystemGraph } from './graph';
+import { nodeIdentityDetails, SystemGraphSchema, type Diagnostic, type Evidence, type GraphEdge, type GraphNode, type SystemGraph } from './graph';
 import { additionalContextNodes, collectContext, compare, compareContextNodes } from './context';
 import { sortedDiagnostics, sortedEvidence } from './nodeDetails';
 
@@ -18,6 +18,9 @@ function field(value: string, shortened: () => void) {
     .replace(/[\u0085\u2028\u2029]/g, c => `\\u${c.codePointAt(0)!.toString(16)}`);
   return `${quoted}${cut ? ' [field truncated; prefix only]' : ''}`;
 }
+// Keep evidence values attached to each entity even when detailed source rows are omitted.
+const evidenceConfidences = (evidence: Evidence[]) => ['confirmed', 'best_effort']
+  .filter(confidence => evidence.some(e => e.confidence === confidence)).join(',');
 const diagnosticTotals = (items: Diagnostic[]) => ({ rows: items.length, skipped: items.reduce((sum, d) => sum + (d.skippedCount ?? 0), 0) });
 
 export function generateContextMarkdown(input: unknown, id: string | null) {
@@ -41,7 +44,7 @@ export function generateContextMarkdown(input: unknown, id: string | null) {
     : `file=${data(n.file)}${n.line === undefined ? '' : `; line=${n.line}${n.endLine === undefined ? '' : `; endLine=${n.endLine}`}`}`;
   const describe = (n: GraphNode) => {
     const identity = nodeIdentityDetails(n);
-    return `${refs.get(n.id)}: kind=${n.kind}; name=${data(n.name)}; canonical ID=${data(n.id)}; ${location(n)}`
+    return `${refs.get(n.id)}: kind=${n.kind}; node evidence confidences=${evidenceConfidences(n.evidence)}; name=${data(n.name)}; canonical ID=${data(n.id)}; ${location(n)}`
       + (n.qualifiedName === undefined ? '' : `; qualifiedName=${data(n.qualifiedName)}`)
       + (identity.methodKind ? `; methodKind=${identity.methodKind}` : '')
       + (identity.specifier ? `; specifier=${data(identity.specifier)}` : '')
@@ -79,7 +82,7 @@ export function generateContextMarkdown(input: unknown, id: string | null) {
   }
   for (const group of context.sections) section(group.key, group.title, group.items, item => item.nodes.map(n => n.id), item =>
     `${item.label}: ${item.nodes.map(describe).join(' | via ')}${item.edges.length ? '; original edges: ' : ''}`
-      + item.edges.map(e => `${edgeRefs.get(e.id)} (${refs.get(e.from)} -> ${e.kind} -> ${refs.get(e.to)}; canonical edge ID=${data(e.id)})`).join(' | '),
+      + item.edges.map(e => `${edgeRefs.get(e.id)} (${refs.get(e.from)} -> ${e.kind} -> ${refs.get(e.to)}; edge evidence confidences=${evidenceConfidences(e.evidence)}; canonical edge ID=${data(e.id)})`).join(' | '),
     item => { for (const e of item.edges) admittedEdges.add(e.id); });
 
   const includedNodes = orderedNodes.filter(n => admittedNodes.has(n.id));
@@ -108,7 +111,7 @@ export function generateContextMarkdown(input: unknown, id: string | null) {
     + `Selected node + included methods: diagnostics=${totals.rows}; skipped call sites=${totals.skipped}; diagnostic rows omitted=${relevant.length - includedItems.diagnostics}.\n`
     + `Candidate methods=${candidateMethods.size}; included methods=${includedMethods.size}; unlisted methods=${candidateMethods.size - includedMethods.size}. Known diagnostics on unlisted candidate methods=${omittedMethods.rows}; skipped call sites=${omittedMethods.skipped} (not part of included-method totals).\n`
     + `Same-file notices=${fileNotices.length}; omitted=${fileNotices.length - includedItems.fileNotices}; not node-attributed, not added to call counts. Other file/global notices are not reproduced.\n`
-    + `Evidence on included entities before evidence-row limits: node declarations (${evidenceCounts(nodeEvidence)}); edge relationships (${evidenceCounts(edgeEvidence)}). Individual evidence keeps its confidence; confirmed means a stated static fact, best_effort means limited heuristic/partial resolution. Neither is derived from severity or aggregated into node confidence. Omitted evidence is not proof of absence.\n`
+    + `Evidence on included entities before evidence-row limits: node declarations (${evidenceCounts(nodeEvidence)}); edge relationships (${evidenceCounts(edgeEvidence)}). Inline node/edge evidence confidences list the distinct values present in that entity’s evidence, not an aggregate confidence rating. Individual evidence keeps its confidence; confirmed means a stated static fact, best_effort means limited heuristic/partial resolution. Neither is derived from severity or aggregated into node confidence. Omitted evidence is not proof of absence.\n`
     + 'Requests token / Requested by confirm only requested_token, not provider implementations, overrides, instances or runtime calls. Declared handler / Handler for endpoint and Static call target / Statically called by describe static relations. Module registration is distinct from lexical method ownership. Unknown relationships remain unknown: no inferred nodes, edges or execution paths. Zero calls/diagnostics never guarantees complete analysis.\n\n'
     + '## Truncation\n'
     + `Tool notice: ${admittedNodes.size - 1} distinct related node IDs included (maximum 200; selected component excluded; intermediate nodes included). Maximum 50 items per fixed section. Omission priority: section item limit, then distinct node limit, then character budget; each omitted item counted once.\n`

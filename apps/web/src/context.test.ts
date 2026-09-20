@@ -224,3 +224,83 @@ it('keeps the existing invalid-path/ref import boundary at export as well', () =
     expect(() => generateContextMarkdown(g, users.id)).toThrow();
   }
 });
+
+function crowdedEvidenceGraph() {
+  const g = emptyGraph();
+  const [s, a, b, c] = ['S', 'A', 'B', 'C'].map(name => declaration(name));
+  g.nodes = [s, a, b, c];
+  g.edges = [a, b, c].map(n => edge(s, 'imports', n));
+  g.edges[0].evidence = Array.from({ length: 50 }, (_, i) => ({ ...evidence[0], line: i + 1 }));
+  g.edges[1].evidence[0].confidence = 'best_effort';
+  return SystemGraphSchema.parse(g);
+}
+const markdownSection = (text: string, title: string) => text.split(`## ${title}\n`)[1]?.split('\n## ')[0] ?? '';
+function edgeReference(g: SystemGraph, selected: string, e: GraphEdge) {
+  const ids = [...new Set(collectContext(g, selected).sections.flatMap(s => s.items.flatMap(i => i.edges.map(e => e.id))))].sort();
+  return `E${ids.indexOf(e.id) + 1}`;
+}
+function expectEdgeConfidence(text: string, ref: string, confidence: string) {
+  expect(text).toContain(`${ref} (`);
+  expect(text.split(`${ref} (`)[1]?.split(')')[0]).toContain(`edge evidence confidences=${confidence};`);
+}
+it('keeps each edge confidence attached when the first edge fills the evidence item limit', () => {
+  const g = crowdedEvidenceGraph(); const s = g.nodes[0];
+  const before = JSON.stringify(g);
+  const out = generateContextMarkdown(g, s.id);
+  const relationships = markdownSection(out.markdown, 'Outgoing relationships');
+  const details = markdownSection(out.markdown, 'Edge relationship evidence (each path leg remains separate)');
+  expect(out.includedItems.outgoing).toBe(3);
+  expect(details.trim().split('\n')).toHaveLength(50);
+  for (const line of details.trim().split('\n')) expect(line).toMatch(/^- E1: .*confidence=confirmed;/);
+  expect(out.omissions.find(o => o.section.startsWith('Edge relationship evidence'))).toMatchObject({ included: 50, items: 2, nodes: 0, characters: 0 });
+  for (const [i, e] of g.edges.entries()) expectEdgeConfidence(relationships, edgeReference(g, s.id, e), i === 1 ? 'best_effort' : 'confirmed');
+  const swapped = structuredClone(g);
+  swapped.edges[1].evidence[0].confidence = 'confirmed';
+  swapped.edges[2].evidence[0].confidence = 'best_effort';
+  const changed = generateContextMarkdown(swapped, s.id).markdown;
+  expect(changed).not.toBe(out.markdown);
+  expectEdgeConfidence(markdownSection(changed, 'Outgoing relationships'), 'E2', 'confirmed');
+  expectEdgeConfidence(markdownSection(changed, 'Outgoing relationships'), 'E3', 'best_effort');
+  const reordered = structuredClone(g); reordered.nodes.reverse(); reordered.edges.reverse();
+  for (const n of reordered.nodes) n.evidence.reverse();
+  for (const e of reordered.edges) e.evidence.reverse();
+  expect(generateContextMarkdown(reordered, s.id).markdown).toBe(out.markdown);
+  expect(generateContextMarkdown(g, s.id).markdown).toBe(out.markdown);
+  expect(JSON.stringify(g)).toBe(before);
+});
+it('keeps mixed node and edge evidence confidences separate after node evidence truncation', () => {
+  const g = crowdedEvidenceGraph(); const [s, a, b, c] = g.nodes;
+  a.evidence = Array.from({ length: 50 }, (_, i) => ({ ...evidence[0], line: i + 1 }));
+  b.evidence = [{ ...evidence[0], confidence: 'confirmed' }, { ...evidence[0], confidence: 'best_effort', line: 2 }];
+  c.evidence[0].confidence = 'best_effort';
+  g.edges[1].evidence.push({ ...evidence[0], line: 2 });
+  const out = generateContextMarkdown(SystemGraphSchema.parse(g), s.id);
+  const rows = markdownSection(out.markdown, 'Outgoing relationships');
+  expect(rows).toContain('N2: kind=class; node evidence confidences=confirmed,best_effort;');
+  expect(rows).toContain('N3: kind=class; node evidence confidences=best_effort;');
+  expectEdgeConfidence(rows, 'E2', 'confirmed,best_effort');
+  expectEdgeConfidence(rows, 'E3', 'confirmed');
+  expect(markdownSection(out.markdown, 'Component')).toContain('node evidence confidences=confirmed;');
+  expect(out.omissions.find(o => o.section === 'Node declaration evidence')!.items).toBe(4);
+  expect(markdownSection(out.markdown, 'Node declaration evidence')).not.toContain('- N2:');
+  const reordered = structuredClone(g);
+  for (const n of reordered.nodes) n.evidence.reverse();
+  for (const e of reordered.edges) e.evidence.reverse();
+  expect(generateContextMarkdown(reordered, s.id).markdown).toBe(out.markdown);
+});
+it('keeps confidence per two-hop leg when detailed edge evidence hits the character budget', () => {
+  const { g, route, handler, callee } = independentPaths();
+  for (const n of g.nodes) n.evidence = Array.from({ length: 50 }, (_, i) => ({ ...evidence[0], file: 'long😀'.repeat(100) + '.ts', line: i + 1 }));
+  const first = g.edges.find(e => e.from === route.id && e.to === handler.id)!;
+  const second = g.edges.find(e => e.from === handler.id && e.to === callee.id)!;
+  for (const e of g.edges) e.evidence = Array.from({ length: 50 }, (_, i) => ({ ...evidence[0], file: 'long😀'.repeat(100) + '.ts', line: i + 1, confidence: e === first ? 'best_effort' : 'confirmed' }));
+  const out = generateContextMarkdown(SystemGraphSchema.parse(g), route.id);
+  const path = markdownSection(out.markdown, 'Endpoint handler static calls');
+  expectEdgeConfidence(path, edgeReference(g, route.id, first), 'best_effort');
+  expectEdgeConfidence(path, edgeReference(g, route.id, second), 'confirmed');
+  expect(out.omissions.find(o => o.section.startsWith('Edge relationship evidence'))!.characters).toBeGreaterThan(0);
+  expect(codePoints(out.markdown)).toBeLessThanOrEqual(32000);
+  expect(out.markdown).toContain('## Analysis scope / unknown');
+  expect(out.markdown).toContain('## Truncation');
+  for (const o of out.omissions) expect(o.included + o.items + o.nodes + o.characters).toBe(o.candidates);
+});
