@@ -166,3 +166,18 @@ dd {
 .search-results small { display: block; font-size: 0.75rem; }
 
 .neighborhood-controls { position: sticky; top: 0; z-index: 2; background: Canvas; color: CanvasText; padding: 0.5rem; border: 1px solid #94a3b8; }
+
+.analysis-panel { border: 1px solid #94a3b8; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; overflow-wrap: anywhere; }
+.analysis-panel h2 { margin-top: 0; }
+.analysis-panel p { margin: 0.5rem 0; }
+.analysis-actions, .diagnostic-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.analysis-panel button, .analysis-panel select { font: inherit; max-width: 100%; cursor: pointer; }
+.analysis-panel button { white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.analysis-panel :focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+.diagnostic-filters label { min-width: 0; }
+.diagnostic-filters select { display: block; }
+.diagnostic-filters input { display: inline; margin: 0 0.4rem 0 0; }
+.diagnostic-rows { max-height: 28rem; overflow: auto; padding-left: 1.5rem; }
+.diagnostic-rows li { padding: 0.75rem 0; border-bottom: 1px solid #94a3b8; }
+.diagnostic-rows small { display: block; font-size: 0.75rem; }
+.confidence-legend { font-size: 0.9rem; }

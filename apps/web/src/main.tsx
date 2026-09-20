@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import { AnalysisPanel } from './AnalysisPanel';
 import { NodeDetails } from './NodeDetailsPanel';
 import { nodeDetails } from './nodeDetails';
 import { CanvasControls } from './CanvasControls';
@@ -85,11 +86,10 @@ function App() {
             <p>{state.fileName} is kept in browser memory.</p>
             <dl>
               <dt>Schema</dt><dd>{state.graph.schemaVersion}</dd>
-              <dt>Nodes in file</dt><dd>{state.graph.nodes.length}</dd>
-              <dt>Edges in file</dt><dd>{state.graph.edges.length}</dd>
-              <dt>Diagnostics</dt><dd>{state.graph.diagnostics.length}</dd>
             </dl>
           </section>
+          <AnalysisPanel key={canvasState.generation} graph={state.graph} generation={canvasState.generation} visibleIds={view!.visibleIds}
+            onNavigate={(id, generation) => changeCanvas({ type: 'navigate', id, generation })} />
           <CanvasControls graph={state.graph} state={canvasState} view={view!} neighborhood={neighborhood} onChange={changeCanvas} />
           <p className="selection-status" aria-live="polite">
             {selectedNode ? `Selected: [${selectedNode.kind}] ${selectedNode.name}` : 'Select a node to see its kind and name.'}
