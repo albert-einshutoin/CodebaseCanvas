@@ -588,3 +588,328 @@ fn semantic_failure_retains_named_body_sites_as_unknown() {
             .any(|d| d.code == "TS_IMPORT_PARSEINCOMPLETE")
     );
 }
+
+fn class_definition_findings(source: &str) -> (calls::CallFindings, SystemGraph) {
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts()).parse();
+    assert!(!parsed.panicked);
+    assert!(parsed.diagnostics.is_empty(), "{:?}", parsed.diagnostics);
+    let semantic = oxc_semantic::SemanticBuilder::new()
+        .with_check_syntax_error(true)
+        .build(&parsed.program);
+    assert!(
+        semantic.diagnostics.is_empty(),
+        "{:?}",
+        semantic.diagnostics
+    );
+    let repo = Repo::new(source);
+    let r = repo.resolver();
+    assert!(r.diagnostics().is_empty(), "{:?}", r.diagnostics());
+    let mut b = builder(&r);
+    let findings = calls::analyze(&r, &b).unwrap();
+    assert!(findings.incomplete_files().is_empty());
+    findings.apply(&mut b).unwrap();
+    r.apply_imports(&mut b).unwrap();
+    (findings, b.finish().unwrap())
+}
+
+#[test]
+fn nested_class_heritage_write_blocks_outer_method_target() {
+    let source = "class Base {}\nclass Outer {\nfind() { return \"declared\"; }\nrun() {\nclass Inner extends (\nthis.find = () => \"replacement\",\nBase\n) {}\nreturn this.find();\n}\n}\n";
+    let (f, g) = class_definition_findings(source);
+    println!(
+        "heritage write: parser/semantic/resolver OK; sites={:?}; edges={:?}; counts={:?}; diagnostics={:?}",
+        f.sites(),
+        call_edges(&g),
+        counts(&g),
+        g.diagnostics
+    );
+    assert_eq!(f.sites().len(), 1);
+    let site = &f.sites()[0];
+    assert_eq!(
+        site.caller_id,
+        method("main.ts", &[], "Outer", "instance", "run")
+    );
+    assert_eq!(site.site.line, 9);
+    assert_eq!(
+        &source[site.site.start as usize..site.site.end as usize],
+        "this.find()"
+    );
+    assert_eq!(site.target, Err("unsupported_call_ambiguous_target".into()));
+    assert!(call_edges(&g).is_empty());
+    assert_eq!(counts(&g), (1, 0, 1));
+    let d = &g.diagnostics[0];
+    assert_eq!(g.diagnostics.len(), 1);
+    assert_eq!(
+        (d.related_node_id.as_ref(), d.line, d.skipped_count),
+        (Some(&site.caller_id), Some(9), Some(1))
+    );
+}
+
+#[test]
+fn nested_class_heritage_call_belongs_to_outer_method() {
+    let source = "class Base {}\nclass Outer {\nbase() { return Base; }\nrun() {\nclass Inner extends this.base() {}\n}\n}\n";
+    let (f, g) = class_definition_findings(source);
+    println!(
+        "heritage call: parser/semantic/resolver OK; sites={:?}; edges={:?}; counts={:?}; diagnostics={:?}",
+        f.sites(),
+        call_edges(&g),
+        counts(&g),
+        g.diagnostics
+    );
+    assert_eq!(f.sites().len(), 1);
+    let site = &f.sites()[0];
+    assert_eq!(
+        site.caller_id,
+        method("main.ts", &[], "Outer", "instance", "run")
+    );
+    assert_eq!(site.site.line, 5);
+    assert_eq!(
+        &source[site.site.start as usize..site.site.end as usize],
+        "this.base()"
+    );
+    assert_eq!(
+        site.target,
+        Ok(method("main.ts", &[], "Outer", "instance", "base"))
+    );
+    assert_eq!(counts(&g), (1, 1, 0));
+    assert_eq!(call_edges(&g).len(), 1);
+    assert!(g.diagnostics.is_empty());
+}
+
+#[test]
+fn nested_class_computed_keys_are_outer_sites_and_writes() {
+    let source = "class Outer {\nkey() { return 'key'; }\nfind() {}\nrun() {\nclass Inner {\n[this.key()] = ignored();\nstatic [this.key()] = ignored();\n[this.key()]() { ignored(); }\naccessor [this.key()] = ignored();\n[(this.find = replacement, 'fixed')] = ignored();\n}\nthis.find();\nthis.find();\n}\n}";
+    let (f, g) = class_definition_findings(source);
+    println!(
+        "computed keys: parser/semantic/resolver OK; sites={:?}; counts={:?}; diagnostics={:?}",
+        f.sites(),
+        counts(&g),
+        g.diagnostics
+    );
+    let caller = method("main.ts", &[], "Outer", "instance", "run");
+    assert_eq!(counts(&g), (6, 4, 2));
+    assert!(f.sites().iter().all(|s| s.caller_id == caller));
+    assert_eq!(
+        f.sites().iter().map(|s| s.site.line).collect::<Vec<_>>(),
+        vec![6, 7, 8, 9, 12, 13]
+    );
+    let edges = call_edges(&g);
+    assert_eq!(edges.len(), 1);
+    assert_eq!(
+        edges[0].to,
+        method("main.ts", &[], "Outer", "instance", "key")
+    );
+    assert_eq!(edges[0].evidence.len(), 4);
+    let d = g
+        .diagnostics
+        .iter()
+        .find(|d| d.skipped_count.is_some())
+        .unwrap();
+    assert_eq!(d.code, "unsupported_call_ambiguous_target");
+    assert_eq!(
+        (d.related_node_id.as_ref(), d.line, d.skipped_count),
+        (Some(&caller), Some(12), Some(2))
+    );
+    assert_eq!(
+        g.diagnostics
+            .iter()
+            .filter_map(|d| d.skipped_count)
+            .sum::<u64>(),
+        2
+    );
+    assert!(g.diagnostics.iter().all(|d| matches!(
+        d.code.as_str(),
+        "unsupported_call_ambiguous_target" | "TS_UNSUPPORTED_METHOD_NAME"
+    )));
+}
+
+#[test]
+fn nested_class_expression_heritage_preserves_outer_staticness() {
+    for (modifier, other, kind) in [("", "static", "instance"), ("static", "", "static")] {
+        let source = format!(
+            "class Base {{}} class Outer {{
+find() {{}} static find() {{}}
+base() {{ return Base; }} static base() {{ return Base; }}
+{modifier} run() {{
+const First = class extends this.base() {{}};
+const Second = class extends (this.find = replacement, Base) {{}};
+this.find();
+}}
+{other} safe() {{ this.find(); }}
+}}"
+        );
+        let (f, g) = class_definition_findings(&source);
+        assert_eq!(counts(&g), (3, 2, 1));
+        let caller = method("main.ts", &[], "Outer", kind, "run");
+        assert_eq!(f.sites()[0].caller_id, caller);
+        assert_eq!(
+            f.sites()[0].target,
+            Ok(method("main.ts", &[], "Outer", kind, "base"))
+        );
+        assert_eq!(f.sites()[1].caller_id, caller);
+        assert_eq!(
+            f.sites()[1].target,
+            Err("unsupported_call_ambiguous_target".into())
+        );
+        let other_kind = if kind == "static" {
+            "instance"
+        } else {
+            "static"
+        };
+        assert_eq!(
+            f.sites()[2].target,
+            Ok(method("main.ts", &[], "Outer", other_kind, "find"))
+        );
+        assert_eq!(call_edges(&g).len(), 2);
+    }
+}
+
+#[test]
+fn nested_class_keys_use_outer_staticness_not_member_staticness() {
+    let source = "class Outer { find() {} static find() {} static key() {return 'key';} static run() { class Inner { [(this.find = replacement, 'fixed')] = ignored(); static [this.key()] = ignored(); } this.find(); } run() {this.find();} }";
+    let (f, g) = class_definition_findings(source);
+    assert_eq!(counts(&g), (3, 2, 1));
+    assert_eq!(
+        f.sites()[0].target,
+        Ok(method("main.ts", &[], "Outer", "static", "key"))
+    );
+    assert_eq!(
+        f.sites()[1].target,
+        Err("unsupported_call_ambiguous_target".into())
+    );
+    assert_eq!(
+        f.sites()[2].target,
+        Ok(method("main.ts", &[], "Outer", "instance", "find"))
+    );
+}
+
+#[test]
+fn nested_class_definition_and_inner_method_sites_have_distinct_owners() {
+    let source = "class Base {} class Outer { base() {return Base;} find() {} run() { class Inner extends this.base() { constructor(){ ignored(); } field = ignored(); static { ignored(); } find() {} run(){ this.find(); } } this.find(); } }";
+    let (f, g) = class_definition_findings(source);
+    assert_eq!(counts(&g), (3, 3, 0));
+    let outer = method("main.ts", &[], "Outer", "instance", "run");
+    assert_eq!(f.sites()[0].caller_id, outer);
+    assert_eq!(f.sites()[2].caller_id, outer);
+    let inner = g.nodes.iter().find(|n| n.name == "Inner").unwrap();
+    assert_eq!(
+        f.sites()[1].caller_id,
+        GraphBuilder::method_id(&inner.id, "instance", "run")
+    );
+    assert_eq!(
+        f.sites()[1].target,
+        Ok(GraphBuilder::method_id(&inner.id, "instance", "find"))
+    );
+    let positions: std::collections::BTreeSet<_> = f
+        .sites()
+        .iter()
+        .map(|s| (s.site.start, s.site.end))
+        .collect();
+    assert_eq!(positions.len(), 3);
+}
+
+#[test]
+fn nested_class_member_writes_do_not_taint_outer_targets() {
+    for member in [
+        "constructor(){ this.find = replacement; }",
+        "field = (this.find = replacement);",
+        "run(){ this.find = replacement; }",
+        "static { this.find = replacement; }",
+    ] {
+        let source = format!(
+            "class Outer {{ find() {{}} run() {{ class Inner {{ {member} }} const Expression = class {{ {member} }}; this.find(); }} }}"
+        );
+        let (f, g) = class_definition_findings(&source);
+        assert_eq!(counts(&g), (1, 1, 0), "{member}");
+        assert_eq!(
+            f.sites()[0].target,
+            Ok(method("main.ts", &[], "Outer", "instance", "find"))
+        );
+    }
+}
+
+#[test]
+fn nested_function_class_definitions_keep_nested_unknown_precedence() {
+    let source = "class Base {} class Outer { base(){return Base;} find(){} run(){
+function nested() { class Inner extends this.base() {} }
+const arrow = () => class extends (this.find = replacement, this.base()) {};
+this.find();
+} }";
+    let (f, g) = class_definition_findings(source);
+    assert_eq!(counts(&g), (3, 0, 3));
+    let caller = method("main.ts", &[], "Outer", "instance", "run");
+    assert!(f.sites().iter().all(|s| s.caller_id == caller));
+    assert!(
+        f.sites()[..2]
+            .iter()
+            .all(|s| s.target == Err("unsupported_call_nested_function".into()))
+    );
+    assert_eq!(
+        f.sites()[2].target,
+        Err("unsupported_call_ambiguous_target".into())
+    );
+    let d = g
+        .diagnostics
+        .iter()
+        .find(|d| d.code == "unsupported_call_nested_function")
+        .unwrap();
+    assert_eq!((d.line, d.skipped_count), (Some(2), Some(2)));
+    assert_eq!(
+        g.diagnostics
+            .iter()
+            .filter_map(|d| d.skipped_count)
+            .sum::<u64>(),
+        3
+    );
+}
+
+#[test]
+fn nested_class_definition_expressions_count_each_nested_call_once() {
+    let source = "class Base {} class Outer { base(){return Base;} key(){return 'key';} run(){
+class Inner extends choose(this.base(), this.base()) {
+[key(this.key())]() {}
+}
+} }";
+    let (f, g) = class_definition_findings(source);
+    assert_eq!(counts(&g), (5, 3, 2));
+    assert_eq!(f.sites().len(), 5);
+    assert_eq!(call_edges(&g).len(), 2);
+    let caller = method("main.ts", &[], "Outer", "instance", "run");
+    assert!(f.sites().iter().all(|s| s.caller_id == caller));
+    let positions: std::collections::BTreeSet<_> = f
+        .sites()
+        .iter()
+        .map(|s| (s.site.start, s.site.end))
+        .collect();
+    assert_eq!(positions.len(), 5);
+    let d = g
+        .diagnostics
+        .iter()
+        .find(|d| d.skipped_count.is_some())
+        .unwrap();
+    assert_eq!(
+        (
+            d.code.as_str(),
+            d.related_node_id.as_ref(),
+            d.line,
+            d.skipped_count
+        ),
+        (
+            "unsupported_call_unknown_receiver",
+            Some(&caller),
+            Some(2),
+            Some(2)
+        )
+    );
+}
+
+#[test]
+fn top_level_class_definition_expressions_have_no_method_coverage() {
+    let source = "class Top extends factory() { [key()] = ignored(); constructor(){ignored();} static {ignored();} run(){} } const Expression = class extends factory() { [key()] = ignored(); run(){} };";
+    let (f, g) = class_definition_findings(source);
+    assert!(f.sites().is_empty());
+    assert_eq!(counts(&g), (0, 0, 0));
+    assert!(call_edges(&g).is_empty());
+    assert!(g.diagnostics.iter().all(|d| d.skipped_count.is_none()));
+}

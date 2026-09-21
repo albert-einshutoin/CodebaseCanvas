@@ -247,8 +247,8 @@ impl<'a> Visit<'a> for Collector<'_> {
                 .visit_function_body(body);
             }
         }
-        // BodyCollector stops at classes. This walk discovers nested declarations once
-        // with the canonical lexical scope, including classes outside method bodies.
+        // BodyCollector only visits a nested class's outer-context expressions.
+        // This walk separately discovers its method declarations with canonical scope.
         walk::walk_class(self, c);
     }
 }
@@ -317,16 +317,48 @@ impl ClassFacts {
                 ClassElement::StaticBlock(_) => true,
                 _ => continue,
             };
-            Writes {
+            let mut writes = Writes {
                 facts: &mut facts,
                 static_,
+            };
+            // Keys belong to the context defining this class, not to the member's this.
+            match element {
+                ClassElement::MethodDefinition(m) => {
+                    writes.visit_function(&m.value, ScopeFlags::Function);
+                }
+                ClassElement::PropertyDefinition(p) => {
+                    if let Some(value) = &p.value {
+                        writes.visit_expression(value);
+                    }
+                }
+                ClassElement::AccessorProperty(p) => {
+                    if let Some(value) = &p.value {
+                        writes.visit_expression(value);
+                    }
+                }
+                ClassElement::StaticBlock(b) => writes.visit_static_block(b),
+                _ => {}
             }
-            .visit_class_element(element);
         }
         facts
     }
 }
-/// Writes are conservative across nested functions in each member, but do not cross classes.
+/// Visit definition-time expressions without entering the nested class's this/body.
+/// Decorators remain outside the existing call-analysis scope.
+fn visit_class_definition_expressions<'a>(visitor: &mut impl Visit<'a>, class: &Class<'a>) {
+    if let Some(heritage) = &class.heritage {
+        visitor.visit_expression(&heritage.expression);
+    }
+    for element in &class.body.body {
+        if element.computed()
+            && let Some(key) = element.property_key()
+        {
+            visitor.visit_property_key(key);
+        }
+    }
+}
+
+/// Writes are conservative across nested functions, but stop at inner member bodies.
 struct Writes<'s> {
     facts: &'s mut ClassFacts,
     static_: bool,
@@ -346,7 +378,9 @@ impl Writes<'_> {
     }
 }
 impl<'a> Visit<'a> for Writes<'_> {
-    fn visit_class(&mut self, _: &Class<'a>) {}
+    fn visit_class(&mut self, class: &Class<'a>) {
+        visit_class_definition_expressions(self, class);
+    }
     fn visit_simple_assignment_target(&mut self, t: &SimpleAssignmentTarget<'a>) {
         if let Some(m) = t.as_member_expression() {
             self.member(m);
@@ -471,7 +505,9 @@ fn wrapped(e: &Expression<'_>) -> bool {
     )
 }
 impl<'a> Visit<'a> for BodyCollector<'_> {
-    fn visit_class(&mut self, _: &Class<'a>) {}
+    fn visit_class(&mut self, class: &Class<'a>) {
+        visit_class_definition_expressions(self, class);
+    }
     fn visit_function(&mut self, f: &Function<'a>, flags: ScopeFlags) {
         self.nested += 1;
         walk::walk_function(self, f, flags);

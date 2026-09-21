@@ -319,10 +319,14 @@ useClass/useFactory/overrideから実行先を推測しない。
 scopeは `parsed_named_class_methods`、modeは `same_class_only`。
 body内のCallExpressionを各1回計数し、callee・引数の中のcallも独立siteとして再帰する。
 nested functionのparameter initializer/bodyのcallも、その外側named methodのunknownになる。
-nested classに入ったら外側bodyの走査を止め、別の宣言走査で内側のnamed methodに帰属させる。
-class expressionは既存抽出器にnamed method nodeがないため対象外。
-constructor、field initializer、static block、class heritage/key/decorator、method decorator/parameter initializerは
-それぞれのmethod body外として含めない。これらの中で宣言されたnamed classのmethod bodyは別途対象になる。
+nested classの定義時に外側contextで評価されるextends式とcomputed member keyは、外側methodのcaller・
+staticness・nested状態を保持して走査する。class declaration/expressionの両方が対象で、内側memberがstaticか
+どうかはkey評価のthisを変えない。式内のcallee/引数のcallも各1回計数する。
+内側classのmethod bodyには入らず、別の宣言走査で内側のnamed methodに一度だけ帰属させる。
+class expressionは既存抽出器にnamed method nodeがないためmember bodyは対象外だが、外側method内の定義式は消さない。
+内側constructor、field initializer、static blockを外側methodへ計上しない。top-levelのclass定義式はnamed method
+body外のためcoverageに含めない。decoratorとmethod parameter initializerは従来のscope外を維持する。
+これらの中で宣言されたnamed classのmethod bodyは別途対象になる。
 parse不能fileにはsite数を割り当てず、`incomplete_files()` と既存file診断を保持する。
 semantic binding失敗だけなら、parseできたnamed bodyは既存lexical identityで計数するが、直接callも
 `ambiguous_target`にする。calls側でparse診断を重複追加せず、`finish()`で既存
@@ -358,7 +362,9 @@ method重複・overloadを衝突として扱う。名前不明のcomputed member
 代入（compound/logicalを含む）、destructuring代入target、for-in/of target、update、deleteの直接this memberを検出する。
 括弧・型assertion付きの書換target/receiverも検査する。literal computed書換は該当名、名前不明のcomputed書換は
 そのstaticnessの全targetを曖昧にする。constructor/field initializer/static blockの書換も含み、source順や制御フローで
-「call後だから安全」とは判定しない。nested classは別owner、nested function内のthis書換は保守的に外側memberと同じ範囲へ影響させる。
+「call後だから安全」とは判定しない。nested classのextends式・computed key内の直接this書換は外側のowner/staticnessに
+反映し、内側member bodyの書換を外側へ伝播させない。各class自身のmember書換検査も、その定義式をmemberのthisと混同しない。
+nested function内のthis書換は保守的に外側memberと同じ範囲へ影響させる。
 
 これはsource上の限定的な書換検査であり、alias経由、class名/prototype経由、Object/Reflect API、eval、
 他fileからのruntime改変、継承constructorの副作用、全repositoryの動的挙動を証明する仕組みではない。
@@ -371,5 +377,10 @@ relatedNodeId、skippedCountまで比較する。既存宣言・role・membershi
 共有provider parentを保持し、Recognizer適用順とfinding配列順の決定論性も確認する。
 独立入力では重複site、誤callee防止、nested/optional/wrapper/higher-order、上書き、診断集約、parse失敗と0件、
 snapshot保持、repo外symlinkへの置換、Builderの不整合/再適用拒否を検証する。
+nested class境界の回帰入力はparse/semantic/Resolver成功をassertする。extendsで直接上書きする入力は
+Outer.runのline 9が1 examined / 0 emitted / 1 skipped（ambiguous_target、edgeなし）、extendsでthis.base()を呼ぶ入力は
+Outer.runのline 5が1 / 1 / 0（Outer.baseへ1 edge）となる。computed method keyの既存
+TS_UNSUPPORTED_METHOD_NAMEはparse失敗と区別して保持する。expression/static context、computed keyの複数siteと
+書換・診断集約、内側ownerへの一回帰属、inner member書換の非伝播、nested_function優先、top-level除外も確認する。
 oracle/source fixture・wire/schema・Web UIは変更しない。Prisma・完全pipeline・#17の本番analyze接続、
 初見UX評価の実施/合格、M2 exitやPoC完成の証明ではない。本番analyzeは非0・無書込のまま。
