@@ -2,7 +2,9 @@
 
 Issue #30 の準備文書。最終評価の正本は [#30](https://github.com/albert-einshutoin/CodebaseCanvas/issues/30)、必須スコープと依存順は [Epic #1](https://github.com/albert-einshutoin/CodebaseCanvas/issues/1) と各 Issue とする。本書の追加では #30 を完了しない。
 
-## 現在の判定
+> 以下の実装状況・次の実装候補は2026-09-08時点の記録です。#30のfixture予備UX準備は [POC_VALIDATION.md](POC_VALIDATION.md) を参照してください。最終GO判定は未実施です。
+
+## 過去時点の判定（2026-09-08）
 
 2026-09-08、main `6e36caf` のソースと GitHub の Issue/PR を確認した時点で、v0.1 の公開判定は保留。CLI は #17 の解析接続待ちで非0終了し、graph を生成しない。Web は起動画面の段階で、import、Canvas、Copy Context、Rust-to-browser E2E は未実装。実利用者評価、性能測定、静的配信の証拠も本書では取得していない。
 
