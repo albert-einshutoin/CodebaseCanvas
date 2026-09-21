@@ -3,6 +3,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{Map, Value};
 use std::collections::{HashMap, HashSet};
 
+pub mod calls;
 pub mod discovery;
 pub mod graph_builder;
 pub mod nestjs_di;

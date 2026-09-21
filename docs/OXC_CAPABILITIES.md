@@ -287,3 +287,100 @@ class-level decoratorは使用位置のbindingと元export名で判定する。`
 既存`type_only_reference`はこのunknown診断だけに使用し、NestJS出自・token・importsを確定しない。別exportの`Roles as Dependencies`、出自が確認できるforeign、local/shadow bindingは正規Dependenciesにしない。local名の全体検索やnamespace/re-export/wrapper解決は追加しない。未解決候補はNestJS由来だと断定せず、class側の問題として既存consumer ID/file/lineに紐付ける。
 
 `unresolved_dependencies_alias_blocks_only_affected_consumer`は単回applyでConsumerのDI finding・edgeがなく、Healthy→WrittenTypeだけが残り、Resolver診断が保持されることを確認する。`dependencies_candidates_use_original_export_and_semantic_scope`は直接/alias/type-only/別export/foreign/shadowと順序入替を確認する。既存fixture projectionとBuilderの診断追記仕様は変更しない。
+
+## #14 同一class calls API
+
+`calls::analyze(&resolver, &builder)` → `CallFindings::apply(&mut builder)` →
+`builder.finish()` の順に使う。先に `resolver.sources()` の全fileへ
+`nestjs_roles::extract_file(file, &resolver, &mut builder)` で宣言を投入する。
+Module/route/DIとimportsの適用は既存の順序・APIを維持でき、callsの前後でも結果は同じ。
+Resolverのsnapshotと宣言位置を照合し、canonical ID、`LexicalScope`、`line_at`を再利用する。
+sourceの再読、外部sourceの追加読込、型checker、DI実装先の解決は行わない。
+
+`CallFindings` は読み取り専用の `sites()` / `summary()` / `diagnostics()` /
+`incomplete_files()` を公開する。各siteにはcontaining method ID、file、byte span、lineと
+callee IDまたは理由codeがある。body走査時に各siteを分類してcounterと診断を更新する。
+`GraphBuilder::apply_call_analysis(summary, edges, diagnostics, incomplete_files)` は
+emitted siteごとのedge findingを受け取る専用の一括APIであり、metadata全体のsetterではない。
+summary恒等式、統合前edge件数、skippedCount合計、method/codeの一意性、method所有・staticness・fileを確認する。
+一度だけ適用でき、0件の解析結果も適用済みとして記録する。再適用、先に投入されたcalls/skip診断との混在、
+適用後のcalls/skip診断の追記はErrorとなり、`finish()`も失敗する。正規validationは緩めない。
+既存Builderの未解析0値は従来の部品テスト用に残り、それだけでcalls実施済みとは判定しない。
+
+### 対応条件と計数
+
+生成するのはnamed class method body内の直接 `this.method()` で、receiverがそのmethodのthis、
+同じclassに同じstaticnessの一意な通常method実装があり、後述の衝突・書換がない場合だけ。
+static methodからはstatic methodにだけ接続する。callee宣言のoverload、getter/setter、computed method、
+継承先、別class/file/scopeへ名前だけで接続しない。nested function内はarrowのlexical thisも含めunknown。
+parameter property receiverの `this.service.method()` は `injected_receiver` であり、requested_tokenや
+useClass/useFactory/overrideから実行先を推測しない。
+
+scopeは `parsed_named_class_methods`、modeは `same_class_only`。
+body内のCallExpressionを各1回計数し、callee・引数の中のcallも独立siteとして再帰する。
+nested functionのparameter initializer/bodyのcallも、その外側named methodのunknownになる。
+nested classの定義時に外側contextで評価されるextends式とcomputed member keyは、外側methodのcaller・
+staticness・nested状態を保持して走査する。class declaration/expressionの両方が対象で、内側memberがstaticか
+どうかはkey評価のthisを変えない。式内のcallee/引数のcallも各1回計数する。
+内側classのmethod bodyには入らず、別の宣言走査で内側のnamed methodに一度だけ帰属させる。
+class expressionは既存抽出器にnamed method nodeがないためmember bodyは対象外だが、外側method内の定義式は消さない。
+内側constructor、field initializer、static blockを外側methodへ計上しない。top-levelのclass定義式はnamed method
+body外のためcoverageに含めない。decoratorとmethod parameter initializerは従来のscope外を維持する。
+これらの中で宣言されたnamed classのmethod bodyは別途対象になる。
+parse不能fileにはsite数を割り当てず、`incomplete_files()` と既存file診断を保持する。
+semantic binding失敗だけなら、parseできたnamed bodyは既存lexical identityで計数するが、直接callも
+`ambiguous_target`にする。calls側でparse診断を重複追加せず、`finish()`で既存
+`TS_PARSE_ERROR` または `TS_IMPORT_PARSEINCOMPLETE` が残っていることを要求する。
+
+`examinedCalls = emittedCalls + skippedCalls`。emittedはsource site数で、Builderが統合したedge数ではない。
+edgeはMethod → Method / calls、evidenceはcall開始行のast/confirmed。これは直接thisと宣言の静的な対応の根拠で、
+runtime実行保証ではない。複数行のsite evidenceは保持し、同一行のwire上同じevidenceは従来どおり統合する。
+
+### unknownの優先順位
+
+code接頭辞は `unsupported_call_`。同一method/codeを1診断へ集約し、最小call開始行を代表位置とする。
+severity=warning、message、file/line、relatedNodeId、正のskippedCountを保持し、全skippedCount合計はsummaryと一致する。
+最初に該当する分岐だけを採用する。
+
+1. nested function内 → `nested_function`。
+2. optional call → `optional`。直接computed callee（literalも含む）→ `computed_target`。
+3. calleeが直接static memberでない → call結果は`higher_order`、superは`inheritance`、
+   括弧・型assertion・non-null・satisfies・instantiation・chain wrapperは`wrapped_target`、その他は`unknown_receiver`。
+4. static memberのoptional receiver → `optional`。receiverがsuperなら`inheritance`、call結果なら`higher_order`、
+   instanceのconstructor parameter propertyなら`injected_receiver`、wrapperなら`wrapped_target`、
+   this以外は`unknown_receiver`。
+5. 直接thisでも宣言対応・一意性・書換検査を満たさない → `ambiguous_target`。
+6. 同じstaticnessのmethodがない → extendsありなら`inheritance`、なければ`missing_method`。
+
+`this.method?.()` / `this?.method()`、`(this.method)()`、`(this as T).method()` 等は未対応だが計数する。
+private `#method`、任意receiver、関数変数のcallもedgeにはしない。汎用expression評価は追加しない。
+
+### 上書き検査の境界
+
+同一class内の全memberを調べ、同じstaticnessの同名field/accessor/parameter property、
+method重複・overloadを衝突として扱う。名前不明のcomputed member宣言はそのstaticness全体を曖昧にする。
+代入（compound/logicalを含む）、destructuring代入target、for-in/of target、update、deleteの直接this memberを検出する。
+括弧・型assertion付きの書換target/receiverも検査する。literal computed書換は該当名、名前不明のcomputed書換は
+そのstaticnessの全targetを曖昧にする。constructor/field initializer/static blockの書換も含み、source順や制御フローで
+「call後だから安全」とは判定しない。nested classのextends式・computed key内の直接this書換は外側のowner/staticnessに
+反映し、内側member bodyの書換を外側へ伝播させない。各class自身のmember書換検査も、その定義式をmemberのthisと混同しない。
+nested function内のthis書換は保守的に外側memberと同じ範囲へ影響させる。
+
+これはsource上の限定的な書換検査であり、alias経由、class名/prototype経由、Object/Reflect API、eval、
+他fileからのruntime改変、継承constructorの副作用、全repositoryの動的挙動を証明する仕組みではない。
+
+### 検証範囲
+
+`tests/calls.rs` はfixture sourceの9 site / 2 emitted / 7 skippedと2 calls edgeを抽出し、
+手定義oracleのcallsとskip診断をcanonical ID、from/kind/to、evidence、confidence、file/line、message、
+relatedNodeId、skippedCountまで比較する。既存宣言・role・membership・Module依存・route・DI・imports・method所有・
+共有provider parentを保持し、Recognizer適用順とfinding配列順の決定論性も確認する。
+独立入力では重複site、誤callee防止、nested/optional/wrapper/higher-order、上書き、診断集約、parse失敗と0件、
+snapshot保持、repo外symlinkへの置換、Builderの不整合/再適用拒否を検証する。
+nested class境界の回帰入力はparse/semantic/Resolver成功をassertする。extendsで直接上書きする入力は
+Outer.runのline 9が1 examined / 0 emitted / 1 skipped（ambiguous_target、edgeなし）、extendsでthis.base()を呼ぶ入力は
+Outer.runのline 5が1 / 1 / 0（Outer.baseへ1 edge）となる。computed method keyの既存
+TS_UNSUPPORTED_METHOD_NAMEはparse失敗と区別して保持する。expression/static context、computed keyの複数siteと
+書換・診断集約、内側ownerへの一回帰属、inner member書換の非伝播、nested_function優先、top-level除外も確認する。
+oracle/source fixture・wire/schema・Web UIは変更しない。Prisma・完全pipeline・#17の本番analyze接続、
+初見UX評価の実施/合格、M2 exitやPoC完成の証明ではない。本番analyzeは非0・無書込のまま。
