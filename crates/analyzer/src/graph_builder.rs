@@ -9,6 +9,8 @@ pub struct GraphBuilder {
     edges: BTreeMap<String, GraphEdge>,
     diagnostics: Vec<Diagnostic>,
     first_error: Option<String>,
+    call_analysis_applied: bool,
+    incomplete_call_files: std::collections::BTreeSet<String>,
 }
 
 impl GraphBuilder {
@@ -19,6 +21,8 @@ impl GraphBuilder {
             edges: BTreeMap::new(),
             diagnostics: Vec::new(),
             first_error: None,
+            call_analysis_applied: false,
+            incomplete_call_files: Default::default(),
         }
     }
 
@@ -62,6 +66,88 @@ impl GraphBuilder {
 
     pub(crate) fn node(&self, id: &str) -> Option<&GraphNode> {
         self.nodes.get(id)
+    }
+
+    /// One batch, one edge finding per emitted site (before tuple deduplication).
+    /// Other metadata is never replaced. Rejection poisons finish like insertion errors.
+    pub fn apply_call_analysis(
+        &mut self,
+        summary: crate::CallAnalysis,
+        edges: Vec<GraphEdge>,
+        diagnostics: Vec<Diagnostic>,
+        incomplete_files: std::collections::BTreeSet<String>,
+    ) -> Result<(), String> {
+        use crate::{EdgeKind, NodeKind};
+        if let Some(error) = &self.first_error {
+            return Err(error.clone());
+        }
+        let prior = &self.metadata.call_analysis;
+        if self.call_analysis_applied
+            || prior.examined_calls != 0
+            || prior.emitted_calls != 0
+            || prior.skipped_calls != 0
+            || self.edges.values().any(|e| e.kind == EdgeKind::Calls)
+            || self.diagnostics.iter().any(|d| d.skipped_count.is_some())
+        {
+            return self.fail("Call analysis requires an unapplied empty call batch");
+        }
+        let mut keys = std::collections::BTreeSet::new();
+        let skipped = diagnostics.iter().try_fold(0u64, |sum, d| {
+            let node = self.nodes.get(d.related_node_id.as_ref()?)?;
+            if node.kind != NodeKind::Method
+                || node.file != d.file
+                || d.line.is_none()
+                || !d.code.starts_with("unsupported_call_")
+                || d.skipped_count == Some(0)
+                || !keys.insert((d.related_node_id.clone(), d.code.clone()))
+            {
+                return None;
+            }
+            sum.checked_add(d.skipped_count?)
+        });
+        let valid_edges = edges.iter().all(|e| {
+            let (Some(from), Some(to)) = (self.nodes.get(&e.from), self.nodes.get(&e.to)) else {
+                return false;
+            };
+            let same_staticness = crate::id_parts(&e.from)
+                .zip(crate::id_parts(&e.to))
+                .is_some_and(|((_, a), (_, b))| a.get(1) == b.get(1));
+            e.kind == EdgeKind::Calls
+                && from.kind == NodeKind::Method
+                && to.kind == NodeKind::Method
+                && from.parent_id.is_some()
+                && from.parent_id == to.parent_id
+                && same_staticness
+                && e.evidence.len() == 1
+                && e.evidence.iter().all(|v| {
+                    from.file.as_deref() == Some(&v.file)
+                        && v.line.is_some()
+                        && v.source == crate::EvidenceSource::Ast
+                        && v.confidence == crate::Confidence::Confirmed
+                })
+        });
+        if summary.examined_calls > crate::MAX_INTEGER
+            || summary.emitted_calls.checked_add(summary.skipped_calls)
+                != Some(summary.examined_calls)
+            || summary.emitted_calls != edges.len() as u64
+            || skipped != Some(summary.skipped_calls)
+            || !valid_edges
+            || incomplete_files
+                .iter()
+                .any(|f| !crate::is_repository_path(f))
+        {
+            return self.fail("Inconsistent call analysis batch");
+        }
+        for edge in edges {
+            self.add_edge(edge)?;
+        }
+        for diagnostic in diagnostics {
+            self.add_diagnostic(diagnostic)?;
+        }
+        self.metadata.call_analysis = summary;
+        self.incomplete_call_files = incomplete_files;
+        self.call_analysis_applied = true;
+        Ok(())
     }
 
     /// Apply confirmed module composition only, then derive display parents from
@@ -162,6 +248,9 @@ impl GraphBuilder {
         if let Some(error) = &self.first_error {
             return Err(error.clone());
         }
+        if self.call_analysis_applied && edge.kind == crate::EdgeKind::Calls {
+            return self.fail("Calls must be applied in one batch");
+        }
         let expected = Self::edge_id(&edge.from, edge.kind, &edge.to);
         if edge.id != expected || edge.from.is_empty() || edge.to.is_empty() {
             return self.fail("Invalid edge identity");
@@ -196,6 +285,9 @@ impl GraphBuilder {
         if let Some(error) = &self.first_error {
             return Err(error.clone());
         }
+        if self.call_analysis_applied && diagnostic.skipped_count.is_some() {
+            return self.fail("Call diagnostics must be applied in one batch");
+        }
         self.diagnostics.push(diagnostic);
         Ok(())
     }
@@ -203,6 +295,18 @@ impl GraphBuilder {
     pub fn finish(self) -> Result<SystemGraph, String> {
         if let Some(error) = self.first_error {
             return Err(error);
+        }
+        if self.incomplete_call_files.iter().any(|file| {
+            !self.diagnostics.iter().any(|d| {
+                d.file.as_ref() == Some(file)
+                    && d.severity == crate::Severity::Error
+                    && matches!(
+                        d.code.as_str(),
+                        "TS_PARSE_ERROR" | "TS_IMPORT_PARSEINCOMPLETE"
+                    )
+            })
+        }) {
+            return Err("Incomplete call scope requires its existing file diagnostic".into());
         }
         let GraphBuilder {
             metadata,
