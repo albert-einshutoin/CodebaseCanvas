@@ -10,6 +10,7 @@ pub mod nestjs_di;
 pub mod nestjs_modules;
 pub mod nestjs_roles;
 pub mod nestjs_routes;
+pub mod prisma;
 pub mod resolver;
 pub mod typescript;
 pub use graph_builder::GraphBuilder;
