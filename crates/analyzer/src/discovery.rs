@@ -92,6 +92,7 @@ pub fn discover(root: &RepositoryRoot) -> Result<DiscoveredRepository, String> {
         &mut visited,
         &mut files,
         &mut diagnostics,
+        FileKind::TypeScript,
     )?;
     files.sort();
     files.dedup();
@@ -106,6 +107,33 @@ pub fn discover(root: &RepositoryRoot) -> Result<DiscoveredRepository, String> {
     })
 }
 
+#[derive(Clone, Copy, PartialEq)]
+enum FileKind {
+    TypeScript,
+    Prisma,
+}
+
+/// Schema candidates share the walk, but never enter the TypeScript source list.
+pub(crate) fn discover_prisma(
+    root: &RepositoryRoot,
+) -> Result<(Vec<String>, Vec<Diagnostic>), String> {
+    let mut files = Vec::new();
+    let mut diagnostics = Vec::new();
+    let mut visited = HashSet::from([root.path().to_path_buf()]);
+    walk(
+        root,
+        root.path(),
+        Path::new(""),
+        &mut visited,
+        &mut files,
+        &mut diagnostics,
+        FileKind::Prisma,
+    )?;
+    files.sort();
+    files.dedup();
+    Ok((files, diagnostics))
+}
+
 fn walk(
     root: &RepositoryRoot,
     actual: &Path,
@@ -113,6 +141,7 @@ fn walk(
     visited: &mut HashSet<PathBuf>,
     files: &mut Vec<String>,
     diagnostics: &mut Vec<Diagnostic>,
+    kind: FileKind,
 ) -> Result<(), String> {
     let mut entries = fs::read_dir(actual)
         .map_err(|_| format!("cannot read repository directory {}", display(logical)))?
@@ -142,14 +171,19 @@ fn walk(
                 ));
                 continue;
             }
-            Err(error) => {
+            Err(_) => {
                 return Err(format!(
-                    "cannot resolve repository path {}: {error}",
+                    "cannot resolve repository path {}",
                     display(&child_logical)
                 ));
             }
         };
         if !resolved.starts_with(root.path()) {
+            if kind == FileKind::Prisma {
+                return Err(
+                    "Prisma discovery encountered a reference outside the repository".into(),
+                );
+            }
             diagnostics.push(diagnostic(
                 "DISCOVERY_OUTSIDE_ROOT",
                 Severity::Warning,
@@ -171,6 +205,14 @@ fn walk(
         }
         let metadata = fs::metadata(&resolved)
             .map_err(|_| format!("cannot inspect repository path {}", display(&child_logical)))?;
+        if kind == FileKind::Prisma
+            && resolved
+                .file_name()
+                .is_some_and(|name| name == "schema.prisma")
+            && !metadata.is_file()
+        {
+            return Err("Prisma schema candidate is not a regular file".into());
+        }
         if metadata.is_dir() {
             if !visited.insert(resolved.clone()) {
                 diagnostics.push(diagnostic(
@@ -181,12 +223,23 @@ fn walk(
                 ));
                 continue;
             }
-            walk(root, &resolved, &child_logical, visited, files, diagnostics)?;
+            walk(
+                root,
+                &resolved,
+                &child_logical,
+                visited,
+                files,
+                diagnostics,
+                kind,
+            )?;
         } else if metadata.is_file()
             && resolved
                 .file_name()
                 .and_then(|name| name.to_str())
-                .is_some_and(is_source)
+                .is_some_and(|name| match kind {
+                    FileKind::TypeScript => is_source(name),
+                    FileKind::Prisma => name == "schema.prisma",
+                })
         {
             files.push(root.relative_path(&resolved)?);
         }
