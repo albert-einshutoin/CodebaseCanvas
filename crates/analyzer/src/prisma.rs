@@ -258,14 +258,21 @@ pub fn parse_schema(file: &str, source: &str) -> Result<PrismaFindings, String> 
                 .or_default()
                 .push(tokens[i].line);
         }
-        let header_valid = tokens[i].kind == Kind::Ident
+        let header_shape = tokens[i].kind == Kind::Ident
             && name.is_some()
             && tokens.get(i + 2).is_some_and(|t| t.symbol(b'{'));
+        let header_valid = header_shape
+            && name.is_some_and(|name| name.line == tokens[start].line)
+            && tokens[start + 2].line == tokens[start].line;
         // An invalid header can only be recovered at a newline or its own closed block.
-        while i < tokens.len() && !tokens[i].symbol(b'{') {
-            i += 1;
-            if i < tokens.len() && tokens[i].line > tokens[start].line {
-                break;
+        if header_shape {
+            i = start + 2;
+        } else {
+            while i < tokens.len() && !tokens[i].symbol(b'{') {
+                i += 1;
+                if i < tokens.len() && tokens[i].line > tokens[start].line {
+                    break;
+                }
             }
         }
         if i == tokens.len() || !tokens[i].symbol(b'{') {
@@ -310,6 +317,20 @@ pub fn parse_schema(file: &str, source: &str) -> Result<PrismaFindings, String> 
         }
         let close = i;
         i += 1;
+        let known_non_model = tokens[start].kind == Kind::Ident
+            && matches!(
+                tokens[start].text,
+                "generator" | "datasource" | "enum" | "type" | "view"
+            );
+        if !is_model && !known_non_model {
+            out.diagnostics.push(diagnostic(
+                file,
+                Some(tokens[start].line),
+                "PRISMA_UNSUPPORTED_TOP_LEVEL",
+                "Top-level declaration was not recognized",
+            ));
+            continue;
+        }
         if !header_valid {
             out.diagnostics.push(diagnostic(
                 file,

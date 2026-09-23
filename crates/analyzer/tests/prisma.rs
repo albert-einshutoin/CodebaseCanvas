@@ -478,3 +478,129 @@ fn resolver_owns_shared_discovery_diagnostics_but_not_prisma_diagnostics() {
         2
     );
 }
+
+#[test]
+fn multiline_model_header_is_not_confirmed() {
+    for source in [
+        "model User\n{ id Int }",
+        "model\nUser { id Int }",
+        "model User /* a\n b */ { id Int }",
+    ] {
+        for text in [source.to_owned(), source.replace('\n', "\r\n")] {
+            let f = parse(&text);
+            assert!(f.nodes.is_empty(), "{text:?}");
+            assert!(
+                f.diagnostics
+                    .iter()
+                    .any(|d| d.code == "PRISMA_INVALID_BLOCK"
+                        && d.file.as_deref() == Some("prisma/schema.prisma")
+                        && d.line == Some(1)
+                        && d.related_node_id.is_none()),
+                "{text:?}: {:?}",
+                f.diagnostics
+            );
+        }
+    }
+
+    let f = parse("model Before { id Int }\nmodel User\n{ id Int }\nmodel After { id Int }");
+    assert_eq!(names(&f), ["Before", "After"]);
+    assert_eq!(
+        f.diagnostics
+            .iter()
+            .filter(|d| d.code == "PRISMA_INVALID_BLOCK" && d.line == Some(2))
+            .count(),
+        1
+    );
+
+    let f = parse("model /* same line */ User { id Int }");
+    assert_eq!(names(&f), ["User"]);
+    assert!(f.diagnostics.is_empty());
+
+    let f = parse("model User\n{ id Int }\nmodel User { id Int }");
+    assert!(f.nodes.is_empty());
+    assert!(
+        f.diagnostics
+            .iter()
+            .any(|d| d.code == "PRISMA_DUPLICATE_MODEL")
+    );
+}
+
+#[test]
+fn unknown_top_level_block_is_diagnosed() {
+    let f = parse("modle User { id Int }");
+    assert!(f.nodes.is_empty());
+    assert!(
+        f.diagnostics
+            .iter()
+            .any(|d| d.code == "PRISMA_UNSUPPORTED_TOP_LEVEL"
+                && d.file.as_deref() == Some("prisma/schema.prisma")
+                && d.line == Some(1)
+                && d.related_node_id.is_none())
+    );
+
+    for keyword in ["modle", "models", "Model", "custom"] {
+        let source = format!(
+            "// {keyword} Hidden {{ id Int }}\nmodel Before {{ id Int }}\n{keyword} Unknown {{\n model Fake {{ id Int }}\n}}\nmodel After {{ id Int }}"
+        );
+        let f = parse(&source);
+        assert_eq!(names(&f), ["Before", "After"]);
+        assert_eq!(
+            f.nodes.iter().map(|n| n.id.as_str()).collect::<Vec<_>>(),
+            [
+                codebasecanvas_analyzer::canonical_id(
+                    "database_model",
+                    &["prisma/schema.prisma", "Before"]
+                ),
+                codebasecanvas_analyzer::canonical_id(
+                    "database_model",
+                    &["prisma/schema.prisma", "After"]
+                ),
+            ]
+        );
+        assert_eq!(f.diagnostics.len(), 1);
+        let d = &f.diagnostics[0];
+        assert_eq!(
+            (
+                d.code.as_str(),
+                d.file.as_deref(),
+                d.line,
+                d.related_node_id.as_deref()
+            ),
+            (
+                "PRISMA_UNSUPPORTED_TOP_LEVEL",
+                Some("prisma/schema.prisma"),
+                Some(3),
+                None
+            )
+        );
+    }
+
+    for keyword in ["generator", "datasource", "enum", "type", "view"] {
+        let f = parse(&format!("{keyword} Known {{ model Fake {{ id Int }} }}"));
+        assert!(f.nodes.is_empty());
+        assert!(f.diagnostics.is_empty());
+    }
+
+    let f = parse("generator\nclient { provider = \"x\" }");
+    assert!(f.nodes.is_empty());
+    assert!(
+        f.diagnostics
+            .iter()
+            .any(|d| d.code == "PRISMA_INVALID_BLOCK" && d.line == Some(1))
+    );
+
+    let f = parse(
+        "model Before { id Int }\nmodle Unknown { value Int @default(}\nmodel Fake { id Int }",
+    );
+    assert_eq!(names(&f), ["Before"]);
+    assert!(
+        f.diagnostics
+            .iter()
+            .any(|d| d.code == "PRISMA_BLOCK_BOUNDARY" && d.line == Some(2))
+    );
+    assert!(
+        !f.diagnostics
+            .iter()
+            .any(|d| d.code == "PRISMA_UNSUPPORTED_TOP_LEVEL")
+    );
+}

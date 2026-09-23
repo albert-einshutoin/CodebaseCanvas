@@ -32,12 +32,12 @@ TS discovery と同じ walker / RepositoryRoot / 除外directory / canonical con
 
 ## 対応文法と記録範囲
 
-- `model Name { ... }` のtop-level宣言。headerは同一行。
+- `model Name { ... }` のtop-level宣言。`model`、名前、`{` の3 tokenが元sourceの同一行にある場合だけ確定する。同一行の空白・コメントは許すが、改行や改行を含むblock comment越しのheaderは `PRISMA_INVALID_BLOCK` とし、閉じたblockを読み飛ばす。
 - ASCII識別子のmodel / field / type名。型は宣言textとして `String`、`Int`、任意識別子、直結した `?` または `[]` を保持。型参照や実DB column / foreign keyとの対応は解決しない。
 - fieldは改行区切り。単一fieldを同一行のblockに書くことも可能。field名と型は同一行。fields配列は対応fieldの宣言順。
 - `//` / `///` / `/* ... */` コメント、escapeを含む二重引用文字列、括弧 / 配列 / brace の境界を区別。文字列・コメント中の偽modelやbraceは構文扱いしない。元textを置換せず、UTF-8 byte位置でtokenを走査し1-based lineを数える。LF / CRLFに対応。
 - `@id`、`@default(...)`、`@relation(...)`、`@map(...)`、`@@map(...)` 等の属性を安全に読み飛ばす。引数は複数行、文字列、配列、入れ子括弧を許す。属性の意味、default評価、mappingは取得しない。
-- generator / datasource / enum / type / view等、model以外の閉じたblock全体を読み飛ばす。中のmodel風文字列・tokenを拾い直さない。
+- `generator` / `datasource` / `enum` / `type` / `view` の5 keywordと完全一致する、同一行headerの閉じた非model blockだけを無診断で読み飛ばす。未知keyword（`modle` 等）は `PRISMA_UNSUPPORTED_TOP_LEVEL` を残す。どちらもblock内部のmodel風文字列・tokenを拾い直さない。
 
 出力は `canonical_id("database_model", &[file, model_name])`、schema上のname、canonical file、開始line / 閉じbraceのendLine、parentなし。evidenceは `source=prisma, confidence=confirmed` と同じ位置。confirmedはsourceの宣言を確認した意味であり、migration適用、実DB、Client生成成功を示さない。
 
@@ -48,7 +48,7 @@ metadataは `fields: [{"name":"id","type":"String"}]` のみ。全文・コメ�
 | 状態 | 結果 |
 |---|---|
 | schemaなし / 正常な0 model | 空node、存在否定はしない |
-| 不明top-level / 不正header | 診断。確認できる改行または閉じblockまで進む |
+| 未知top-level / 不正header | それぞれ `PRISMA_UNSUPPORTED_TOP_LEVEL` / `PRISMA_INVALID_BLOCK`。閉じたblockの境界を確認できれば全体を読み飛ばし、次の独立宣言へ進む |
 | 閉じmodel内の未対応field / 属性 | `PRISMA_UNSUPPORTED_FIELD`、当該宣言を除く部分一覧 |
 | delimiter不一致（属性引数内の早すぎる `}` 等） | `PRISMA_BLOCK_BOUNDARY`、当該blockはmodel終端を確定できないためnodeなし、残りを推測しない |
 | model block未閉鎖 | `PRISMA_UNCLOSED_BLOCK`、当該nodeなし、残りの解析停止 |
