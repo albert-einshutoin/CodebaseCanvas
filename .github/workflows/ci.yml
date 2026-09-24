@@ -30,6 +30,10 @@ jobs:
           cache: pnpm
       - name: Install pinned Rust toolchain
         run: rustup show active-toolchain
+      - name: Install Chromium for browser E2E
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm --filter @codebasecanvas/web exec playwright install --with-deps chromium
       - name: Full PR verification
         if: github.event_name == 'pull_request'
         run: pnpm run ci-pr

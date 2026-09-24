@@ -70,7 +70,7 @@ function App() {
         </li>
       </ol>
       <p>Your file stays in this browser and is not uploaded.</p>
-      <p>CLI graph generation is not implemented yet. This graph is a snapshot: re-run the CLI and choose the file again after source changes.</p>
+      <p>This graph is a snapshot: re-run the CLI and choose the file again after source changes.</p>
 
       {state.kind === 'loading' && <p role="status">Reading {state.fileName}…</p>}
       {state.kind === 'error' && (
