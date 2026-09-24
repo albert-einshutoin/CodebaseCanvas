@@ -13,7 +13,7 @@ findings.apply(&mut builder, &[])?; // 単独利用。Resolver併用時は下記
 let graph = builder.finish()?;
 ```
 
-`analyze` は共有 discovery で候補を選択し、1 source を一度読み、純粋関数 `parse_schema` で findings を収集する。`PrismaFindings` の candidates / selected_schema / nodes / diagnostics は検証可能。`apply(builder, owned_discovery_diagnostics)` は既存 `add_node` / `add_diagnostic` だけを使い、再読・再解析・calls batch 再適用を行わない。Builder の矛盾検出と finish validation はそのまま。CLI #17 へは未接続で、本番 analyze は引き続き非0・無書込。
+`analyze` は共有 discovery で候補を選択し、1 source を一度読み、純粋関数 `parse_schema` で findings を収集する。`PrismaFindings` の candidates / selected_schema / nodes / diagnostics は検証可能。`apply(builder, owned_discovery_diagnostics)` は既存 `add_node` / `add_diagnostic` だけを使い、再読・再解析・calls batch 再適用を行わない。Builder の矛盾検出と finish validation はそのまま。CLI #17 の pipeline はこの入口を calls batch の後に一度だけ適用する。
 
 ## 探索・選択・安全な read
 

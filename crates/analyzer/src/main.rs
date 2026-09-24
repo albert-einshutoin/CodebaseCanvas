@@ -11,15 +11,31 @@ fn main() -> ExitCode {
     let Some(path) = arguments.get_one::<std::path::PathBuf>("repository") else {
         return ExitCode::FAILURE;
     };
-    match cli::analyze(path, |_| {
-        Err("repository analysis is not implemented yet (Issue #17); no graph was written".into())
+    match cli::analyze(path, |root| {
+        let analyzed_at = codebasecanvas_analyzer::pipeline::utc_now()?;
+        codebasecanvas_analyzer::pipeline::analyze(root, &analyzed_at)
     }) {
         Ok(summary) => {
-            println!("Graph written: {:?}", summary.path);
             println!(
-                "Diagnostics: {} warnings, {} errors",
-                summary.warnings, summary.errors
+                "Read {} TypeScript/TSX source files (including parse failures)",
+                summary.typescript_sources
             );
+            println!(
+                "Analyzed {} selected Prisma schemas",
+                summary.prisma_schemas
+            );
+            println!(
+                "Generated {} nodes / {} edges",
+                summary.nodes, summary.edges
+            );
+            println!(
+                "Diagnostics: {} info / {} warnings / {} errors",
+                summary.info, summary.warnings, summary.errors
+            );
+            if summary.errors > 0 {
+                println!("Partial analysis: error diagnostics are present; see graph.json");
+            }
+            println!("Output: {}", summary.path.display());
             ExitCode::SUCCESS
         }
         Err(error) => {

@@ -1,5 +1,6 @@
 use super::{Repository, unix};
 use codebasecanvas_analyzer::SystemGraph;
+use codebasecanvas_analyzer::pipeline::Analysis;
 use std::fs;
 use std::io::{self, Write};
 use std::os::unix::fs::{PermissionsExt, symlink};
@@ -31,6 +32,13 @@ fn graph() -> SystemGraph {
     let cases: serde_json::Value =
         serde_json::from_str(include_str!("../../../contracts/cases.json")).unwrap();
     SystemGraph::from_json(&cases["graph"].to_string()).unwrap()
+}
+fn analysis(graph: SystemGraph) -> Analysis {
+    Analysis {
+        graph,
+        typescript_sources: 0,
+        prisma_schemas: 0,
+    }
 }
 fn assert_only_graph(sandbox: &Sandbox) {
     let files: Vec<_> = fs::read_dir(sandbox.0.join(".codebasecanvas"))
@@ -67,6 +75,7 @@ fn invalid_graph_and_pipeline_failure_preserve_previous_graph() {
     let previous = fs::read(sandbox.target()).unwrap();
     graph.nodes[0].id = "invalid".into();
     assert!(repository.save(&graph).is_err());
+    assert!(crate::cli::analyze(&sandbox.0, |_| Ok(analysis(graph))).is_err());
     assert!(crate::cli::analyze(&sandbox.0, |_| Err("fatal pipeline".into())).is_err());
     assert_eq!(fs::read(sandbox.target()).unwrap(), previous);
     assert_only_graph(&sandbox);
@@ -165,7 +174,7 @@ fn root_changed_during_pipeline_does_not_create_output() {
         crate::cli::analyze(&root, |_| {
             fs::rename(&root, &moved).unwrap();
             fs::create_dir(&root).unwrap();
-            Ok(graph())
+            Ok(analysis(graph()))
         })
         .is_err()
     );
@@ -178,7 +187,7 @@ fn orchestration_accepts_warning_graph_and_passes_canonical_root() {
     let sandbox = Sandbox::new();
     let summary = crate::cli::analyze(&sandbox.0.join("."), |root| {
         assert_eq!(root.path(), sandbox.0);
-        Ok(graph())
+        Ok(analysis(graph()))
     })
     .unwrap();
     assert_eq!(summary.path, sandbox.target());
