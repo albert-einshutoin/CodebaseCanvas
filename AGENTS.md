@@ -9,7 +9,7 @@
 - `apps/web`: React / TypeScript / Vite。pnpm workspace package は `@codebasecanvas/web`。
 - Analyzer と Web の境界は `docs/DATA_MODEL.md` の正規 JSON。ソースコードや AST を共有しない。
 - `examples/nestjs-sample` は #4、graph 契約は #3、CLI は #5、file import は #19、Canvas は #20、CI は #31。
-- 現在はビルド、起動画面、SystemGraph v0.1 契約型・検証・共有テスト。未実装の解析・test を成功する stub にしない。
+- 現在は本番 CLI が既存 v0.1 recognizer を接続し、検証済み `graph.json` を保存する。未実装の解析・test を成功する stub にしない。
 
 ## 実コマンド（ルートから実行）
 
@@ -55,4 +55,4 @@ GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を�
 
 #18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続し、#30 で対象 commit の hosted 結果を確認します。現在 E2E は未実装です。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
 
-#5 の CLI は引数・repository と安全な保存経路を提供する。実解析は #17 まで非0・無書込。合成 graph による保存 test を実解析の成功としない。Unix dirfd による保存は同一ユーザーの同時 directory 移動を隔離しない（README の境界参照）。
+#5 の CLI は引数・repository と安全な保存経路を提供し、#17 の pipeline が既存 recognizer を接続する。合成 graph による保存 test と実 CLI の解析成功を区別する。Unix dirfd による保存は同一ユーザーの同時 directory 移動を隔離しない（README の境界参照）。

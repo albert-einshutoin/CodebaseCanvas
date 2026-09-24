@@ -7,7 +7,7 @@ AI が生成・変更するコードを、人間が理解できる構造の地�
 
 Issue #2 の開発基盤に、#3 の SystemGraph v0.1 型・検証・契約テストと、#19 のローカル graph 選択を追加しています。
 Rust のビルドと React/Vite の起動画面、#4 の NestJS fixture と手定義の期待 graph が利用できます。
-リポジトリ解析、graph 生成、Canvas はまだ実装していません。
+CLI からの既存 v0.1 部品によるリポジトリ解析と graph 生成は接続済みです。Canvas は別の実装境界です。
 内蔵 LLM、バックエンド、認証、データベースはありません。
 
 目標とするデータの流れは次のとおりです。
@@ -66,14 +66,14 @@ pnpm web:build
 preview は先にビルドしてから [確認画面](http://127.0.0.1:4173) を開きます。
 ポート使用中は別ポートへ自動変更せずエラーになります。終了は Ctrl+C です。
 
-Rust と Web は共通 JSON ケースで契約を検証します。汎用 TypeScript 抽出は #8 の `codebasecanvas_analyzer::typescript::extract_file` と fixture テストで検証し、CLI からの全体実行は #17 で接続します。
-`codebasecanvas --help` は成功し、`codebasecanvas analyze <repo>` は引数と repository を検証します。実解析は #17 で接続するため、現在は未実装エラーで終了コード 1 を返し、graph を生成しません。
+Rust と Web は共通 JSON ケースで契約を検証します。CLI は #17 の pipeline で既存の TypeScript/NestJS、calls、Prisma 解析を接続し、正規 `graph.json` を保存します。
+`codebasecanvas --help` は成功し、`codebasecanvas analyze <repo>` は引数と repository を検証したうえで解析します。
 
 Recognizer は `codebasecanvas_analyzer::GraphBuilder` に findings を追加し、`finish()` で `SystemGraph::validate` 済みの graph を受け取ります。`add_node`/`add_edge`/`add_diagnostic` は `Result` を返し、最初の失敗後は同じエラーで追加と `finish()` を失敗させます。同一内容の node/edge は evidence を統合し、矛盾・dangling edge・不正な evidence は失敗します。宣言nodeのIDは `node_id`、method/endpoint/external dependencyのIDは専用の `method_id`/`endpoint_id`/`external_id`、edgeは `edge_id` で生成します。
 `typescript::extract_file` は Oxc で named class/interface/method と `contains` edge を抽出し、宣言の lexical scope・export metadata・AST evidence を保持します。anonymous class、computed method name、parse failureは推測でnode化せず、限定されたDiagnosticとして返します。
 `web:e2e` は未実装です。成功する仮コマンドは用意していません。
 
-Issue #6 の discovery API (`codebasecanvas_analyzer::discovery::discover`) は、選択した root を canonicalize し、`.ts`/`.tsx`（`.d.ts`を除く）を root 相対 `/` 区切りで決定論的に列挙します。`.git`、`.codebasecanvas`、`node_modules`、`dist`、`build`、`coverage`、`.next`、generated directory は除外し、root 外・loop・除外先への symlink alias は取り込みません。`tsconfig.json` は root 直下だけ検出します。解析 pipeline にはまだ接続せず、解析未実装の CLI は非0・無書込のままです。
+Issue #6 の discovery API (`codebasecanvas_analyzer::discovery::discover`) は、選択した root を canonicalize し、`.ts`/`.tsx`（`.d.ts`を除く）を root 相対 `/` 区切りで決定論的に列挙します。`.git`、`.codebasecanvas`、`node_modules`、`dist`、`build`、`coverage`、`.next`、generated directory は除外し、root 外・loop・除外先への symlink alias は取り込みません。`tsconfig.json` は root 直下だけ検出します。Resolver と Prisma はこの共有境界を用います。
 
 ## 構成と後続作業
 
@@ -88,9 +88,8 @@ Issue #6 の discovery API (`codebasecanvas_analyzer::discovery::discover`) は�
 #31 の基本 CI は導入済みです。#26 で `pnpm web:e2e` を同じ完全検証入口へ接続します。
 Rust と Web はソースコードを共有せず、正規 JSON graph を境界とします。
 
-解析パイプライン完成後は `codebasecanvas analyze <repo>` で
-`<repo>/.codebasecanvas/graph.json` を生成し、Web の「Choose graph.json」で選択します。
-現段階では CLI の graph 生成が未実装のため、手定義 fixture など既存の v0.1 JSON を使って取込を確認できます。
+`codebasecanvas analyze <repo>` で `<repo>/.codebasecanvas/graph.json` を生成し、Web の「Choose graph.json」で選択します。
+手定義 fixture は独立した期待値であり、CLI の解析出力や失敗時の代替には使いません。
 graph は解析時点の snapshot なので、ソース変更後には CLI を再実行してファイルを再選択してください。
 
 ## 設計文書
@@ -126,10 +125,10 @@ cargo run --locked -p codebasecanvas-analyzer -- --help
 cargo run --locked -p codebasecanvas-analyzer -- analyze ./examples/nestjs-sample
 ```
 
-help は終了コード 0、引数不正は 2、repository・解析・保存の fatal error は 1 です。現在の analyze は解析未実装として 1 を返します。空 graph や手定義 fixture を解析済みの出力にする経路はありません。#17 で `cli::analyze` に実 pipeline を接続します。成功した pipeline の warning は保存を妨げず、保存先と diagnostics 件数を表示します。fatal error は graph diagnostics と分離します。
+help は終了コード 0、引数不正は 2、repository・解析・保存の fatal error は 1 です。正常な analyze は既存の全必須部品を適用し、validation と保存の成功後に source・schema・node・edge・diagnostic 件数と保存先を表示します。error diagnostic が残る場合は部分解析と明示します。詳細な順序・件数の定義・失敗境界は [analysis pipeline](docs/ANALYSIS_PIPELINE.md) を参照してください。
 
 保存経路は `SystemGraph::to_json` で検証・正規化してから、固定の `.codebasecanvas/graph.json` に保存します。Unix (macOS/Linux) の directory-relative I/O で開いた root/output directory を使い、既存 output directory/target の symlink・非regular target を拒否します。temp は排他的に作成し権限0600、書込・sync完了後に同じdirectory内でatomic renameします。失敗時は旧 graph を保持しtempを削除し、削除も失敗した場合はそのエラーを報告します。非Unixは安全な保存の未対応エラーです。
 
 symlink参照先への書込は行いません。検査後にtargetがsymlinkへ変わってもrenameはlink自体を置換します。root/output directoryのidentityを照合し、検出した差替えは失敗にします。ただし同一ユーザーが保存中にdirectory自体を移動し続ける状況や、同時writer同士の競合を隔離するsandbox/lockではありません。保存中はrepository/output directoryを移動・変更しないでください。atomic置換は途中JSONの公開を防ぐ保証であり、停電後のdirectory entryの永続性まで保証しません。
 
-成功・再保存・warning・途中write失敗・symlink差替え・旧graph保護は、使い捨てdirectoryの合成graphで検証します。これは現行Analyzerの解析成功やE2Eの証拠ではありません。依存は引数処理の `clap`（独自parserを避ける）と、unsafe自作syscallを避ける `rustix`（Unix filesystemのみ）に限定します。
+成功・再保存・warning・途中write失敗・symlink差替え・旧graph保護は、使い捨てdirectoryの合成graphで検証します。別途、使い捨てfixture sourceに対する実processのCLI解析と保存も検証します。ブラウザE2Eや実repo精度の証拠とは区別します。依存は引数処理の `clap`（独自parserを避ける）と、unsafe自作syscallを避ける `rustix`（Unix filesystemのみ）に限定します。
