@@ -65,8 +65,8 @@ Web は各 profile の最初の成功 Graph を固定し、各 6 回とも同じ
 
 | Profile | Graph JSON (bytes) | 全 nodes/edges | 表示 nodes/edges | parent frames | 初回→render (ms) | 反復→render 中央値 (ms) |
 |---|---:|---:|---:|---:|---:|---:|
-| Fixture | 150,732 | 57 / 90 | 40 / 56 | 7 | 113.70 | 84.20 |
-| 実 repo | 646,330 | 164 / 385 | 105 / 155 | 10 | 150.80 | 150.80 |
+| Fixture | 150,732 | 57 / 90 | 40 / 56 | 7 | 113.70 | 81.10 |
+| 実 repo | 646,330 | 164 / 385 | 105 / 155 | 10 | 150.80 | 145.20 |
 
 以下の min/max は反復 5 回だけから算出。各試行の丸め前の値は raw JSON に記録した。`initial_canvas_ms` は `layout_ms` を内包し、各列を足して全体時間にはしない。
 
@@ -74,18 +74,20 @@ Web は各 profile の最初の成功 Graph を固定し、各 6 回とも同じ
 |---|---:|---:|---:|---:|
 | Fixture read/decode | 3.50 | 0.90 | 0.80 | 1.40 |
 | Fixture JSON.parse | 0.50 | 0.20 | 0.00 | 0.20 |
-| Fixture validation | 13.50 | 6.80 | 6.10 | 6.90 |
+| Fixture validation | 13.50 | 6.70 | 6.10 | 6.90 |
 | Fixture layout/Fit | 40.90 | 41.40 | 36.50 | 43.00 |
-| Fixture initial Canvas→render | 72.90 | 64.80 | 60.20 | 67.50 |
-| Fixture File handler→render | 113.70 | 84.20 | 78.20 | 87.80 |
+| Fixture initial Canvas→render | 72.90 | 62.50 | 60.20 | 67.50 |
+| Fixture File handler→render | 113.70 | 81.10 | 78.20 | 87.80 |
 | 実 repo read/decode | 1.40 | 1.10 | 0.90 | 1.50 |
 | 実 repo JSON.parse | 0.40 | 0.40 | 0.30 | 0.40 |
 | 実 repo validation | 15.20 | 15.80 | 14.80 | 17.10 |
-| 実 repo layout/Fit | 85.90 | 85.40 | 79.20 | 90.10 |
-| 実 repo initial Canvas→render | 117.70 | 117.70 | 111.30 | 120.50 |
-| 実 repo File handler→render | 150.80 | 150.80 | 142.80 | 154.00 |
+| 実 repo layout/Fit | 85.90 | 83.60 | 79.20 | 90.10 |
+| 実 repo initial Canvas→render | 117.70 | 115.60 | 111.30 | 120.50 |
+| 実 repo File handler→render | 150.80 | 145.20 | 142.80 | 154.00 |
 
 全 12 試行で対象 generation の render、既定表示数、取込成功を確認し、timeout・欠測・失敗は 0。Fixture の反復 JSON.parse `0.00 ms` はブラウザ時計の分解能で 0 と報告された生値であり、処理時間が物理的にゼロとの意味ではない。browser 全体や JS heap の memory は測っていない。
+
+PR #63 の初回レビューで、結果表の一部に初回を含む6値の中央値を転記していた誤りが見つかった。上表と下のguardrail表は raw JSON の **trial 1–5 だけ**をソートして再計算した値に訂正した。raw値、事前上限、判定、計測sourceには変更がなく、追加測定もしていない。
 
 ### 判定・解釈・再実行
 
@@ -93,13 +95,13 @@ Web は各 profile の最初の成功 Graph を固定し、各 6 回とも同じ
 |---|---:|---:|---|
 | Analyzer 反復 wall 中央値 ≤10,000 ms | 13.99 ms | 29.47 ms | 両方 WITHIN |
 | Analyzer peak RSS 最大 ≤1,024 MiB | 5.44 MiB | 8.05 MiB | 両方 WITHIN |
-| Web 反復 validation 中央値 ≤1,000 ms | 6.80 ms | 15.80 ms | 両方 WITHIN |
-| Web 反復 initial Canvas 中央値 ≤5,000 ms | 64.80 ms | 117.70 ms | 両方 WITHIN |
-| Web 反復 File handler→render 中央値 ≤10,000 ms | 84.20 ms | 150.80 ms | 両方 WITHIN |
+| Web 反復 validation 中央値 ≤1,000 ms | 6.70 ms | 15.80 ms | 両方 WITHIN |
+| Web 反復 initial Canvas 中央値 ≤5,000 ms | 62.50 ms | 115.60 ms | 両方 WITHIN |
+| Web 反復 File handler→render 中央値 ≤10,000 ms | 81.10 ms | 145.20 ms | 両方 WITHIN |
 
-本測定の完備状態は `OK`、guardrail 超過は 0。小規模 2 profile では PoC 性能の明確な blocker を観測せず、今回の性能だけを理由とした v0.1 前の修正や新 Issue は不要と判断する。Web では測定した区間のうち layout/Fit が反復中央値で Fixture 41.40 ms、実 repo 85.40 ms と最長だが、未 profiling の内部関数や依存ライブラリを原因と断定しない。数万～10万 LOC の repository、method 展開、長時間の反復、初見 UX、精度は測っていない。incremental analysis の必要性はこの 2 件からは判定できない。#30 の Phase B 全体と release 判定は引き続き未評価。
+本測定の完備状態は `OK`、guardrail 超過は 0。小規模 2 profile では PoC 性能の明確な blocker を観測せず、今回の性能だけを理由とした v0.1 前の修正や新 Issue は不要と判断する。Web では測定した区間のうち layout/Fit が反復中央値で Fixture 41.40 ms、実 repo 83.60 ms と最長だが、未 profiling の内部関数や依存ライブラリを原因と断定しない。数万～10万 LOC の repository、method 展開、長時間の反復、初見 UX、精度は測っていない。incremental analysis の必要性はこの 2 件からは判定できない。#30 の Phase B 全体と release 判定は引き続き未評価。
 
-再実行はこの専用 worktree で Node 24.2.0 以上の 24.x、pnpm 11.8.0、Rust 1.96.0、Playwright Chromium を用意して `pnpm install --frozen-lockfile --ignore-scripts`、`pnpm web:e2e:install`、`pnpm bench:poc`。runner が固定実 repo を隔離取得し、release binary と production Web を build し、各 profile の 1+5 試行を実行する。出力は [全生値・内訳・hash の JSON](benchmark/issue27-raw.json)（本測定 file SHA-256 `5608679a1f0e6502b0da96fc119ad0304ff8941322172deb3a8d52e28fda94ce`）。pilot は `CBC_BENCH_PILOT=1 pnpm bench:poc` で別 file に保存する。通常の `ci` には公開 repo 取得と実測反復を入れず、計測 helper の安定したテスト・型検査だけを含めた。
+再実行はこの専用 worktree で Node 24.2.0 以上の 24.x、pnpm 11.8.0、Rust 1.96.0、Playwright Chromium を用意して `pnpm install --frozen-lockfile --ignore-scripts`、`pnpm web:e2e:install`、`pnpm bench:poc`。Linux では GNU `time` パッケージの `/usr/bin/time` が追加の前提条件であり、実行前に `/usr/bin/time -v /usr/bin/true` の stderr に `Maximum resident set size (kbytes):` が出ることを確認する。未導入なら runner は成功値を作らず失敗する。macOS の実測に Linux RSS の結果を代入しない。runner が固定実 repo を隔離取得し、release binary と production Web を build し、各 profile の 1+5 試行を実行する。出力は [全生値・内訳・hash の JSON](benchmark/issue27-raw.json)（本測定 file SHA-256 `5608679a1f0e6502b0da96fc119ad0304ff8941322172deb3a8d52e28fda94ce`）。pilot は `CBC_BENCH_PILOT=1 pnpm bench:poc` で別 file に保存する。通常の `ci` には公開 repo 取得と実測反復を入れず、計測 helper の安定したテスト・型検査だけを含めた。
 
 ### 計測器・最終検証
 
