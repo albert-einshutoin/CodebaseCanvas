@@ -48,6 +48,16 @@ describe('local graph import', () => {
     expect(result).toEqual({ ok: true, graph: cases.graph });
   });
 
+  it('observes the canonical import without changing its result or reporting a rejected graph as rendered', async () => {
+    const good = JSON.stringify(cases.graph);
+    const marks: string[] = [];
+    expect(await readGraphFile(new Blob([good]), step => marks.push(step))).toEqual(await readGraphFile(new Blob([good])));
+    expect(marks).toEqual(['read_start', 'read_end', 'json_start', 'json_end', 'validation_start', 'validation_end']);
+    const rejected: string[] = [];
+    expect((await readGraphFile(new Blob(['{']), step => rejected.push(step))).ok).toBe(false);
+    expect(rejected).toEqual(['read_start', 'read_end', 'json_start']);
+  });
+
   it('rejects malformed UTF-8 instead of replacing bytes in graph strings', async () => {
     const graph = structuredClone(cases.graph);
     graph.metadata.analyzerVersion = 'UTF8_MARKER';

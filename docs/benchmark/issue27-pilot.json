@@ -1,0 +1,208 @@
+{
+  "base": "6e5b974dc01bead04f93cff06c8ecab15613d8d1",
+  "real": {
+    "origin": "https://github.com/lujakob/nestjs-realworld-example-app",
+    "commit": "c1c2cc4e448b279ff083272df1ac50d20c3304fa",
+    "clean": true
+  },
+  "binarySha256": "ea7bfd78a425b713b379d0b7f3410f502b91237480d8c7119f4cf890e9a90f58",
+  "profiles": [
+    {
+      "name": "fixture",
+      "input": {
+        "fileCount": 15,
+        "tsFiles": 13,
+        "sourceLoc": 150,
+        "manifestSha256": "70cdb78acde1622a0855db1a1f5275d7a2bf32c3eed533281499eb804d9db462"
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "status": "OK",
+          "wallMs": 258.6607919999999,
+          "peakRssBytes": 5668864,
+          "peakRssMiB": 5.40625,
+          "graphSha256": "52b4cd9e29bf7ae19a4489eb90d0eb54a06bac1724c4342595665f63098df155",
+          "normalizedSha256": "c5c12bb311eb156bf78d809beb864c5d1510c1c525840950532abf3bdb182471",
+          "graphBytes": 150732,
+          "tsFiles": 13,
+          "prismaSchemas": 1,
+          "nodes": 57,
+          "edges": 90,
+          "diagnostics": 15,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 15,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 5,
+            "controller": 3,
+            "database_model": 2,
+            "endpoint": 6,
+            "external_dependency": 12,
+            "interface": 1,
+            "method": 17,
+            "module": 6,
+            "repository": 2,
+            "service": 3
+          },
+          "edgeKinds": {
+            "calls": 2,
+            "contains": 26,
+            "depends_on": 8,
+            "exposes": 6,
+            "imports": 43,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "unsupported_call_computed_target": 1,
+            "unsupported_call_injected_receiver": 5,
+            "unsupported_call_nested_function": 1,
+            "unsupported_di_custom_token": 1,
+            "unsupported_di_interface": 1,
+            "unsupported_di_type_only": 1,
+            "unsupported_module_dynamic": 1,
+            "unsupported_module_forward_ref": 1,
+            "unsupported_module_provider": 2,
+            "unsupported_module_spread": 1
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 9,
+            "emittedCalls": 2,
+            "skippedCalls": 7
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:30:57Z",
+          "partial": false
+        }
+      ],
+      "consistent": true,
+      "summary": null
+    },
+    {
+      "name": "real",
+      "input": {
+        "fileCount": 49,
+        "tsFiles": 35,
+        "sourceLoc": 1191,
+        "manifestSha256": "dabaac389c11718b4cd926ada4cd3ca8a06fd302ec7a64e16ccf24201ce77eb3"
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "status": "OK",
+          "wallMs": 34.76362500000005,
+          "peakRssBytes": 8372224,
+          "peakRssMiB": 7.984375,
+          "graphSha256": "57def1af2743b06a8be98be40ad83535051a1209d43e787fb2fa5deb40ea9d01",
+          "normalizedSha256": "ffb774a5b3c474b70d58f3a08c071ff25567097e6e6d93bbd781111f0a99b195",
+          "graphBytes": 646330,
+          "tsFiles": 35,
+          "prismaSchemas": 0,
+          "nodes": 164,
+          "edges": 385,
+          "diagnostics": 116,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 116,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 11,
+            "controller": 5,
+            "endpoint": 21,
+            "external_dependency": 48,
+            "interface": 9,
+            "method": 59,
+            "module": 5,
+            "service": 6
+          },
+          "edgeKinds": {
+            "calls": 7,
+            "contains": 68,
+            "depends_on": 28,
+            "exposes": 21,
+            "imports": 256,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "TS_IMPORT_MISSINGMODULE": 4,
+            "TS_IMPORT_UNSUPPORTEDEXPORT": 17,
+            "TS_IMPORT_UNSUPPORTEDIMPORT": 5,
+            "unsupported_call_higher_order": 6,
+            "unsupported_call_injected_receiver": 45,
+            "unsupported_call_nested_function": 1,
+            "unsupported_call_unknown_receiver": 22,
+            "unsupported_call_wrapped_target": 2,
+            "unsupported_di_decorator_origin": 8,
+            "unsupported_di_external": 1,
+            "unsupported_module_dynamic": 5
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 141,
+            "emittedCalls": 7,
+            "skippedCalls": 134
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:30:57Z",
+          "partial": false
+        }
+      ],
+      "consistent": true,
+      "summary": null
+    }
+  ],
+  "web": {
+    "fixture": [
+      {
+        "status": "OK",
+        "trial": 0,
+        "graphHash": "52b4cd9e29bf7ae19a4489eb90d0eb54a06bac1724c4342595665f63098df155",
+        "graphBytes": 150732,
+        "nodes": 57,
+        "edges": 90,
+        "display": {
+          "nodes": 40,
+          "edges": 56,
+          "parentFrames": 7
+        },
+        "timings": {
+          "read_decode_ms": 4.200000002980232,
+          "json_parse_ms": 0.4000000059604645,
+          "validation_ms": 14.200000002980232,
+          "layout_ms": 69.79999999701977,
+          "initial_canvas_ms": 116,
+          "import_to_render_ms": 159.70000000298023
+        }
+      }
+    ],
+    "real": [
+      {
+        "status": "OK",
+        "trial": 0,
+        "graphHash": "57def1af2743b06a8be98be40ad83535051a1209d43e787fb2fa5deb40ea9d01",
+        "graphBytes": 646330,
+        "nodes": 164,
+        "edges": 385,
+        "display": {
+          "nodes": 105,
+          "edges": 155,
+          "parentFrames": 10
+        },
+        "timings": {
+          "read_decode_ms": 1,
+          "json_parse_ms": 0.4000000059604645,
+          "validation_ms": 15.399999991059303,
+          "layout_ms": 80.5,
+          "initial_canvas_ms": 115.8999999910593,
+          "import_to_render_ms": 149.09999999403954
+        }
+      }
+    ]
+  }
+}

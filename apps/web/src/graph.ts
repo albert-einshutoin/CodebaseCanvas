@@ -192,25 +192,32 @@ function validationDetails(issues: readonly { path: PropertyKey[]; message: stri
   return details;
 }
 
-export function parseGraphText(text: string): GraphImportResult {
+export function parseGraphText(text: string, mark?: (step: string) => void): GraphImportResult {
   let value: unknown;
   try {
+    mark?.('json_start');
     value = JSON.parse(text);
+    mark?.('json_end');
   } catch {
     return { ok: false, message: 'Unable to open this graph.', details: ['The selected file is not valid JSON.'] };
   }
 
+  mark?.('validation_start');
   const parsed = SystemGraphSchema.safeParse(value);
+  mark?.('validation_end');
   if (!parsed.success) {
     return { ok: false, message: 'Unable to open this graph.', details: validationDetails(parsed.error.issues) };
   }
   return { ok: true, graph: parsed.data };
 }
 
-export async function readGraphFile(file: Pick<Blob, 'arrayBuffer'>): Promise<GraphImportResult> {
+export async function readGraphFile(file: Pick<Blob, 'arrayBuffer'>, mark?: (step: string) => void): Promise<GraphImportResult> {
   try {
+    mark?.('read_start');
     const bytes = await file.arrayBuffer();
-    return parseGraphText(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+    const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    mark?.('read_end');
+    return parseGraphText(decoded, mark);
   } catch {
     return { ok: false, message: 'Unable to open this graph.', details: ['The selected file could not be read as UTF-8.'] };
   }
