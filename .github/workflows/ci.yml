@@ -30,6 +30,14 @@ jobs:
           cache: pnpm
       - name: Install pinned Rust toolchain
         run: rustup show active-toolchain
+      - name: Install Chromium system dependencies
+        run: |
+          browser_path="$RUNNER_TEMP/codebasecanvas-playwright-browsers"
+          test ! -e "$browser_path"
+          echo "Browser install path starts empty: $browser_path"
+          echo "PLAYWRIGHT_BROWSERS_PATH=$browser_path" >> "$GITHUB_ENV"
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm --filter @codebasecanvas/web exec playwright install-deps chromium
       - name: Full PR verification
         if: github.event_name == 'pull_request'
         run: pnpm run ci-pr

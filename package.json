@@ -11,10 +11,12 @@
     "web:build": "pnpm --filter @codebasecanvas/web build",
     "web:preview": "pnpm --filter @codebasecanvas/web preview",
     "web:test": "pnpm --filter @codebasecanvas/web test",
+    "web:e2e:install": "pnpm --filter @codebasecanvas/web exec playwright install chromium",
+    "web:e2e": "node --experimental-strip-types apps/web/e2e/run.ts",
     "fixture:typecheck": "pnpm --filter @codebasecanvas/nestjs-sample typecheck",
     "ci:rust": "cargo build --workspace --locked && cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked",
     "ci:web": "pnpm web:typecheck && pnpm web:test && pnpm web:build && pnpm fixture:typecheck",
-    "ci": "pnpm install --frozen-lockfile --ignore-scripts && pnpm run ci:rust && pnpm run ci:web",
+    "ci": "pnpm install --frozen-lockfile --ignore-scripts && pnpm run web:e2e:install && pnpm run ci:rust && pnpm run ci:web && pnpm run web:e2e",
     "ci-pr": "pnpm run ci"
   }
 }

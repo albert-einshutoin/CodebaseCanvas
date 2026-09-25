@@ -168,6 +168,7 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
     if (!cy) return;
 
     const initial = previousGraph.current?.graph !== graph || previousGraph.current.generation !== generation;
+    if (containerRef.current) containerRef.current.dataset.layoutReady = 'false';
     syncing.current = true;
     try {
       if (initial) { cy.elements().remove(); cy.reset(); }
@@ -202,6 +203,26 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
     const target = cy.getElementById(focusRequest.id);
     if (target.length) cy.center(target);
   }, [focusRequest, generation]);
+
+  // Read-only E2E seam: report the rendered Cytoscape state after its synchronous effects.
+  useEffect(() => {
+    const cy = cyRef.current;
+    const container = containerRef.current;
+    if (!cy || !container) return;
+    container.dataset.graphGeneration = String(generation);
+    container.dataset.graphNodes = String(cy.nodes().length);
+    container.dataset.graphEdges = String(cy.edges().length);
+    container.dataset.selectedNodes = cy.nodes(':selected').map(node => node.id()).join(',');
+    container.dataset.focusNeighbors = String(cy.nodes('.focus-neighbor').length);
+    container.dataset.focusDimmed = String(cy.elements('.focus-dim').length);
+    container.dataset.focusNeighborIds = JSON.stringify(cy.nodes('.focus-neighbor').map(node => node.id()).sort());
+    container.dataset.focusContextIds = JSON.stringify(cy.nodes('.focus-context').map(node => node.id()).sort());
+    container.dataset.focusDimmedNodeIds = JSON.stringify(cy.nodes('.focus-dim').map(node => node.id()).sort());
+    container.dataset.focusEdgeIds = JSON.stringify(cy.edges().not('.focus-dim').map(edge => edge.id()).sort());
+    container.dataset.parentFrameIds = JSON.stringify(cy.nodes(':parent').map(node => node.id()).sort());
+    container.dataset.ancestorFrameIds = JSON.stringify(cy.nodes('.ancestor-frame').map(node => node.id()).sort());
+    container.dataset.layoutReady = 'true';
+  }, [graph, generation, view, neighborhood, selectedNodeId, expandedOwnerId, focusRequest]);
 
   function zoomBy(factor: number) {
     const cy = cyRef.current;
