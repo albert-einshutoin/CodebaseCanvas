@@ -25,6 +25,7 @@
 | Web 型検査 | `pnpm web:typecheck` |
 | Web ビルド | `pnpm web:build` |
 | Web preview | `pnpm web:preview` |
+| 静的配信 dry-run | `pnpm web:deploy:check` |
 | CLI help | `cargo run --locked -p codebasecanvas-analyzer -- --help` |
 | CLI/保存境界の対象検証 | `cargo test --workspace --locked --bin codebasecanvas --test cli` |
 | Rust ビルド | `cargo build --workspace --locked` |
@@ -54,6 +55,6 @@ Rust/Web 契約テストは `contracts/cases.json` を共用する。#4 の `exa
 
 GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を実行します。Ubuntu 24.04 の1環境、Node は `.node-version`、pnpm は `packageManager`、Rust は `rust-toolchain.toml` で固定します。Actions は commit SHA 固定、token は contents read、pnpm store のみ標準 cache、古い同一 PR run は中止します。必須 check に設定する場合は `Rust / Web quality` を選びます（branch protection の設定は別工程）。
 
-#18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続し、#30 で対象 commit の hosted 結果を確認します。Linux の OS 依存は workflow で別途準備し、ローカル `ci` は OS package manager を起動しません。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
+#18 の構造回帰と #26 の E2E はこの完全検証入口へ接続済みです。#28 のWeb buildは生成Static Assetsの検査を含みます。#30 で対象 commit の hosted 結果を確認します。Linux の OS 依存は workflow で別途準備し、ローカル `ci` は OS package manager を起動しません。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
 
 #5 の CLI は引数・repository と安全な保存経路を提供し、#17 の pipeline が既存 recognizer を接続する。合成 graph による保存 test と実 CLI の解析成功を区別する。Unix dirfd による保存は同一ユーザーの同時 directory 移動を隔離しない（README の境界参照）。

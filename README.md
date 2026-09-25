@@ -21,7 +21,7 @@ CLI からの既存 v0.1 部品によるリポジトリ解析と graph 生成は
 ```
 
 解析と graph データはローカルに留め、サーバーへアップロードしない設計です。Web UI は選択した JSON をブラウザメモリで検証し、保存や送信を行いません。
-Cloudflare による静的配信は #28 で実装します。
+Cloudflare Workers Static Assets 用の静的 build・local preview・deploy dry-run は #28 で用意します。Cloudflare への実 deploy は未実施です。
 
 ## セットアップ
 
@@ -56,6 +56,7 @@ pnpm web:build
 | Web 型検査 | `pnpm web:typecheck` |
 | Web 本番ビルド | `pnpm web:build` |
 | ビルド済み Web の確認 | `pnpm web:preview` |
+| Static Assets の deploy dry-run | `pnpm web:deploy:check` |
 | Rust ビルド | `cargo build --workspace --locked` |
 | Rust フォーマット確認 | `cargo fmt --all --check` |
 | Rust lint | `cargo clippy --workspace --all-targets --locked -- -D warnings` |
@@ -63,15 +64,18 @@ pnpm web:build
 | Discovery 対象テスト | `cargo test --workspace --locked -p codebasecanvas-analyzer discovery` |
 
 `pnpm web:dev` 後に [開発画面](http://127.0.0.1:5173) を開きます。
-preview は先にビルドしてから [確認画面](http://127.0.0.1:4173) を開きます。
+preview は起動時にビルドしてから [確認画面](http://127.0.0.1:4173) を開きます。
 ポート使用中は別ポートへ自動変更せずエラーになります。終了は Ctrl+C です。
+`web:build` は Cloudflare Vite plugin で `apps/web/dist/` に client HTML/JS/CSS と生成 `wrangler.json` を作り、公開assetと禁止bindingを検査します。`web:preview` はそのbuildを作り直してからCloudflare pluginのloopback previewを起動します。`web:deploy:check` は同じbuildを検査してWranglerの `--dry-run` のみを実行します。固定依存は `@cloudflare/vite-plugin@1.60.1`（Vite `^6.1.0 || ^7.0.0 || ^8.0.0`、Wrangler `^4.140.0`）と `wrangler@4.140.0`（Node `>=22`）です。現行Viteは8.2.2、Nodeは24.2.0です。
+
+実deployと公開後確認は別工程です。入力設定、生成設定、認証時点、将来のdeploy command、公開後の確認項目は [静的配信手順](docs/DEPLOYMENT.md) に記載します。Cloudflareが配る製品のHTML/JS/CSSと、利用者がFile APIで選ぶGraphは別です。Graphのupload/API/storage機能はありませんが、静的ページへの通常requestは発生します。
 
 Rust と Web は共通 JSON ケースで契約を検証します。CLI は #17 の pipeline で既存の TypeScript/NestJS、calls、Prisma 解析を接続し、正規 `graph.json` を保存します。
 `codebasecanvas --help` は成功し、`codebasecanvas analyze <repo>` は引数と repository を検証したうえで解析します。
 
 Recognizer は `codebasecanvas_analyzer::GraphBuilder` に findings を追加し、`finish()` で `SystemGraph::validate` 済みの graph を受け取ります。`add_node`/`add_edge`/`add_diagnostic` は `Result` を返し、最初の失敗後は同じエラーで追加と `finish()` を失敗させます。同一内容の node/edge は evidence を統合し、矛盾・dangling edge・不正な evidence は失敗します。宣言nodeのIDは `node_id`、method/endpoint/external dependencyのIDは専用の `method_id`/`endpoint_id`/`external_id`、edgeは `edge_id` で生成します。
 `typescript::extract_file` は Oxc で named class/interface/method と `contains` edge を抽出し、宣言の lexical scope・export metadata・AST evidence を保持します。anonymous class、computed method name、parse failureは推測でnode化せず、限定されたDiagnosticとして返します。
-`web:e2e` は未実装です。成功する仮コマンドは用意していません。
+`web:e2e` は現checkoutのRust解析結果をproduction File入力へ渡し、Cloudflare plugin preview上のCanvas・Clipboard・拒否境界・SPA reloadをChromiumで確認します。
 
 Issue #6 の discovery API (`codebasecanvas_analyzer::discovery::discover`) は、選択した root を canonicalize し、`.ts`/`.tsx`（`.d.ts`を除く）を root 相対 `/` 区切りで決定論的に列挙します。`.git`、`.codebasecanvas`、`node_modules`、`dist`、`build`、`coverage`、`.next`、generated directory は除外し、root 外・loop・除外先への symlink alias は取り込みません。`tsconfig.json` は root 直下だけ検出します。Resolver と Prisma はこの共有境界を用います。
 
@@ -85,7 +89,7 @@ Issue #6 の discovery API (`codebasecanvas_analyzer::discovery::discover`) は�
 | `docs/` | 製品・設計・graph 契約の文書 |
 
 #3 の契約は [DATA_MODEL.md](docs/DATA_MODEL.md) と `contracts/cases.json` に定義しています。
-#31 の基本 CI は導入済みです。#26 で `pnpm web:e2e` を同じ完全検証入口へ接続します。
+#31 の基本 CI と #26 の `pnpm web:e2e` は同じ完全検証入口へ接続済みです。
 Rust と Web はソースコードを共有せず、正規 JSON graph を境界とします。
 
 `codebasecanvas analyze <repo>` で `<repo>/.codebasecanvas/graph.json` を生成し、Web の「Choose graph.json」で選択します。
@@ -116,7 +120,7 @@ Fixture の意味・期待件数と変更規則は [fixture README](examples/nes
 
 GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を実行します。Ubuntu 24.04 の1環境、Node は `.node-version`、pnpm は `packageManager`、Rust は `rust-toolchain.toml` で固定します。Actions は commit SHA 固定、token は contents read、pnpm store のみ標準 cache、古い同一 PR run は中止します。必須 check に設定する場合は `Rust / Web quality` を選びます（branch protection の設定は別工程）。
 
-#18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続し、#30 で対象 commit の hosted 結果を確認します。現在 E2E は未実装です。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
+#18 の構造回帰は通常の Rust test に、#26 の E2E はこの完全検証入口に接続済みです。#30 で対象 commit の hosted 結果を確認します。`pnpm audit` は独立した security check で、`ci` の build/test 成功とは分けて確認します。
 
 ## CLI 入出力の境界 (#5)
 

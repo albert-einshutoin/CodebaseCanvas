@@ -29,14 +29,14 @@ function generated(): GeneratedGraph {
   return JSON.parse(readFileSync(graphPath!, 'utf8')) as GeneratedGraph;
 }
 
-async function guardNetwork(page: Page) {
+async function guardNetwork(page: Page, documentPaths: readonly string[] = ['/']) {
   const rejected: string[] = [];
   await page.route('**/*', async route => {
     const request = route.request();
     const url = new URL(request.url());
     const type = request.resourceType();
     const allowed = request.method() === 'GET' && url.origin === origin && !url.search
-      && ((url.pathname === '/' && type === 'document')
+      && ((documentPaths.includes(url.pathname) && type === 'document')
         || (builtAssets.has(url.pathname) && type === (url.pathname.endsWith('.js') ? 'script' : 'stylesheet')));
     if (allowed) await route.continue();
     else { rejected.push(`${request.method()} ${request.url()}`); await route.abort(); }
@@ -47,6 +47,34 @@ async function guardNetwork(page: Page) {
   });
   return rejected;
 }
+
+test('static SPA loads at root and a direct deep path, then reloads without retaining the local graph', async ({ page }) => {
+  const rejected = await guardNetwork(page, ['/', '/review']);
+  const assetResponses: { url: string; type: string }[] = [];
+  page.on('response', response => {
+    if (builtAssets.has(new URL(response.url()).pathname)) assetResponses.push({ url: response.url(), type: response.headers()['content-type'] ?? '' });
+  });
+  const root = await page.goto('/');
+  expect(root?.status()).toBe(200);
+  expect(root?.headers()['content-type']).toContain('text/html');
+  await expect(page.locator('#graph-file')).toBeVisible();
+  const deep = await page.goto('/review');
+  expect(deep?.status()).toBe(200);
+  expect(deep?.headers()['content-type']).toContain('text/html');
+  await expect(page.locator('#graph-file')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('#graph-file')).toBeVisible();
+  await importGraph(page);
+  await expect(page.locator('.canvas-viewport')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('#graph-file')).toBeVisible();
+  await expect(page.locator('.canvas-viewport')).toHaveCount(0);
+  for (const asset of builtAssets) {
+    expect(assetResponses.some(response => new URL(response.url).pathname === asset
+      && response.type.includes(asset.endsWith('.js') ? 'javascript' : 'text/css'))).toBe(true);
+  }
+  expect(rejected).toEqual([]);
+});
 
 async function importGraph(page: Page, path = graphPath!) {
   await page.locator('#graph-file').setInputFiles(path);
