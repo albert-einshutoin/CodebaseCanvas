@@ -1,0 +1,1062 @@
+{
+  "base": "6e5b974dc01bead04f93cff06c8ecab15613d8d1",
+  "real": {
+    "origin": "https://github.com/lujakob/nestjs-realworld-example-app",
+    "commit": "c1c2cc4e448b279ff083272df1ac50d20c3304fa",
+    "clean": true
+  },
+  "binarySha256": "ea7bfd78a425b713b379d0b7f3410f502b91237480d8c7119f4cf890e9a90f58",
+  "measurementSourceSha256": "8431c582afafe41a620ce04c05bb59aef3f87db637eb0b047eaaa9ff1f99e30e",
+  "measurementFiles": [
+    "package.json",
+    "apps/web/playwright.benchmark.config.ts",
+    "apps/web/e2e/benchmark.run.ts",
+    "apps/web/e2e/benchmark.metrics.ts",
+    "apps/web/e2e/performance.bench.ts",
+    "apps/web/src/benchmarkTiming.ts",
+    "apps/web/src/graph.ts",
+    "apps/web/src/main.tsx",
+    "apps/web/src/Canvas.tsx"
+  ],
+  "startedAtUtc": "2026-09-25T05:39:00.759Z",
+  "profiles": [
+    {
+      "name": "fixture",
+      "input": {
+        "fileCount": 15,
+        "tsFiles": 13,
+        "sourceLoc": 150,
+        "manifestSha256": "70cdb78acde1622a0855db1a1f5275d7a2bf32c3eed533281499eb804d9db462"
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "status": "OK",
+          "wallMs": 269.587583,
+          "peakRssBytes": 5570560,
+          "peakRssMiB": 5.3125,
+          "graphSha256": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+          "normalizedSha256": "c5c12bb311eb156bf78d809beb864c5d1510c1c525840950532abf3bdb182471",
+          "graphBytes": 150732,
+          "tsFiles": 13,
+          "prismaSchemas": 1,
+          "nodes": 57,
+          "edges": 90,
+          "diagnostics": 15,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 15,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 5,
+            "controller": 3,
+            "database_model": 2,
+            "endpoint": 6,
+            "external_dependency": 12,
+            "interface": 1,
+            "method": 17,
+            "module": 6,
+            "repository": 2,
+            "service": 3
+          },
+          "edgeKinds": {
+            "calls": 2,
+            "contains": 26,
+            "depends_on": 8,
+            "exposes": 6,
+            "imports": 43,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "unsupported_call_computed_target": 1,
+            "unsupported_call_injected_receiver": 5,
+            "unsupported_call_nested_function": 1,
+            "unsupported_di_custom_token": 1,
+            "unsupported_di_interface": 1,
+            "unsupported_di_type_only": 1,
+            "unsupported_module_dynamic": 1,
+            "unsupported_module_forward_ref": 1,
+            "unsupported_module_provider": 2,
+            "unsupported_module_spread": 1
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 9,
+            "emittedCalls": 2,
+            "skippedCalls": 7
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 1,
+          "status": "OK",
+          "wallMs": 15.011707999999999,
+          "peakRssBytes": 5554176,
+          "peakRssMiB": 5.296875,
+          "graphSha256": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+          "normalizedSha256": "c5c12bb311eb156bf78d809beb864c5d1510c1c525840950532abf3bdb182471",
+          "graphBytes": 150732,
+          "tsFiles": 13,
+          "prismaSchemas": 1,
+          "nodes": 57,
+          "edges": 90,
+          "diagnostics": 15,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 15,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 5,
+            "controller": 3,
+            "database_model": 2,
+            "endpoint": 6,
+            "external_dependency": 12,
+            "interface": 1,
+            "method": 17,
+            "module": 6,
+            "repository": 2,
+            "service": 3
+          },
+          "edgeKinds": {
+            "calls": 2,
+            "contains": 26,
+            "depends_on": 8,
+            "exposes": 6,
+            "imports": 43,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "unsupported_call_computed_target": 1,
+            "unsupported_call_injected_receiver": 5,
+            "unsupported_call_nested_function": 1,
+            "unsupported_di_custom_token": 1,
+            "unsupported_di_interface": 1,
+            "unsupported_di_type_only": 1,
+            "unsupported_module_dynamic": 1,
+            "unsupported_module_forward_ref": 1,
+            "unsupported_module_provider": 2,
+            "unsupported_module_spread": 1
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 9,
+            "emittedCalls": 2,
+            "skippedCalls": 7
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 2,
+          "status": "OK",
+          "wallMs": 12.53229199999987,
+          "peakRssBytes": 5701632,
+          "peakRssMiB": 5.4375,
+          "graphSha256": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+          "normalizedSha256": "c5c12bb311eb156bf78d809beb864c5d1510c1c525840950532abf3bdb182471",
+          "graphBytes": 150732,
+          "tsFiles": 13,
+          "prismaSchemas": 1,
+          "nodes": 57,
+          "edges": 90,
+          "diagnostics": 15,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 15,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 5,
+            "controller": 3,
+            "database_model": 2,
+            "endpoint": 6,
+            "external_dependency": 12,
+            "interface": 1,
+            "method": 17,
+            "module": 6,
+            "repository": 2,
+            "service": 3
+          },
+          "edgeKinds": {
+            "calls": 2,
+            "contains": 26,
+            "depends_on": 8,
+            "exposes": 6,
+            "imports": 43,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "unsupported_call_computed_target": 1,
+            "unsupported_call_injected_receiver": 5,
+            "unsupported_call_nested_function": 1,
+            "unsupported_di_custom_token": 1,
+            "unsupported_di_interface": 1,
+            "unsupported_di_type_only": 1,
+            "unsupported_module_dynamic": 1,
+            "unsupported_module_forward_ref": 1,
+            "unsupported_module_provider": 2,
+            "unsupported_module_spread": 1
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 9,
+            "emittedCalls": 2,
+            "skippedCalls": 7
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 3,
+          "status": "OK",
+          "wallMs": 13.283249999999953,
+          "peakRssBytes": 5554176,
+          "peakRssMiB": 5.296875,
+          "graphSha256": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+          "normalizedSha256": "c5c12bb311eb156bf78d809beb864c5d1510c1c525840950532abf3bdb182471",
+          "graphBytes": 150732,
+          "tsFiles": 13,
+          "prismaSchemas": 1,
+          "nodes": 57,
+          "edges": 90,
+          "diagnostics": 15,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 15,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 5,
+            "controller": 3,
+            "database_model": 2,
+            "endpoint": 6,
+            "external_dependency": 12,
+            "interface": 1,
+            "method": 17,
+            "module": 6,
+            "repository": 2,
+            "service": 3
+          },
+          "edgeKinds": {
+            "calls": 2,
+            "contains": 26,
+            "depends_on": 8,
+            "exposes": 6,
+            "imports": 43,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "unsupported_call_computed_target": 1,
+            "unsupported_call_injected_receiver": 5,
+            "unsupported_call_nested_function": 1,
+            "unsupported_di_custom_token": 1,
+            "unsupported_di_interface": 1,
+            "unsupported_di_type_only": 1,
+            "unsupported_module_dynamic": 1,
+            "unsupported_module_forward_ref": 1,
+            "unsupported_module_provider": 2,
+            "unsupported_module_spread": 1
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 9,
+            "emittedCalls": 2,
+            "skippedCalls": 7
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 4,
+          "status": "OK",
+          "wallMs": 14.263791999999967,
+          "peakRssBytes": 5554176,
+          "peakRssMiB": 5.296875,
+          "graphSha256": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+          "normalizedSha256": "c5c12bb311eb156bf78d809beb864c5d1510c1c525840950532abf3bdb182471",
+          "graphBytes": 150732,
+          "tsFiles": 13,
+          "prismaSchemas": 1,
+          "nodes": 57,
+          "edges": 90,
+          "diagnostics": 15,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 15,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 5,
+            "controller": 3,
+            "database_model": 2,
+            "endpoint": 6,
+            "external_dependency": 12,
+            "interface": 1,
+            "method": 17,
+            "module": 6,
+            "repository": 2,
+            "service": 3
+          },
+          "edgeKinds": {
+            "calls": 2,
+            "contains": 26,
+            "depends_on": 8,
+            "exposes": 6,
+            "imports": 43,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "unsupported_call_computed_target": 1,
+            "unsupported_call_injected_receiver": 5,
+            "unsupported_call_nested_function": 1,
+            "unsupported_di_custom_token": 1,
+            "unsupported_di_interface": 1,
+            "unsupported_di_type_only": 1,
+            "unsupported_module_dynamic": 1,
+            "unsupported_module_forward_ref": 1,
+            "unsupported_module_provider": 2,
+            "unsupported_module_spread": 1
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 9,
+            "emittedCalls": 2,
+            "skippedCalls": 7
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 5,
+          "status": "OK",
+          "wallMs": 13.98804199999995,
+          "peakRssBytes": 5603328,
+          "peakRssMiB": 5.34375,
+          "graphSha256": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+          "normalizedSha256": "c5c12bb311eb156bf78d809beb864c5d1510c1c525840950532abf3bdb182471",
+          "graphBytes": 150732,
+          "tsFiles": 13,
+          "prismaSchemas": 1,
+          "nodes": 57,
+          "edges": 90,
+          "diagnostics": 15,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 15,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 5,
+            "controller": 3,
+            "database_model": 2,
+            "endpoint": 6,
+            "external_dependency": 12,
+            "interface": 1,
+            "method": 17,
+            "module": 6,
+            "repository": 2,
+            "service": 3
+          },
+          "edgeKinds": {
+            "calls": 2,
+            "contains": 26,
+            "depends_on": 8,
+            "exposes": 6,
+            "imports": 43,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "unsupported_call_computed_target": 1,
+            "unsupported_call_injected_receiver": 5,
+            "unsupported_call_nested_function": 1,
+            "unsupported_di_custom_token": 1,
+            "unsupported_di_interface": 1,
+            "unsupported_di_type_only": 1,
+            "unsupported_module_dynamic": 1,
+            "unsupported_module_forward_ref": 1,
+            "unsupported_module_provider": 2,
+            "unsupported_module_spread": 1
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 9,
+            "emittedCalls": 2,
+            "skippedCalls": 7
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        }
+      ],
+      "consistent": true,
+      "summary": {
+        "wallMs": {
+          "median": 13.98804199999995,
+          "min": 12.53229199999987,
+          "max": 15.011707999999999
+        },
+        "maxPeakRssMiB": 5.4375
+      }
+    },
+    {
+      "name": "real",
+      "input": {
+        "fileCount": 49,
+        "tsFiles": 35,
+        "sourceLoc": 1191,
+        "manifestSha256": "dabaac389c11718b4cd926ada4cd3ca8a06fd302ec7a64e16ccf24201ce77eb3"
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "status": "OK",
+          "wallMs": 32.72591699999998,
+          "peakRssBytes": 8355840,
+          "peakRssMiB": 7.96875,
+          "graphSha256": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+          "normalizedSha256": "ffb774a5b3c474b70d58f3a08c071ff25567097e6e6d93bbd781111f0a99b195",
+          "graphBytes": 646330,
+          "tsFiles": 35,
+          "prismaSchemas": 0,
+          "nodes": 164,
+          "edges": 385,
+          "diagnostics": 116,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 116,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 11,
+            "controller": 5,
+            "endpoint": 21,
+            "external_dependency": 48,
+            "interface": 9,
+            "method": 59,
+            "module": 5,
+            "service": 6
+          },
+          "edgeKinds": {
+            "calls": 7,
+            "contains": 68,
+            "depends_on": 28,
+            "exposes": 21,
+            "imports": 256,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "TS_IMPORT_MISSINGMODULE": 4,
+            "TS_IMPORT_UNSUPPORTEDEXPORT": 17,
+            "TS_IMPORT_UNSUPPORTEDIMPORT": 5,
+            "unsupported_call_higher_order": 6,
+            "unsupported_call_injected_receiver": 45,
+            "unsupported_call_nested_function": 1,
+            "unsupported_call_unknown_receiver": 22,
+            "unsupported_call_wrapped_target": 2,
+            "unsupported_di_decorator_origin": 8,
+            "unsupported_di_external": 1,
+            "unsupported_module_dynamic": 5
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 141,
+            "emittedCalls": 7,
+            "skippedCalls": 134
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 1,
+          "status": "OK",
+          "wallMs": 29.471415999999863,
+          "peakRssBytes": 8355840,
+          "peakRssMiB": 7.96875,
+          "graphSha256": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+          "normalizedSha256": "ffb774a5b3c474b70d58f3a08c071ff25567097e6e6d93bbd781111f0a99b195",
+          "graphBytes": 646330,
+          "tsFiles": 35,
+          "prismaSchemas": 0,
+          "nodes": 164,
+          "edges": 385,
+          "diagnostics": 116,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 116,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 11,
+            "controller": 5,
+            "endpoint": 21,
+            "external_dependency": 48,
+            "interface": 9,
+            "method": 59,
+            "module": 5,
+            "service": 6
+          },
+          "edgeKinds": {
+            "calls": 7,
+            "contains": 68,
+            "depends_on": 28,
+            "exposes": 21,
+            "imports": 256,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "TS_IMPORT_MISSINGMODULE": 4,
+            "TS_IMPORT_UNSUPPORTEDEXPORT": 17,
+            "TS_IMPORT_UNSUPPORTEDIMPORT": 5,
+            "unsupported_call_higher_order": 6,
+            "unsupported_call_injected_receiver": 45,
+            "unsupported_call_nested_function": 1,
+            "unsupported_call_unknown_receiver": 22,
+            "unsupported_call_wrapped_target": 2,
+            "unsupported_di_decorator_origin": 8,
+            "unsupported_di_external": 1,
+            "unsupported_module_dynamic": 5
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 141,
+            "emittedCalls": 7,
+            "skippedCalls": 134
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 2,
+          "status": "OK",
+          "wallMs": 28.90258300000005,
+          "peakRssBytes": 8339456,
+          "peakRssMiB": 7.953125,
+          "graphSha256": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+          "normalizedSha256": "ffb774a5b3c474b70d58f3a08c071ff25567097e6e6d93bbd781111f0a99b195",
+          "graphBytes": 646330,
+          "tsFiles": 35,
+          "prismaSchemas": 0,
+          "nodes": 164,
+          "edges": 385,
+          "diagnostics": 116,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 116,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 11,
+            "controller": 5,
+            "endpoint": 21,
+            "external_dependency": 48,
+            "interface": 9,
+            "method": 59,
+            "module": 5,
+            "service": 6
+          },
+          "edgeKinds": {
+            "calls": 7,
+            "contains": 68,
+            "depends_on": 28,
+            "exposes": 21,
+            "imports": 256,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "TS_IMPORT_MISSINGMODULE": 4,
+            "TS_IMPORT_UNSUPPORTEDEXPORT": 17,
+            "TS_IMPORT_UNSUPPORTEDIMPORT": 5,
+            "unsupported_call_higher_order": 6,
+            "unsupported_call_injected_receiver": 45,
+            "unsupported_call_nested_function": 1,
+            "unsupported_call_unknown_receiver": 22,
+            "unsupported_call_wrapped_target": 2,
+            "unsupported_di_decorator_origin": 8,
+            "unsupported_di_external": 1,
+            "unsupported_module_dynamic": 5
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 141,
+            "emittedCalls": 7,
+            "skippedCalls": 134
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 3,
+          "status": "OK",
+          "wallMs": 30.164166999999907,
+          "peakRssBytes": 8290304,
+          "peakRssMiB": 7.90625,
+          "graphSha256": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+          "normalizedSha256": "ffb774a5b3c474b70d58f3a08c071ff25567097e6e6d93bbd781111f0a99b195",
+          "graphBytes": 646330,
+          "tsFiles": 35,
+          "prismaSchemas": 0,
+          "nodes": 164,
+          "edges": 385,
+          "diagnostics": 116,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 116,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 11,
+            "controller": 5,
+            "endpoint": 21,
+            "external_dependency": 48,
+            "interface": 9,
+            "method": 59,
+            "module": 5,
+            "service": 6
+          },
+          "edgeKinds": {
+            "calls": 7,
+            "contains": 68,
+            "depends_on": 28,
+            "exposes": 21,
+            "imports": 256,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "TS_IMPORT_MISSINGMODULE": 4,
+            "TS_IMPORT_UNSUPPORTEDEXPORT": 17,
+            "TS_IMPORT_UNSUPPORTEDIMPORT": 5,
+            "unsupported_call_higher_order": 6,
+            "unsupported_call_injected_receiver": 45,
+            "unsupported_call_nested_function": 1,
+            "unsupported_call_unknown_receiver": 22,
+            "unsupported_call_wrapped_target": 2,
+            "unsupported_di_decorator_origin": 8,
+            "unsupported_di_external": 1,
+            "unsupported_module_dynamic": 5
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 141,
+            "emittedCalls": 7,
+            "skippedCalls": 134
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 4,
+          "status": "OK",
+          "wallMs": 29.012875000000122,
+          "peakRssBytes": 8437760,
+          "peakRssMiB": 8.046875,
+          "graphSha256": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+          "normalizedSha256": "ffb774a5b3c474b70d58f3a08c071ff25567097e6e6d93bbd781111f0a99b195",
+          "graphBytes": 646330,
+          "tsFiles": 35,
+          "prismaSchemas": 0,
+          "nodes": 164,
+          "edges": 385,
+          "diagnostics": 116,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 116,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 11,
+            "controller": 5,
+            "endpoint": 21,
+            "external_dependency": 48,
+            "interface": 9,
+            "method": 59,
+            "module": 5,
+            "service": 6
+          },
+          "edgeKinds": {
+            "calls": 7,
+            "contains": 68,
+            "depends_on": 28,
+            "exposes": 21,
+            "imports": 256,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "TS_IMPORT_MISSINGMODULE": 4,
+            "TS_IMPORT_UNSUPPORTEDEXPORT": 17,
+            "TS_IMPORT_UNSUPPORTEDIMPORT": 5,
+            "unsupported_call_higher_order": 6,
+            "unsupported_call_injected_receiver": 45,
+            "unsupported_call_nested_function": 1,
+            "unsupported_call_unknown_receiver": 22,
+            "unsupported_call_wrapped_target": 2,
+            "unsupported_di_decorator_origin": 8,
+            "unsupported_di_external": 1,
+            "unsupported_module_dynamic": 5
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 141,
+            "emittedCalls": 7,
+            "skippedCalls": 134
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        },
+        {
+          "trial": 5,
+          "status": "OK",
+          "wallMs": 29.680041999999958,
+          "peakRssBytes": 8323072,
+          "peakRssMiB": 7.9375,
+          "graphSha256": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+          "normalizedSha256": "ffb774a5b3c474b70d58f3a08c071ff25567097e6e6d93bbd781111f0a99b195",
+          "graphBytes": 646330,
+          "tsFiles": 35,
+          "prismaSchemas": 0,
+          "nodes": 164,
+          "edges": 385,
+          "diagnostics": 116,
+          "diagnosticSeverities": {
+            "info": 0,
+            "warning": 116,
+            "error": 0
+          },
+          "nodeKinds": {
+            "class": 11,
+            "controller": 5,
+            "endpoint": 21,
+            "external_dependency": 48,
+            "interface": 9,
+            "method": 59,
+            "module": 5,
+            "service": 6
+          },
+          "edgeKinds": {
+            "calls": 7,
+            "contains": 68,
+            "depends_on": 28,
+            "exposes": 21,
+            "imports": 256,
+            "injects": 5
+          },
+          "diagnosticCodes": {
+            "TS_IMPORT_MISSINGMODULE": 4,
+            "TS_IMPORT_UNSUPPORTEDEXPORT": 17,
+            "TS_IMPORT_UNSUPPORTEDIMPORT": 5,
+            "unsupported_call_higher_order": 6,
+            "unsupported_call_injected_receiver": 45,
+            "unsupported_call_nested_function": 1,
+            "unsupported_call_unknown_receiver": 22,
+            "unsupported_call_wrapped_target": 2,
+            "unsupported_di_decorator_origin": 8,
+            "unsupported_di_external": 1,
+            "unsupported_module_dynamic": 5
+          },
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 141,
+            "emittedCalls": 7,
+            "skippedCalls": 134
+          },
+          "analyzerVersion": "0.1.0",
+          "analyzedAt": "2026-09-25T05:39:01Z",
+          "partial": false
+        }
+      ],
+      "consistent": true,
+      "summary": {
+        "wallMs": {
+          "median": 29.471415999999863,
+          "min": 28.90258300000005,
+          "max": 30.164166999999907
+        },
+        "maxPeakRssMiB": 8.046875
+      }
+    }
+  ],
+  "web": {
+    "fixture": [
+      {
+        "status": "OK",
+        "trial": 0,
+        "graphHash": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+        "graphBytes": 150732,
+        "nodes": 57,
+        "edges": 90,
+        "display": {
+          "nodes": 40,
+          "edges": 56,
+          "parentFrames": 7
+        },
+        "timings": {
+          "read_decode_ms": 3.5,
+          "json_parse_ms": 0.5,
+          "validation_ms": 13.5,
+          "layout_ms": 40.8999999910593,
+          "initial_canvas_ms": 72.8999999910593,
+          "import_to_render_ms": 113.69999998807907
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 1,
+        "graphHash": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+        "graphBytes": 150732,
+        "nodes": 57,
+        "edges": 90,
+        "display": {
+          "nodes": 40,
+          "edges": 56,
+          "parentFrames": 7
+        },
+        "timings": {
+          "read_decode_ms": 0.9000000059604645,
+          "json_parse_ms": 0,
+          "validation_ms": 6.800000011920929,
+          "layout_ms": 43,
+          "initial_canvas_ms": 67.5,
+          "import_to_render_ms": 87.80000001192093
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 2,
+        "graphHash": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+        "graphBytes": 150732,
+        "nodes": 57,
+        "edges": 90,
+        "display": {
+          "nodes": 40,
+          "edges": 56,
+          "parentFrames": 7
+        },
+        "timings": {
+          "read_decode_ms": 0.9000000059604645,
+          "json_parse_ms": 0.20000000298023224,
+          "validation_ms": 6.200000002980232,
+          "layout_ms": 42.29999999701977,
+          "initial_canvas_ms": 62.5,
+          "import_to_render_ms": 81.1000000089407
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 3,
+        "graphHash": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+        "graphBytes": 150732,
+        "nodes": 57,
+        "edges": 90,
+        "display": {
+          "nodes": 40,
+          "edges": 56,
+          "parentFrames": 7
+        },
+        "timings": {
+          "read_decode_ms": 0.7999999970197678,
+          "json_parse_ms": 0.20000000298023224,
+          "validation_ms": 6.0999999940395355,
+          "layout_ms": 40.29999999701977,
+          "initial_canvas_ms": 60.29999999701977,
+          "import_to_render_ms": 78.19999998807907
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 4,
+        "graphHash": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+        "graphBytes": 150732,
+        "nodes": 57,
+        "edges": 90,
+        "display": {
+          "nodes": 40,
+          "edges": 56,
+          "parentFrames": 7
+        },
+        "timings": {
+          "read_decode_ms": 0.800000011920929,
+          "json_parse_ms": 0,
+          "validation_ms": 6.700000002980232,
+          "layout_ms": 41.3999999910593,
+          "initial_canvas_ms": 64.79999999701977,
+          "import_to_render_ms": 84.20000000298023
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 5,
+        "graphHash": "fef2048faf6ee2f0d70f277b7bc890a6a9b8716b812c622104ed398e5bef6d84",
+        "graphBytes": 150732,
+        "nodes": 57,
+        "edges": 90,
+        "display": {
+          "nodes": 40,
+          "edges": 56,
+          "parentFrames": 7
+        },
+        "timings": {
+          "read_decode_ms": 1.3999999910593033,
+          "json_parse_ms": 0.20000000298023224,
+          "validation_ms": 6.9000000059604645,
+          "layout_ms": 36.5,
+          "initial_canvas_ms": 60.20000000298023,
+          "import_to_render_ms": 79.29999999701977
+        }
+      }
+    ],
+    "real": [
+      {
+        "status": "OK",
+        "trial": 0,
+        "graphHash": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+        "graphBytes": 646330,
+        "nodes": 164,
+        "edges": 385,
+        "display": {
+          "nodes": 105,
+          "edges": 155,
+          "parentFrames": 10
+        },
+        "timings": {
+          "read_decode_ms": 1.3999999910593033,
+          "json_parse_ms": 0.4000000059604645,
+          "validation_ms": 15.200000002980232,
+          "layout_ms": 85.90000000596046,
+          "initial_canvas_ms": 117.70000000298023,
+          "import_to_render_ms": 150.80000001192093
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 1,
+        "graphHash": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+        "graphBytes": 646330,
+        "nodes": 164,
+        "edges": 385,
+        "display": {
+          "nodes": 105,
+          "edges": 155,
+          "parentFrames": 10
+        },
+        "timings": {
+          "read_decode_ms": 1.5,
+          "json_parse_ms": 0.29999999701976776,
+          "validation_ms": 17.100000008940697,
+          "layout_ms": 85.3999999910593,
+          "initial_canvas_ms": 118.20000000298023,
+          "import_to_render_ms": 153.8999999910593
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 2,
+        "graphHash": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+        "graphBytes": 646330,
+        "nodes": 164,
+        "edges": 385,
+        "display": {
+          "nodes": 105,
+          "edges": 155,
+          "parentFrames": 10
+        },
+        "timings": {
+          "read_decode_ms": 0.8999999910593033,
+          "json_parse_ms": 0.4000000059604645,
+          "validation_ms": 15,
+          "layout_ms": 83.59999999403954,
+          "initial_canvas_ms": 114.70000000298023,
+          "import_to_render_ms": 145.1000000089407
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 3,
+        "graphHash": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+        "graphBytes": 646330,
+        "nodes": 164,
+        "edges": 385,
+        "display": {
+          "nodes": 105,
+          "edges": 155,
+          "parentFrames": 10
+        },
+        "timings": {
+          "read_decode_ms": 1.0999999940395355,
+          "json_parse_ms": 0.4000000059604645,
+          "validation_ms": 15.799999997019768,
+          "layout_ms": 79.19999998807907,
+          "initial_canvas_ms": 111.29999999701977,
+          "import_to_render_ms": 142.79999999701977
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 4,
+        "graphHash": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+        "graphBytes": 646330,
+        "nodes": 164,
+        "edges": 385,
+        "display": {
+          "nodes": 105,
+          "edges": 155,
+          "parentFrames": 10
+        },
+        "timings": {
+          "read_decode_ms": 1,
+          "json_parse_ms": 0.29999999701976776,
+          "validation_ms": 14.799999997019768,
+          "layout_ms": 79.80000001192093,
+          "initial_canvas_ms": 115.59999999403954,
+          "import_to_render_ms": 145.20000000298023
+        }
+      },
+      {
+        "status": "OK",
+        "trial": 5,
+        "graphHash": "22970b836c8bd1277af85603b5190bed65a3a39df66e82bd6a8a62394a6c7415",
+        "graphBytes": 646330,
+        "nodes": 164,
+        "edges": 385,
+        "display": {
+          "nodes": 105,
+          "edges": 155,
+          "parentFrames": 10
+        },
+        "timings": {
+          "read_decode_ms": 1.0999999940395355,
+          "json_parse_ms": 0.4000000059604645,
+          "validation_ms": 17.099999994039536,
+          "layout_ms": 90.1000000089407,
+          "initial_canvas_ms": 120.5,
+          "import_to_render_ms": 154
+        }
+      }
+    ]
+  },
+  "status": "OK",
+  "finishedAtUtc": "2026-09-25T05:39:08.384Z"
+}

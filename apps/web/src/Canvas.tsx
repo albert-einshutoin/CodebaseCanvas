@@ -6,6 +6,7 @@ import type { Neighborhood, ViewProjection } from './canvasView';
 import type { CanvasState } from './canvasState';
 import type { SystemGraph } from './graph';
 import { layoutCanvas, updateCanvasElements, fitPadding } from './canvasLayout';
+import { benchmarkEnabled, benchmarkMark } from './benchmarkTiming';
 
 type GraphCanvasProps = {
   graph: SystemGraph;
@@ -109,6 +110,7 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
   const onSelectRef = useRef(onSelect);
   const syncing = useRef(false);
   const previousGraph = useRef<{ graph: SystemGraph; generation: number } | null>(null);
+  const renderListener = useRef<cytoscape.EventHandler | null>(null);
   onSelectRef.current = onSelect;
 
   useEffect(() => {
@@ -157,6 +159,8 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
       cy.removeListener('select', 'node', handleNodeSelect);
       cy.removeListener('unselect', 'node', handleNodeUnselect);
       cy.removeListener('tap', handleBackgroundTap);
+      if (renderListener.current) cy.removeListener('render', renderListener.current);
+      renderListener.current = null;
       cy.destroy();
       previousGraph.current = null;
       cyRef.current = null;
@@ -168,12 +172,32 @@ export function GraphCanvas({ graph, onSelect, selectedNodeId, expandedOwnerId, 
     if (!cy) return;
 
     const initial = previousGraph.current?.graph !== graph || previousGraph.current.generation !== generation;
+    if (initial && renderListener.current) {
+      cy.removeListener('render', renderListener.current);
+      renderListener.current = null;
+    }
+    if (initial && benchmarkEnabled(generation)) {
+      const onRender: cytoscape.EventHandler = () => {
+        const container = containerRef.current;
+        if (container?.dataset.graphGeneration !== String(generation) || container.dataset.layoutReady !== 'true' || !cy.nodes().length) return;
+        benchmarkMark(generation, 'render_end');
+        cy.removeListener('render', onRender);
+        renderListener.current = null;
+      };
+      cy.on('render', onRender);
+      renderListener.current = onRender;
+      benchmarkMark(generation, 'canvas_start');
+    }
     if (containerRef.current) containerRef.current.dataset.layoutReady = 'false';
     syncing.current = true;
     try {
       if (initial) { cy.elements().remove(); cy.reset(); }
       const changed = updateCanvasElements(cy, graphToCytoscapeElements(graph, expandedOwnerId, view.visibleIds));
-      if (initial || changed) layoutCanvas(cy, initial);
+      if (initial || changed) {
+        if (initial) benchmarkMark(generation, 'layout_start');
+        layoutCanvas(cy, initial);
+        if (initial) benchmarkMark(generation, 'layout_end');
+      }
       previousGraph.current = { graph, generation };
     } finally { syncing.current = false; }
     // A kind toggle may change frame styling without changing the element set.

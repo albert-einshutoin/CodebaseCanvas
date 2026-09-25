@@ -88,7 +88,7 @@ Status: NOT_RUN。#30最終Decision: NOT_EVALUATED。Phase A結果から数値�
 | Accuracy findings | Module/DI/Endpoint false relation=0必須。supported total/correct/missing/false、unsupported正診断/黙殺を別集計。calls falseも問題とする | missing/unknown許容上限の具体値は未固定、測定開始不可 |
 | Unsupported findings | scope別unknown理由/件数、#14、provider overrideのfalse calls禁止 | 未実施 |
 | Canvas usability / source比較 | 未知の実repo課題、対応正解/難度、人数/経験/割当/順序、時間/正答の基準 | 未固定 |
-| Performance | #27の機器/入力規模/測定方法、時間/peak memory/graphサイズ/UI loadの数値上限 | 未固定、測定開始不可 |
+| Performance | [#27の事前計画・暫定上限・実測結果](POC_BENCHMARK.md) | #27の2 profile測定済み、暫定guardrail内。Phase B全体の判定には未使用 |
 | Copy Context | 独立正解に対する構造・evidence・confidence帰属・unknown・日時・上限の保持 | 実repo未実施 |
 | E2E / release | #17統合、#18構造回帰、#26現行Rust→fresh graph→production File API→Canvas/Context、#27、#28配信、最終commit #31 hosted CI | 未完了。fixture JSON代替不可 |
 | Decision | 全証拠でGO / GO WITH FIXES / STOPを判定。証拠不足はNOT_EVALUATED | NOT_EVALUATED |

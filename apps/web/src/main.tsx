@@ -9,6 +9,7 @@ import { projectView, directNeighborhood } from './canvasView';
 import { GraphCanvas } from './Canvas';
 import { directMethods, initialCanvasState, transitionCanvasState, type CanvasAction } from './canvasState';
 import { readGraphFile, type SystemGraph } from './graph';
+import { beginBenchmark, benchmarkMark } from './benchmarkTiming';
 
 type ImportState =
   | { kind: 'idle' }
@@ -27,10 +28,11 @@ function App() {
     if (!file) return;
 
     const sequence = ++importSequence.current;
+    beginBenchmark(sequence);
     setState({ kind: 'loading', fileName: file.name });
     setCanvasState(initialCanvasState(sequence));
     input.value = '';
-    const result = await readGraphFile(file);
+    const result = await readGraphFile(file, step => benchmarkMark(sequence, step));
     if (sequence !== importSequence.current) return;
     setState(result.ok
       ? { kind: 'loaded', fileName: file.name, graph: result.graph }
