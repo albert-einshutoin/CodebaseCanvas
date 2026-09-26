@@ -820,6 +820,7 @@
   "nodeErrors": [],
   "unexpectedNodes": [],
   "provenanceErrors": [],
+  "errorDiagnostics": [],
   "diagnosticDuplicates": [
     {
       "code": "TS_IMPORT_UNSUPPORTEDEXPORT",

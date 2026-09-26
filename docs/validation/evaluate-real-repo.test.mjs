@@ -22,13 +22,21 @@ const freeze = ledger => ({ ledgerSha256: createHash('sha256').update(JSON.strin
 const graph = () => ({ nodes: [], edges: [], diagnostics: [], metadata: { callAnalysis: { examinedCalls: 0, emittedCalls: 0, skippedCalls: 0 } } });
 const edge = (from, kind, to, line = 1) => ({ from, kind, to, evidence: [{ source: 'nestjs', confidence: 'confirmed', file: 'src/a.ts', line }] });
 
-test('missing true target and false other target both count', () => {
+test('missing true target and itemless owner false relations both count', () => {
   const ledger = base(); const actual = graph();
-  actual.edges = [edge(id('A'), 'depends_on', id('X')), edge(id('C'), 'exposes', id('E'), 3)];
+  ledger.items.push(
+    { itemId: 'DECLARATION-M', family: 'declaration', expectedNode: { id: id('M'), kind: 'module' } },
+    { itemId: 'DECLARATION-D', family: 'declaration', expectedNode: { id: id('D'), kind: 'service' } },
+    { itemId: 'DECLARATION-C', family: 'declaration', expectedNode: { id: id('C2'), kind: 'controller' } },
+  );
+  actual.edges = [edge(id('A'), 'depends_on', id('X')), edge(id('M'), 'depends_on', id('X')),
+    edge(id('D'), 'injects', id('X')), edge(id('C2'), 'exposes', id('E2')), edge(id('C'), 'exposes', id('E'), 3)];
   actual.diagnostics = [{ code: 'unsupported_di_external', relatedNodeId: id('A'), file: 'src/a.ts', line: 2 }];
   const result = evaluate(JSON.stringify(ledger), freeze(ledger), actual);
   assert.equal(result.families.module.missing, 1);
-  assert.equal(result.families.module.false, 1);
+  assert.equal(result.families.module.false, 2);
+  assert.equal(result.families.di.false, 1);
+  assert.equal(result.families.endpoint.false, 1);
   assert.equal(result.families.module.verdict, 'EXCEEDED');
 });
 
@@ -50,12 +58,18 @@ test('duplicate and wrong-scope diagnostics are preserved', () => {
   assert.equal(result.diagnosticWrongScope.length, 1);
 });
 
-test('zero denominator and unassessed items are never success', () => {
+test('zero denominator, unassessed items, and error diagnostics are never success', () => {
   const ledger = { version: 'test', items: [{ itemId: 'DI-2', family: 'di', status: 'undecided', file: 'src/a.ts', line: 1 }] };
   const result = evaluate(JSON.stringify(ledger), freeze(ledger), graph());
   assert.equal(result.families.module.missingRate, null);
   assert.equal(result.families.module.verdict, 'NOT_ASSESSABLE');
   assert.equal(result.families.di.verdict, 'NOT_ASSESSABLE');
+  const withError = graph();
+  withError.metadata.callAnalysis = { scope: 'parsed_named_class_methods', mode: 'same_class_only', examinedCalls: 0, emittedCalls: 0, skippedCalls: 0 };
+  withError.diagnostics = [{ code: 'TS_PARSE_ERROR', severity: 'error', file: 'src/a.ts', line: 1 }];
+  const errorResult = evaluate(JSON.stringify(ledger), freeze(ledger), withError);
+  assert.equal(errorResult.technicalVerdict, 'EXCEEDED');
+  assert.deepEqual(errorResult.errorDiagnostics, [{ code: 'TS_PARSE_ERROR', file: 'src/a.ts', line: 1 }]);
 });
 
 test('family totals derive from item ledger, including unsupported source units', () => {
@@ -131,7 +145,7 @@ test('call target, skipped group duplicate and unexpected scope fail separately'
   assert.equal(result.technicalVerdict, 'EXCEEDED');
 });
 
-test('input inventory, manifest and source bytes each fail closed', () => {
+test('input inventory covers analyzer root, manifest and source bytes', () => {
   const root = mkdtempSync(join(tmpdir(), 'issue30-input-test-'));
   try {
     mkdirSync(join(root, 'src'));
@@ -141,6 +155,12 @@ test('input inventory, manifest and source bytes each fail closed', () => {
     const frozen = { inputSourceManifestSha256: manifestSha };
     assert.throws(() => verifyInputFiles(ledger, frozen, root), /inventory mismatch/);
     writeFileSync(join(root, 'src/a.ts'), source);
+    writeFileSync(join(root, 'extra.ts'), '');
+    assert.throws(() => verifyInputFiles(ledger, frozen, root), /inventory mismatch/);
+    rmSync(join(root, 'extra.ts'));
+    writeFileSync(join(root, 'schema.prisma'), '');
+    assert.throws(() => verifyInputFiles(ledger, frozen, root), /inventory mismatch/);
+    rmSync(join(root, 'schema.prisma'));
     assert.throws(() => verifyInputFiles(ledger, { inputSourceManifestSha256: 'bad' }, root), /manifest freeze mismatch/);
     writeFileSync(join(root, 'src/a.ts'), 'changed\n');
     assert.throws(() => verifyInputFiles(ledger, frozen, root), /source hash mismatch/);

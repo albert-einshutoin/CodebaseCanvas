@@ -16,6 +16,7 @@ export function evaluate(ledgerText, freeze, graph) {
   const edges = new Map(graph.edges.map(e => [relationKey(e), e]));
   const nodes = new Map(graph.nodes.map(n => [n.id, n]));
   const diagnostics = graph.diagnostics;
+  const errorDiagnostics = diagnostics.filter(d => d.severity === 'error').map(d => ({ code: d.code, file: d.file, line: d.line }));
   const diagnosticDuplicates = [];
   const diagnosticWrongScope = [];
   const unexpectedScopedDiagnostics = [];
@@ -70,7 +71,11 @@ export function evaluate(ledgerText, freeze, graph) {
         if (!hasEvidence(r.evidence, actual.evidence)) provenanceErrors.push({ family, entity: 'edge', key, expected: r.evidence });
       } else missing.push(key);
     }
-    const sources = new Set(sourceItems.flatMap(i => relevantRelations(i).map(r => r.from).concat(i.expectedDiagnostic?.scope ?? [])));
+    const ownerKinds = family === 'module' ? ['module'] : family === 'di' ? ['module', 'controller', 'service', 'repository'] : ['controller'];
+    const sources = new Set([
+      ...sourceItems.flatMap(i => relevantRelations(i).map(r => r.from).concat(i.expectedDiagnostic?.scope ?? [])),
+      ...items.filter(i => i.family === 'declaration' && ownerKinds.includes(i.expectedNode?.kind)).map(i => i.expectedNode.id),
+    ]);
     const exposedEndpoints = new Set(graph.edges.filter(e => e.kind === 'exposes' && sources.has(e.from)).map(e => e.to));
     const expectedEndpoints = new Set(sourceItems.flatMap(i => i.expectedRelations?.filter(r => r.kind === 'exposes').map(r => r.to) ?? []));
     const actualFamily = graph.edges.filter(e => family === 'module'
@@ -153,24 +158,29 @@ export function evaluate(ledgerText, freeze, graph) {
     skippedDiagnosticSum: groups.reduce((n, d) => n + (d.skippedCount ?? 0), 0), groups: groups.map(d => ({ code: d.code, file: d.file, line: d.line, relatedNodeId: d.relatedNodeId, skippedCount: d.skippedCount })) };
   // Same-line named imports can produce identical wire diagnostics; record candidate duplicates without inferring duplicate emission.
   const familyVerdicts = Object.values(families).map(f => f.verdict);
-  const technicalVerdict = familyVerdicts.includes('EXCEEDED') || falseCalls.length || missingCallSites.length || nodeErrors.length || unexpectedNodes.length || provenanceErrors.length ||
+  const technicalVerdict = errorDiagnostics.length || familyVerdicts.includes('EXCEEDED') || falseCalls.length || missingCallSites.length || nodeErrors.length || unexpectedNodes.length || provenanceErrors.length ||
     !calls.summaryMatches || calls.skippedDiagnosticSum !== summary.skippedCalls || unknownMismatches.length || calls.duplicateGroups.length || diagnosticWrongScope.length || unexpectedScopedDiagnostics.length
     ? 'EXCEEDED' : familyVerdicts.includes('NOT_ASSESSABLE') ? 'NOT_ASSESSABLE' : 'WITHIN';
-  return { ledgerVersion: ledger.version, technicalVerdict, families, calls, nodeErrors, unexpectedNodes, provenanceErrors, diagnosticDuplicates, diagnosticWrongScope, unexpectedScopedDiagnostics };
+  return { ledgerVersion: ledger.version, technicalVerdict, families, calls, nodeErrors, unexpectedNodes, provenanceErrors, errorDiagnostics, diagnosticDuplicates, diagnosticWrongScope, unexpectedScopedDiagnostics };
 }
 
 
 export function verifyInputFiles(ledger, freeze, inputRoot) {
   const expected = new Map(ledger.sourceInventory.map(f => [f.file, f.sha256]));
   const found = [];
+  // Match the fixed analyzer discovery exclusions; reject aliases rather than guessing their resolved scope.
+  const excludedDirs = new Set(['.git', '.codebasecanvas', 'node_modules', 'dist', 'build', 'coverage', '.next', 'generated', '__generated__']);
   function walk(dir) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
+      if (excludedDirs.has(entry.name)) continue;
+      if (entry.isSymbolicLink()) throw Error('input symlink requires canonical discovery');
       if (entry.isDirectory()) walk(full);
-      else if (entry.isFile() && /\.tsx?$/.test(entry.name)) found.push(relative(inputRoot, full).replaceAll('\\', '/'));
+      else if (entry.isFile() && ((/\.tsx?$/.test(entry.name) && !entry.name.endsWith('.d.ts')) || entry.name === 'schema.prisma'))
+        found.push(relative(inputRoot, full).replaceAll('\\', '/'));
     }
   }
-  walk(join(inputRoot, 'src'));
+  walk(inputRoot);
   if (found.length !== expected.size || found.some(file => !expected.has(file))) throw Error('input source inventory mismatch');
   const manifest = [...expected].map(([file, sha]) => `${sha}  ${file}\n`).join('');
   if (createHash('sha256').update(manifest).digest('hex') !== freeze.inputSourceManifestSha256) throw Error('input manifest freeze mismatch');
