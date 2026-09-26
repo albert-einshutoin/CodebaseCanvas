@@ -10,6 +10,7 @@
     "web:typecheck": "pnpm --filter @codebasecanvas/web typecheck",
     "web:build": "pnpm --filter @codebasecanvas/web build",
     "web:preview": "pnpm --filter @codebasecanvas/web preview",
+    "web:deploy:check": "pnpm --filter @codebasecanvas/web deploy:check",
     "web:test": "pnpm --filter @codebasecanvas/web test",
     "web:e2e:install": "pnpm --filter @codebasecanvas/web exec playwright install chromium",
     "web:e2e": "node --experimental-strip-types apps/web/e2e/run.ts",

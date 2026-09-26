@@ -1,0 +1,8 @@
+{
+  "name": "codebasecanvas",
+  "compatibility_date": "2026-09-24",
+  "send_metrics": false,
+  "assets": {
+    "not_found_handling": "single-page-application"
+  }
+}
