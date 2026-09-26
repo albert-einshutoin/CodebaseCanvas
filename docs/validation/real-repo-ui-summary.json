@@ -1,0 +1,127 @@
+{
+  "url": "https://codebasecanvas.einstein-4s-1110.workers.dev/",
+  "graphSha256": "b1d58bd695d34bf15c296e172781664492369a4bd7a99194c2fd7b7cf76e55f3",
+  "analyzedAt": "2026-09-26T15:26:51Z",
+  "canvas": {
+    "generation": "1",
+    "layoutReady": "true",
+    "nodes": "105",
+    "edges": "155"
+  },
+  "requestsAfterImport": [],
+  "consoleErrors": [],
+  "method": "Local headless Playwright Chromium, 1440x900, actual browser File input and clipboard readback; source-first selections from source-v7",
+  "analysisCounts": {
+    "nodes": 164,
+    "edges": 385,
+    "diagnostics": 116,
+    "callsExamined": 141,
+    "callsEmitted": 7,
+    "callsSkipped": 134
+  },
+  "selections": [
+    {
+      "name": "ArticleController",
+      "id": "class:7372632f61727469636c652f61727469636c652e636f6e74726f6c6c65722e7473:41727469636c65436f6e74726f6c6c6572",
+      "reason": "static Module membership and routes",
+      "selectedMatches": true,
+      "detailsContainsId": true,
+      "detailsContainsAnalyzedAt": true,
+      "detailsContainsNodeEvidence": true,
+      "detailsContainsEdgeEvidence": true,
+      "detailsHasLocalUnknown": true,
+      "detailsHasGraphCallAnalysis": true,
+      "detailsHasScopedSkipped": true,
+      "contextSha256": "9d2b4bad2f11d2169d48d0ca67a1292cb92bbdd6cdee798954045ea17f583b38",
+      "contextCodePoints": 28638,
+      "contextContainsId": true,
+      "contextContainsAnalyzedAt": true,
+      "contextHasScope": true,
+      "contextHasTruncation": true,
+      "moduleInDetails": true,
+      "routesInDetails": true,
+      "routesInContext": true,
+      "contextOmittedDiagnostics": [
+        11,
+        0,
+        11
+      ],
+      "contextOmittedEdgeEvidence": [
+        29,
+        0,
+        29
+      ]
+    },
+    {
+      "name": "AuthMiddleware",
+      "id": "class:7372632f757365722f617574682e6d6964646c65776172652e7473:417574684d6964646c6577617265",
+      "reason": "Injectable requesting local UserService class token",
+      "selectedMatches": true,
+      "detailsContainsId": true,
+      "detailsContainsAnalyzedAt": true,
+      "detailsContainsNodeEvidence": true,
+      "detailsContainsEdgeEvidence": true,
+      "detailsHasLocalUnknown": true,
+      "detailsHasGraphCallAnalysis": true,
+      "detailsHasScopedSkipped": true,
+      "contextSha256": "f2d7c7c795530de7550ef463a442a4efc8c33a20180e42821d8db14dad837b80",
+      "contextCodePoints": 13814,
+      "contextContainsId": true,
+      "contextContainsAnalyzedAt": true,
+      "contextHasScope": true,
+      "contextHasTruncation": true,
+      "requestedTokenInDetails": true,
+      "requestedTokenInContext": true,
+      "unknownInContext": true,
+      "contextOmittedDiagnostics": [
+        9,
+        9,
+        0
+      ],
+      "contextOmittedEdgeEvidence": [
+        8,
+        8,
+        0
+      ]
+    },
+    {
+      "name": "ProfileService",
+      "id": "class:7372632f70726f66696c652f70726f66696c652e736572766963652e7473:50726f66696c6553657276696365",
+      "reason": "unsupported foreign InjectRepository constructor tokens",
+      "selectedMatches": true,
+      "detailsContainsId": true,
+      "detailsContainsAnalyzedAt": true,
+      "detailsContainsNodeEvidence": true,
+      "detailsContainsEdgeEvidence": true,
+      "detailsHasLocalUnknown": true,
+      "detailsHasGraphCallAnalysis": true,
+      "detailsHasScopedSkipped": true,
+      "contextSha256": "92f4515b4e6b8cb79d6b73c1e22e0a574a50fb3a7bdcae941f78ea5bfc40f068",
+      "contextCodePoints": 25343,
+      "contextContainsId": true,
+      "contextContainsAnalyzedAt": true,
+      "contextHasScope": true,
+      "contextHasTruncation": true,
+      "unsupportedInDetails": true,
+      "unsupportedInContext": true,
+      "contextOmittedDiagnostics": [
+        7,
+        7,
+        0
+      ],
+      "contextOmittedEdgeEvidence": [
+        21,
+        21,
+        0
+      ]
+    }
+  ],
+  "endpoint": {
+    "id": "endpoint:474554:2f61727469636c6573:6d6574686f643a363336633631373337333361333733333337333233363333333236363336333133373332333733343336333933363333333636333336333533323636333633313337333233373334333633393336333333363633333633353332363533363333333636363336363533373334333733323336363633363633333636333336333533373332333236353337333433373333336133343331333733323337333433363339333633333336363333363335333433333336363633363635333733343337333233363636333636333336363333363335333733323a363936653733373436313665363336353a3636363936653634343136633663",
+    "selectedMatches": true,
+    "routeVisible": true,
+    "controllerVisible": true,
+    "handlerVisible": true,
+    "declaredEndpointLabel": true
+  }
+}

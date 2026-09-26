@@ -79,18 +79,18 @@ Node24.x（24.2.0以上）、pnpm11.8.0。実施環境案: Chrome stable/macOS�
 
 ## Phase B: 実repo精度・比較・性能・E2E・release gate
 
-Status: NOT_RUN。#30最終Decision: NOT_EVALUATED。Phase A結果から数値を後付けしない。
+Status: **TECHNICAL_AUDIT_RECORDED / HUMAN_NOT_RUN**。#30最終Decision: **NOT_EVALUATED**。Phase A結果から数値を後付けしない。実repoの技術監査は [第1工程の台帳・結果](validation/REAL_REPO_ACCURACY.md) に記録した。Phase B全体の完了やGOを意味しない。
 
 | 項目 | 測定前に固定するもの | 現状 |
 |---|---|---|
-| Repository profile | #7のpinned実repo/commit/capability matrix参照。変更なら理由/pattern差分。公開可能なsourceと独立重要関係集合 | 未固定 |
-| Analyzer result | 現行Rust commit、入力commit、実analyzeコマンド、生成日時/graph hash、成功/失敗、files/nodes/edges/diagnostics | 未実施 |
-| Accuracy findings | Module/DI/Endpoint false relation=0必須。supported total/correct/missing/false、unsupported正診断/黙殺を別集計。calls falseも問題とする | missing/unknown許容上限の具体値は未固定、測定開始不可 |
-| Unsupported findings | scope別unknown理由/件数、#14、provider overrideのfalse calls禁止 | 未実施 |
+| Repository profile | #7のpinned実repo/commit/capability matrix参照。変更なら理由/pattern差分。公開可能なsourceと独立重要関係集合 | `lujakob/nestjs-realworld-example-app` の `c1c2cc4e…`、35 TS/TSXを固定。#7/#27で既知のprofile。source-first台帳 v6を今回の詳細照合前にレビュー・固定し、Actual後のmethod行位置訂正 v7を履歴付きで記録。未観測holdoutではない |
+| Analyzer result | 固定Rust commit、入力commit、実analyzeコマンド、生成日時/graph hash、成功/失敗、files/nodes/edges/diagnostics | 固定製品 `434bf36a…` / tree `894b669e…` のCLI exit 0、Graph `b1d58bd6…`、164 nodes / 385 edges / warning 116。正規validator通過。hash・実行条件は技術監査記録を参照 |
+| Accuracy findings | Module/DI/Endpoint false relation=0必須。supported total/correct/missing/false、unsupported正診断/黙殺を別集計。calls falseも問題とする | 暫定基準をsource-first台帳で固定。Module 16/16、DI 5/5、Endpoint 42/42 correct、missing/false/silent omission各0。ただしsource単位未解決はModule 5/21=23.8095%、DI 9/14=64.2857%で20%上限超過。技術判定 **EXCEEDED**、最終Decisionとは別 |
+| Unsupported findings | scope別unknown理由/件数、#14、provider overrideのfalse calls禁止 | Module 5、DI 9は全件scoped診断。callsはsource 141 sites中7 supported / 134 skipped、76 method＋reason groupと一致、false target 0。Prisma schemaは対象repoに無くN/A |
 | Canvas usability / source比較 | 未知の実repo課題、対応正解/難度、人数/経験/割当/順序、時間/正答の基準 | 未固定 |
 | Performance | [#27の事前計画・暫定上限・実測結果](POC_BENCHMARK.md) | #27の2 profile測定済み、暫定guardrail内。Phase B全体の判定には未使用 |
-| Copy Context | 独立正解に対する構造・evidence・confidence帰属・unknown・日時・上限の保持 | 実repo未実施 |
-| E2E / release | #17統合、#18構造回帰、#26現行Rust→fresh graph→production File API→Canvas/Context、#27、#28配信、最終commit #31 hosted CI | 未完了。fixture JSON代替不可 |
+| Copy Context | 独立正解に対する構造・evidence・confidence帰属・unknown・日時・上限の保持 | 公開Webと固定buildのasset hash一致後、実repo GraphをFile入力しsource-firstの3 componentを検索・Details・実Clipboardで確認。`ArticleController` のContextは32,000 code points上限下で詳細edge evidence 29件・局所診断11件を省略したが、省略数・scope/unknown計数は表示。技術確認のみで人間の理解を示さない |
+| E2E / release | #17統合、#18構造回帰、#26現行Rust→fresh graph→production File API→Canvas/Context、#27、#28配信、最終commit #31 hosted CI | 今回の公開UI技術フローは確認。#27の既存性能と#28配信、固定製品commitのHosted CI成功は別証拠。評価helper/testのローカル検証は技術監査記録に、PR最終HEADのHosted結果はPRに分けて記録する。#30全体とrelease判断は未完了 |
 | Decision | 全証拠でGO / GO WITH FIXES / STOPを判定。証拠不足はNOT_EVALUATED | NOT_EVALUATED |
 
 #14/#15/#17を含む必須scopeを除外してv0.1完成にしない。#29は任意。GO WITH FIXESも修正/再検証前の完成を意味しない。#1 DoD最終確認、release/公開判断は別工程。新たな追跡Issue作成は今回行わない。
@@ -107,7 +107,9 @@ Status: NOT_RUN。#30最終Decision: NOT_EVALUATED。Phase A結果から数値�
 | Phase A実評価 | NOT_RUN |
 | 点数・時間・発言・参加者回答 | 未記入 |
 | source-first実験 | NOT_RUN |
-| Phase B | NOT_RUN |
+| Phase B技術監査 | 実repo accuracy / unknown / Copy Contextを記録。暫定技術基準 **EXCEEDED**。既知profile監査のみ |
+| Phase B人間UX・source-first比較 | NOT_RUN。参加者回答・点数・時間は未記入 |
+| Phase B全体 | NOT_COMPLETE |
 | #30最終Decision | NOT_EVALUATED |
 
 リハーサルの実施結果と資料差分レビューは進行者資料にのみ記録。LLM仮想参加者や予想回答で結果を埋めない。

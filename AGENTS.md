@@ -22,6 +22,7 @@
 | Web 開発 | `pnpm web:dev` |
 | Fixture 型検査 | `pnpm fixture:typecheck` |
 | Web 契約テスト | `pnpm web:test` |
+| 固定評価helperの手定義入力テスト | `pnpm validation:test` |
 | Web 型検査 | `pnpm web:typecheck` |
 | Web ビルド | `pnpm web:build` |
 | Web preview | `pnpm web:preview` |
@@ -51,7 +52,7 @@ Rust/Web 契約テストは `contracts/cases.json` を共用する。#4 の `exa
 
 ## CI の正本と後続の検証
 
-`package.json` の `ci` が独立した完全検証の正本です。`ci:rust` と `ci:web` に分けた既存検証を順に実行し、失敗時に停止します。`ci-pr` は `ci` へ一方向委譲します。変更範囲 selector は未実装です。
+`package.json` の `ci` が独立した完全検証の正本です。`ci:rust` と `ci:web` に分けた既存検証を順に実行し、失敗時に停止します。`ci:web` は `validation:test` で #30 評価helperの小さな手定義入力だけを確認し、公開実repoの取得・監査や公開URLへのアクセスはしません。`ci-pr` は `ci` へ一方向委譲します。変更範囲 selector は未実装です。
 
 GitHub Actions の `Rust / Web quality` は PR と main push で同じ入口を実行します。Ubuntu 24.04 の1環境、Node は `.node-version`、pnpm は `packageManager`、Rust は `rust-toolchain.toml` で固定します。Actions は commit SHA 固定、token は contents read、pnpm store のみ標準 cache、古い同一 PR run は中止します。必須 check に設定する場合は `Rust / Web quality` を選びます（branch protection の設定は別工程）。
 
