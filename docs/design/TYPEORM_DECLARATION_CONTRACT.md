@@ -56,7 +56,7 @@ TypeORM tag `0.2.24` は commit `4ed79c9cf9ad0f1e51930159dfdab8c1e8549339`。[`s
 提案のidentityは3層を独立させる。
 
 1. **Entity source ID**: 現行 `canonical_id("class", [root相対file, lexical scope..., 宣言名])`。同名別fileは別ID。
-2. **出現ID**: `canonical_id("typeorm_decl", [root相対file, kind, decimal startByte, slot])`。`slot` は `parameter:<index>` または `imports:<entryIndex>`。`forFeature.entries[]` は `canonical_id("typeorm_entry", [file, callStartByte, entity:<index>])`。同じEntityを複数parameter・Moduleで使っても合算しない。owner IDをrecordで検証し、source上の位置が変わればIDも変わる。
+2. **出現ID**: `canonical_id("typeorm_decl", [root相対file, kind, decimal startByte, slot])`。ここで `kind` はJSONの完全な判別子（例: `typeorm_repository_request`）そのもので、省略形へ変換しない。`slot` は `parameter:<index>` または `imports:<entryIndex>`。`forFeature.entries[]` は `canonical_id("typeorm_entry", [file, callStartByte, entity:<index>])`。同じEntityを複数parameter・Moduleで使っても合算しない。owner IDをrecordで検証し、source上の位置が変わればIDも変わる。
 3. **token比較ID**: string tokenは `canonical_id("nest_string", [実際のtoken文字列])`。同じ接続・同名の別file Entityは、source IDが別でも同じstring比較IDとなり、**衝突候補**として双方を残す。同じEntityでも接続名が異なれば別比較ID。class tokenはpackage/version/exportの静的参照で比較候補とするが、runtime class object同一性とは呼ばない。prefixやpackage名をstring token比較IDに追加して衝突を隠さない。
 
 次は v0.2 の frameworkDeclarations 部分だけの具体例であり、完全な SystemGraph JSONではない。UserService requestは監査 item DI-131、UserModule callは MODULE-114 に対応する。出現位置は固定sourceのUTF-8 byte offsetである。
@@ -65,7 +65,7 @@ TypeORM tag `0.2.24` は commit `4ed79c9cf9ad0f1e51930159dfdab8c1e8549339`。[`s
 {
   "frameworkDeclarations": [
     {
-      "id": "typeorm_decl:7372632f757365722f757365722e736572766963652e7473:7265706f7369746f72795f72657175657374:363438:706172616d657465723a30",
+      "id": "typeorm_decl:7372632f757365722f757365722e736572766963652e7473:747970656f726d5f7265706f7369746f72795f72657175657374:363438:706172616d657465723a30",
       "kind": "typeorm_repository_request",
       "ownerId": "class:7372632f757365722f757365722e736572766963652e7473:5573657253657276696365",
       "site": {
@@ -127,7 +127,7 @@ TypeORM tag `0.2.24` は commit `4ed79c9cf9ad0f1e51930159dfdab8c1e8549339`。[`s
       }
     },
     {
-      "id": "typeorm_decl:7372632f757365722f757365722e6d6f64756c652e7473:666f725f66656174757265:333532:696d706f7274733a30",
+      "id": "typeorm_decl:7372632f757365722f757365722e6d6f64756c652e7473:747970656f726d5f666f725f66656174757265:333532:696d706f7274733a30",
       "kind": "typeorm_for_feature",
       "ownerId": "class:7372632f757365722f757365722e6d6f64756c652e7473:557365724d6f64756c65",
       "site": {
@@ -211,9 +211,9 @@ TypeORM tag `0.2.24` は commit `4ed79c9cf9ad0f1e51930159dfdab8c1e8549339`。[`s
 | 同名foreign decorator、local shadow、type-only、re-export、namespace、wrapper、動的配列・spread、未知connection | 該当出現だけ unknown 診断。安全な兄弟recordやownerを残す。名前だけのfallback・全repo走査をしない。 |
 | custom Repository / AbstractRepository、EntitySchema、`extends` 未解決 | 出現と参照事実は残せても通常Entity tokenは導出しない。固定7.0.0のcustom分岐を別に設計するまで局所unknown。 |
 | 版不明、manifestとlockfileの矛盾、patch未確認 | syntax事実だけ。version規則・token descriptor・candidate matchを作らず、原因を局所診断する。 |
-| 外部 `Connection` | fixed `typeorm@0.2.24` のclass宣言/export、正規import、constructor type、必要なtsconfig metadata条件がそろう場合だけ class-token **要求候補**。provider・class object同一性・注入成功は不明。 |
+| 外部 `Connection` | fixed `typeorm@0.2.24` のclass宣言/export、正規import、constructor type、必要なtsconfig metadata条件に加え、そのparameterに明示的な`@Inject`や出自不明のdecoratorがない場合だけ class-token **要求候補**。provider・class object同一性・注入成功は不明。 |
 
-[case C18](typeorm-declaration-cases.json) は固定root tsconfigのhashと両compiler optionを明示した入力である。C19はTypeORM版が不明、C22はmetadata設定が不明またはfalseという2変種で、いずれもclass-token要求recordを出さない。後続実装は設定が不明な状態を有効と推定しない。
+[case C18](typeorm-declaration-cases.json) は固定root tsconfigのhashと両compiler optionを明示した入力である。C19はTypeORM版が不明、C22はmetadata設定が不明またはfalseという2変種で、いずれもclass-token要求recordを出さない。C23では正規`@Inject('ALT')`が型メタデータより優先され、出自不明decoratorもtype由来の要求を抑止する。両parameterは型参照と局所診断だけを残し、decoratorのない正常な兄弟parameterだけclass-token要求候補にする。この抑止は型から推定する外部class経路に適用し、正規`@InjectRepository`自体を無効化しない。後続実装は設定やdecoratorの意味が不明な状態を有効と推定しない。
 
 未知なentryを確定した隣のentryへ伝播させない。ただし同一 `forFeature` の connection引数やorigin/版が不明なら、そのcallの全entryについてtoken導出は未知とする。tokenが同じrequestと登録entryを見つけても、表示は「token文字列一致の候補」であり、Graph edgeやruntime選択ではない。同名別fileの衝突時は全候補を列挙し `typeorm_token_name_collision` を付け、単一targetへ勝手に縮約しない。
 
@@ -252,4 +252,6 @@ TypeORM tag `0.2.24` は commit `4ed79c9cf9ad0f1e51930159dfdab8c1e8549339`。[`s
 
 最初の専門レビューはC18の入力に `emitDecoratorMetadata` の前提が欠けていると **BLOCK** した。欠落したままでは、`Connection` のconstructor型参照だけから `typeorm_external_class_request` とclass-token descriptorを導出し得た。修正ではC18に固定root `tsconfig.json` のraw SHA-256と `experimentalDecorators: true` / `emitDecoratorMetadata: true` を入力として明示し、[提案JSON例](typeorm-declaration-proposal-examples.json)の導出根拠にもcompiler設定とTypeORMの公開export indexのraw hashを加えた。C19はTypeORM版不明、C22はmetadata設定が不明またはfalseとして、型参照と局所診断を残し、要求recordを作らない。固定設定が存在することは確認したが、compilerがその設定を使用した実行結果やruntime metadataの存在は確認していない。TypeORM意味論・Graph契約・誤接続防止を対象とした同じ専門レビュー担当による指摘範囲の読み取り再確認は **ALLOW** だった。これをCompanion Gateの結果とは扱わない。
 
-`python3 -m json.tool` で受入ケースと提案JSON例の構文を確認した。一時Pythonチェックで22 case ID、9 example参照、12 declaration record、2 feature entry、および固定sourceの2 recordについて、UTF-8 byte位置・行・`canonical_id`・string token比較ID・unknown条件を照合してPASSした。固定入力と上流sourceのraw hashは `shasum -a 256` で照合し、`git diff --check` もPASSした。計算用Pythonは一時コマンドで、常設の自動testではない。同じ照合は両JSONを読み、case `files` と固定入力の原文をUTF-8 bytesで切り出し、上記3種類のID規則を適用して再確認できる。実Analyzer抽出probe、v0.2正式validator、Canvas/Context表示、完全CI、実repo再監査は未実施。Companion Gateも **NOT_RUN**（既知のモデル非対応HTTP 400を同じ設定で再試行していない）。
+設計PRの初回HEADに対する追加レビューは、出現IDの `kind` がJSON判別子の省略形になっていた点と、明示的 `@Inject` がある外部 `Connection` parameterに型由来tokenを付け得る点をP2として指摘した。出現IDはすべて完全な `kind` で再計算し、C23で `@Inject('ALT')` と出自不明decoratorをそれぞれ局所抑止する期待を追加した。既存の `explicit_inject_precedes_resolvable_or_invalid_type` は明示tokenの優先順位を示すが、このSpikeのC23をAnalyzerで実行した証拠ではない。
+
+`python3 -m json.tool` で受入ケースと提案JSON例の構文を確認した。一時Pythonチェックで23 case ID、9 example参照、12 declaration record、2 feature entry、および固定sourceの2 recordについて、UTF-8 byte位置・行・完全な `kind` を含む `canonical_id`・string token比較ID・unknown条件を照合してPASSした。C23の明示token・未知decorator・正常な兄弟parameterの期待も照合した。固定入力と上流sourceのraw hashは `shasum -a 256` で照合し、修正後の `git diff --check` もPASSした。計算用Pythonは一時コマンドで、常設の自動testではない。同じ照合は両JSONを読み、case `files` と固定入力の原文をUTF-8 bytesで切り出し、上記3種類のID規則を適用して再確認できる。実Analyzer抽出probe、v0.2正式validator、Canvas/Context表示、ローカル完全CI、実repo再監査は未実施。Companion Gateも **NOT_RUN**（既知のモデル非対応HTTP 400を同じ設定で再試行していない）。

@@ -14,7 +14,7 @@
       "caseId": "C01-same-file",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:323035:706172616d657465723a30",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323035:706172616d657465723a30",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -82,7 +82,7 @@
       "caseId": "C02-import-alias",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:313838:706172616d657465723a30",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313838:706172616d657465723a30",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -150,7 +150,7 @@
       "caseId": "C03-default-and-named",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:313534:706172616d657465723a30",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313534:706172616d657465723a30",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -212,7 +212,7 @@
           }
         },
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:313930:706172616d657465723a31",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313930:706172616d657465723a31",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -274,7 +274,7 @@
           }
         },
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:323337:706172616d657465723a32",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323337:706172616d657465723a32",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -342,7 +342,7 @@
       "caseId": "C05-same-name-distinct-source",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:323136:706172616d657465723a30",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323136:706172616d657465723a30",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -404,7 +404,7 @@
           }
         },
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:323439:706172616d657465723a31",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323439:706172616d657465723a31",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -470,8 +470,8 @@
         {
           "code": "typeorm_token_name_collision",
           "relatedDeclarationIds": [
-            "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:323136:706172616d657465723a30",
-            "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:323439:706172616d657465723a31"
+            "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323136:706172616d657465723a30",
+            "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323439:706172616d657465723a31"
           ],
           "comparisonKey": "nest_string:557365725265706f7369746f7279",
           "meaning": "same string token; no provider selected"
@@ -482,7 +482,7 @@
       "caseId": "C07-for-feature-static-and-sibling-module",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f6d2e7473:666f725f66656174757265:313639:696d706f7274733a30",
+          "id": "typeorm_decl:7372632f6d2e7473:747970656f726d5f666f725f66656174757265:313639:696d706f7274733a30",
           "kind": "typeorm_for_feature",
           "ownerId": "class:7372632f6d2e7473:4d",
           "site": {
@@ -604,7 +604,7 @@
       "caseId": "C04-unknown-connection-with-sibling",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:313932:706172616d657465723a30",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313932:706172616d657465723a30",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -654,7 +654,7 @@
           }
         },
         {
-          "id": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:323436:706172616d657465723a31",
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323436:706172616d657465723a31",
           "kind": "typeorm_repository_request",
           "ownerId": "class:7372632f732e7473:53",
           "site": {
@@ -719,7 +719,7 @@
       "diagnostics": [
         {
           "code": "typeorm_connection_expression_unknown",
-          "relatedDeclarationId": "typeorm_decl:7372632f732e7473:7265706f7369746f72795f72657175657374:313932:706172616d657465723a30",
+          "relatedDeclarationId": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313932:706172616d657465723a30",
           "file": "src/s.ts",
           "line": 5
         }
@@ -729,7 +729,7 @@
       "caseId": "C18-external-Connection-verified",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f6170702e7473:65787465726e616c5f636c6173735f72657175657374:313331:706172616d657465723a30",
+          "id": "typeorm_decl:7372632f6170702e7473:747970656f726d5f65787465726e616c5f636c6173735f72657175657374:313331:706172616d657465723a30",
           "kind": "typeorm_external_class_request",
           "ownerId": "class:7372632f6170702e7473:417070",
           "site": {
@@ -763,7 +763,8 @@
               "verified package-lock profile",
               "verified typeorm index export",
               "emitDecoratorMetadata=true",
-              "decorated consumer class"
+              "decorated consumer class",
+              "no explicit Inject or unresolved parameter decorator"
             ]
           },
           "evidence": [
@@ -788,7 +789,7 @@
       "caseId": "C20-forRoot-without-runtime-config",
       "frameworkDeclarations": [
         {
-          "id": "typeorm_decl:7372632f6170702e7473:666f725f726f6f74:313038:696d706f7274733a30",
+          "id": "typeorm_decl:7372632f6170702e7473:747970656f726d5f666f725f726f6f74:313038:696d706f7274733a30",
           "kind": "typeorm_for_root",
           "ownerId": "class:7372632f6170702e7473:417070",
           "site": {
@@ -843,7 +844,7 @@
       "diagnostics": [
         {
           "code": "typeorm_root_runtime_config_unknown",
-          "relatedDeclarationId": "typeorm_decl:7372632f6170702e7473:666f725f726f6f74:313038:696d706f7274733a30",
+          "relatedDeclarationId": "typeorm_decl:7372632f6170702e7473:747970656f726d5f666f725f726f6f74:313038:696d706f7274733a30",
           "file": "src/app.ts",
           "line": 3
         }

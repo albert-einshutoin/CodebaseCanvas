@@ -971,7 +971,7 @@
           "src/app.ts#App"
         ]
       },
-      "note": "Requires fixed typeorm 0.2.24 export/class evidence and emitDecoratorMetadata=true; still no runtime injection guarantee."
+      "note": "Requires fixed typeorm 0.2.24 export/class evidence, emitDecoratorMetadata=true, and no explicit Inject or unresolved parameter decorator; still no runtime injection guarantee."
     },
     {
       "id": "C19-external-Connection-unverified",
@@ -1116,6 +1116,78 @@
         ]
       },
       "note": ""
+    },
+    {
+      "id": "C23-explicit-and-unknown-decorator-precede-Connection-type",
+      "profile": "fixed",
+      "files": {
+        "src/app.ts": "import { Module, Inject } from '@nestjs/common';\nimport { Connection } from 'typeorm';\nfunction Maybe(): ParameterDecorator { return () => {}; }\n@Module({}) export class App { constructor(@Inject('ALT') readonly explicit: Connection, @Maybe() readonly uncertain: Connection, readonly plain: Connection) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "constructor_type_reference",
+            "owner": "src/app.ts#App",
+            "parameterIndex": 0,
+            "importedType": "typeorm/Connection",
+            "parameterDecorator": "@nestjs/common/Inject"
+          },
+          {
+            "kind": "constructor_type_reference",
+            "owner": "src/app.ts#App",
+            "parameterIndex": 1,
+            "importedType": "typeorm/Connection",
+            "parameterDecorator": "local Maybe"
+          },
+          {
+            "kind": "constructor_type_reference",
+            "owner": "src/app.ts#App",
+            "parameterIndex": 2,
+            "importedType": "typeorm/Connection",
+            "parameterDecorator": "none"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 2,
+            "kind": "external_class_export",
+            "value": "typeorm@0.2.24/Connection",
+            "runtimeClassIdentity": "unverified"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_explicit_inject_precedes_type@parameter:0",
+          "typeorm_parameter_decorator_origin_unknown@parameter:1"
+        ],
+        "forbiddenEdges": [
+          "class-token request for parameter 0 or 1",
+          "App->Connection injects",
+          "interpret ALT as TypeORM Connection class token"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_custom_token",
+            "unsupported_di_decorator_origin",
+            "unsupported_di_external"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": [],
+          "frameworkDeclarationKinds": [
+            "typeorm_external_class_request"
+          ],
+          "frameworkDeclarationParameterIndexes": [
+            2
+          ]
+        },
+        "positiveControl": [
+          "src/app.ts#App",
+          "plain parameter 2 class-token request candidate"
+        ]
+      },
+      "note": "The verified @Inject literal and the unresolved local parameter decorator each block type-derived class-token inference only at their own parameter. The undecorated sibling remains eligible; no runtime provider is asserted."
     }
   ]
 }
