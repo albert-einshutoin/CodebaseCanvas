@@ -1,0 +1,871 @@
+{
+  "status": "PROPOSED_NOT_IMPLEMENTED",
+  "proposalVersion": "SystemGraph/0.2 frameworkDeclarations fragments; never import as v0.1",
+  "exampleFields": "Each example inherits fixedProfile; profileOverrides replaces specified fields for that example. An empty frameworkDeclarations list with diagnostics is an intentional unknown outcome, not absence of a source type reference.",
+  "fixedProfile": {
+    "nestTypeorm": "7.0.0",
+    "typeorm": "0.2.24",
+    "tsconfigSha256": "0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "examples": [
+    {
+      "caseId": "C01-same-file",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323035:706172616d657465723a30",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 205,
+            "endByte": 228,
+            "line": 5,
+            "parameterIndex": 0
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f732e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "omitted",
+            "normalizedName": "default"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "caseId": "C02-import-alias",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313838:706172616d657465723a30",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 188,
+            "endByte": 200,
+            "line": 4,
+            "parameterIndex": 0
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "IR",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f757365722e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "omitted",
+            "normalizedName": "default"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "caseId": "C03-default-and-named",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313534:706172616d657465723a30",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 154,
+            "endByte": 177,
+            "line": 4,
+            "parameterIndex": 0
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f732e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "omitted",
+            "normalizedName": "default"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        },
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313930:706172616d657465723a31",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 190,
+            "endByte": 224,
+            "line": 4,
+            "parameterIndex": 1
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f732e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "literal",
+            "normalizedName": "default"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        },
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323337:706172616d657465723a32",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 237,
+            "endByte": 271,
+            "line": 4,
+            "parameterIndex": 2
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f732e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "literal",
+            "normalizedName": "reports"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "reports_UserRepository",
+            "comparisonKey": "nest_string:7265706f7274735f557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 4,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "caseId": "C05-same-name-distinct-source",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323136:706172616d657465723a30",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 216,
+            "endByte": 236,
+            "line": 5,
+            "parameterIndex": 0
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f612f757365722e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "omitted",
+            "normalizedName": "default"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        },
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323439:706172616d657465723a31",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 249,
+            "endByte": 269,
+            "line": 5,
+            "parameterIndex": 1
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f622f757365722e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "omitted",
+            "normalizedName": "default"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "code": "typeorm_token_name_collision",
+          "relatedDeclarationIds": [
+            "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323136:706172616d657465723a30",
+            "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323439:706172616d657465723a31"
+          ],
+          "comparisonKey": "nest_string:557365725265706f7369746f7279",
+          "meaning": "same string token; no provider selected"
+        }
+      ]
+    },
+    {
+      "caseId": "C07-for-feature-static-and-sibling-module",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f6d2e7473:747970656f726d5f666f725f66656174757265:313639:696d706f7274733a30",
+          "kind": "typeorm_for_feature",
+          "ownerId": "class:7372632f6d2e7473:4d",
+          "site": {
+            "file": "src/m.ts",
+            "startByte": 169,
+            "endByte": 207,
+            "line": 5,
+            "metadataField": "imports",
+            "metadataEntryIndex": 0
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "TypeOrmModule",
+            "localName": "TypeOrmModule",
+            "lockedVersion": "7.0.0",
+            "method": "forFeature"
+          },
+          "connection": {
+            "syntax": "omitted",
+            "normalizedName": "default"
+          },
+          "entries": [
+            {
+              "id": "typeorm_entry:7372632f6d2e7473:313639:656e746974793a30",
+              "site": {
+                "file": "src/m.ts",
+                "startByte": 195,
+                "endByte": 199,
+                "line": 5
+              },
+              "entityIndex": 0,
+              "entityRef": {
+                "id": "class:7372632f652e7473:55736572",
+                "name": "User"
+              },
+              "token": {
+                "state": "derived_under_profile",
+                "kind": "string",
+                "value": "UserRepository",
+                "comparisonKey": "nest_string:557365725265706f7369746f7279"
+              },
+              "derivation": {
+                "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+                "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+                "conditions": [
+                  "verified package-lock profile",
+                  "resolved local class value with no extends",
+                  "literal or omitted connection"
+                ]
+              },
+              "evidence": [
+                {
+                  "claim": "argument_reference",
+                  "source": "resolver",
+                  "file": "src/m.ts",
+                  "line": 5,
+                  "confidence": "confirmed"
+                }
+              ]
+            },
+            {
+              "id": "typeorm_entry:7372632f6d2e7473:313639:656e746974793a31",
+              "site": {
+                "file": "src/m.ts",
+                "startByte": 201,
+                "endByte": 205,
+                "line": 5
+              },
+              "entityIndex": 1,
+              "entityRef": {
+                "id": "class:7372632f652e7473:5465616d",
+                "name": "Team"
+              },
+              "token": {
+                "state": "derived_under_profile",
+                "kind": "string",
+                "value": "TeamRepository",
+                "comparisonKey": "nest_string:5465616d5265706f7369746f7279"
+              },
+              "derivation": {
+                "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+                "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+                "conditions": [
+                  "verified package-lock profile",
+                  "resolved local class value with no extends",
+                  "literal or omitted connection"
+                ]
+              },
+              "evidence": [
+                {
+                  "claim": "argument_reference",
+                  "source": "resolver",
+                  "file": "src/m.ts",
+                  "line": 5,
+                  "confidence": "confirmed"
+                }
+              ]
+            }
+          ],
+          "evidence": [
+            {
+              "claim": "metadata_entry",
+              "source": "nestjs",
+              "file": "src/m.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          }
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "caseId": "C04-unknown-connection-with-sibling",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313932:706172616d657465723a30",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 192,
+            "endByte": 231,
+            "line": 5,
+            "parameterIndex": 0
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f732e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "unknown_expression"
+          },
+          "token": {
+            "state": "unknown",
+            "reason": "connection_expression_unknown"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          }
+        },
+        {
+          "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:323436:706172616d657465723a31",
+          "kind": "typeorm_repository_request",
+          "ownerId": "class:7372632f732e7473:53",
+          "site": {
+            "file": "src/s.ts",
+            "startByte": 246,
+            "endByte": 269,
+            "line": 5,
+            "parameterIndex": 1
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "InjectRepository",
+            "localName": "InjectRepository",
+            "lockedVersion": "7.0.0"
+          },
+          "entityRef": {
+            "id": "class:7372632f732e7473:55736572",
+            "name": "User"
+          },
+          "connection": {
+            "syntax": "omitted",
+            "normalizedName": "default"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          },
+          "evidence": [
+            {
+              "claim": "decorator_origin",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            },
+            {
+              "claim": "argument_reference",
+              "source": "resolver",
+              "file": "src/s.ts",
+              "line": 5,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/getRepositoryToken:ordinary_class",
+            "sourceSha256": "8395dc1f59d3471724312c4053cbd7af0dff38fd354d0720580b72452af633f9",
+            "conditions": [
+              "verified package-lock profile",
+              "resolved local class value with no extends",
+              "literal or omitted connection"
+            ]
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "code": "typeorm_connection_expression_unknown",
+          "relatedDeclarationId": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:313932:706172616d657465723a30",
+          "file": "src/s.ts",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "caseId": "C18-external-Connection-verified",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f6170702e7473:747970656f726d5f65787465726e616c5f636c6173735f72657175657374:313331:706172616d657465723a30",
+          "kind": "typeorm_external_class_request",
+          "ownerId": "class:7372632f6170702e7473:417070",
+          "site": {
+            "file": "src/app.ts",
+            "startByte": 131,
+            "endByte": 153,
+            "line": 3,
+            "parameterIndex": 0
+          },
+          "origin": {
+            "specifier": "typeorm",
+            "exportedName": "Connection",
+            "localName": "Connection",
+            "lockedVersion": "0.2.24"
+          },
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "external_class_export",
+            "package": "typeorm",
+            "lockedVersion": "0.2.24",
+            "exportedName": "Connection",
+            "staticComparisonKey": "typeorm@0.2.24/Connection",
+            "runtimeClassIdentity": "unverified"
+          },
+          "derivation": {
+            "rule": "typeorm@0.2.24/exported-Connection-class + decorator metadata preconditions",
+            "sourceSha256": "1940377cca8bac4ed35bf6af25cf36349cd1c555aa8a38e4278bdde636a2125d",
+            "exportIndexSha256": "492f60c5f98d93650d915b238a2cbe92a9bf66643c620b8f2b26bd56970fecbf",
+            "compilerConfigSha256": "0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f",
+            "conditions": [
+              "verified package-lock profile",
+              "verified typeorm index export",
+              "emitDecoratorMetadata=true",
+              "decorated consumer class",
+              "no explicit Inject or unresolved parameter decorator"
+            ]
+          },
+          "evidence": [
+            {
+              "claim": "constructor_type",
+              "source": "resolver",
+              "file": "src/app.ts",
+              "line": 3,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          }
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "caseId": "C20-forRoot-without-runtime-config",
+      "frameworkDeclarations": [
+        {
+          "id": "typeorm_decl:7372632f6170702e7473:747970656f726d5f666f725f726f6f74:313038:696d706f7274733a30",
+          "kind": "typeorm_for_root",
+          "ownerId": "class:7372632f6170702e7473:417070",
+          "site": {
+            "file": "src/app.ts",
+            "startByte": 108,
+            "endByte": 131,
+            "line": 3,
+            "metadataField": "imports",
+            "metadataEntryIndex": 0
+          },
+          "origin": {
+            "specifier": "@nestjs/typeorm",
+            "exportedName": "TypeOrmModule",
+            "localName": "TypeOrmModule",
+            "lockedVersion": "7.0.0",
+            "method": "forRoot"
+          },
+          "optionsSyntax": "omitted",
+          "token": {
+            "state": "derived_under_profile",
+            "kind": "external_class_export",
+            "package": "typeorm",
+            "lockedVersion": "0.2.24",
+            "exportedName": "Connection",
+            "staticComparisonKey": "typeorm@0.2.24/Connection",
+            "runtimeClassIdentity": "unverified"
+          },
+          "derivation": {
+            "rule": "@nestjs/typeorm@7.0.0/forRoot + getConnectionToken({})",
+            "sourceSha256": "08c838aac9f91013894564c0e158580b0e5bb97f149211f64aac1bd7f4cfe866",
+            "conditions": [
+              "verified package-lock profile",
+              "direct forRoot() call with no options"
+            ]
+          },
+          "evidence": [
+            {
+              "claim": "metadata_entry",
+              "source": "nestjs",
+              "file": "src/app.ts",
+              "line": 3,
+              "confidence": "confirmed"
+            }
+          ],
+          "runtime": {
+            "providerExistence": "unverified",
+            "visibility": "unverified",
+            "injection": "unverified"
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "code": "typeorm_root_runtime_config_unknown",
+          "relatedDeclarationId": "typeorm_decl:7372632f6170702e7473:747970656f726d5f666f725f726f6f74:313038:696d706f7274733a30",
+          "file": "src/app.ts",
+          "line": 3
+        }
+      ]
+    },
+    {
+      "caseId": "C22-external-Connection-metadata-unavailable",
+      "profileOverrides": {
+        "emitDecoratorMetadata": null,
+        "tsconfigSha256": null
+      },
+      "frameworkDeclarations": [],
+      "diagnostics": [
+        {
+          "code": "typeorm_decorator_metadata_unavailable",
+          "file": "src/app.ts",
+          "line": 3,
+          "parameterIndex": 0,
+          "meaning": "constructor type reference remains; class-token request is not derived"
+        }
+      ]
+    }
+  ]
+}
