@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-const integer = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+export const integer = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const scalarString = z.string().refine(s => Array.from(s).every(c => c.length !== 1 || c.charCodeAt(0) < 0xd800 || c.charCodeAt(0) > 0xdfff), 'Invalid Unicode scalar string');
-const text = scalarString.min(1);
+export const text = scalarString.min(1);
 type JsonValue = z.infer<ReturnType<typeof z.json>>;
 // Validate in place: z.record would silently discard an own __proto__ key.
 const metadataSchema = z.custom<Record<string, JsonValue>>((value: unknown) => {
@@ -27,7 +27,7 @@ export function isRepositoryPath(path: string): boolean {
   return path.length > 0 && !/[\\:\u0000-\u001f\u007f-\u009f]/u.test(path)
     && path.split('/').every(part => part !== '' && part !== '.' && part !== '..');
 }
-const file = text.refine(isRepositoryPath, 'Expected a normalized repository-relative path');
+export const file = text.refine(isRepositoryPath, 'Expected a normalized repository-relative path');
 const position = { file: file.optional(), line: integer.min(1).optional(), endLine: integer.min(1).optional() };
 function validPosition(p: {file?: string; line?: number; endLine?: number}): boolean {
   return (p.line === undefined || p.file !== undefined)
@@ -58,8 +58,7 @@ export const DiagnosticSchema = z.strictObject({
   code: text, severity: z.enum(['info', 'warning', 'error']), message: text,
   file: file.optional(), line: integer.min(1).optional(), relatedNodeId: text.optional(), skippedCount: integer.min(1).optional(),
 }).refine(validPosition, 'Invalid diagnostic location');
-const WireGraphSchema = z.strictObject({
-  schemaVersion: z.literal('0.1'),
+export const GraphCoreFields = {
   metadata: z.strictObject({
     analyzerVersion: text, analyzedAt: text.refine(timestamp, 'Expected a UTC second-resolution timestamp'), rootName: text.optional(),
     callAnalysis: z.strictObject({
@@ -68,7 +67,8 @@ const WireGraphSchema = z.strictObject({
     }),
   }),
   nodes: z.array(GraphNodeSchema), edges: z.array(GraphEdgeSchema), diagnostics: z.array(DiagnosticSchema),
-});
+};
+const WireGraphSchema = z.strictObject({ schemaVersion: z.literal('0.1'), ...GraphCoreFields });
 export type GraphNode = z.infer<typeof GraphNodeSchema>;
 export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
 export type Evidence = z.infer<typeof EvidenceSchema>;
@@ -99,7 +99,7 @@ const declaration = (kind: string) => classLike(kind) || kind === 'interface' ||
 const route = (path: string) => path.startsWith('/') && (path === '/' || (!path.endsWith('/') && path.slice(1).split('/').every(p => p !== '' && p !== '.' && p !== '..')))
   && !/[\\?#\s\u0085\u0000-\u001f\u007f]/u.test(path);
 
-function semanticError(g: SystemGraph): string | undefined {
+export function graphSemanticError(g: Pick<SystemGraph, 'metadata' | 'nodes' | 'edges' | 'diagnostics'>): string | undefined {
   const nodes = new Map(g.nodes.map(n => [n.id, n]));
   if (nodes.size !== g.nodes.length) return 'Duplicate node ID';
   const edgeIds = new Set<string>();
@@ -174,7 +174,7 @@ function semanticError(g: SystemGraph): string | undefined {
     || c.emittedCalls < g.edges.filter(e => e.kind === 'calls').length || (c.emittedCalls > 0 && !g.edges.some(e => e.kind === 'calls'))) return 'Call coverage mismatch';
 }
 export const SystemGraphSchema = WireGraphSchema.superRefine((graph, ctx) => {
-  const error = semanticError(graph);
+  const error = graphSemanticError(graph);
   if (error) ctx.addIssue({ code: 'custom', message: error });
 });
 

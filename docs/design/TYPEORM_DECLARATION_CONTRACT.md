@@ -1,6 +1,6 @@
 # TypeORM declaration contract spike — PROPOSED / NOT_IMPLEMENTED
 
-対象は Issue #30 の固定監査で `unknown` だった14 source項目だけである。状態は **PROPOSED / NOT_IMPLEMENTED**、**SystemGraph v0.2 candidate** であり、現行の正式契約は [DATA_MODEL.md](../DATA_MODEL.md) の **v0.1** のまま。Rust/Web validator、公開 Graph に適用していない。[手書き受入ケース](typeorm-declaration-cases.json)も実 Analyzer の抽出結果ではない。既存技術監査は **COMPLETED / EXCEEDED**（Module 5/21、DI 9/14、Endpoint 0/21）のまま、#30 Decision は NOT_EVALUATED、人間 UX / source-first は NOT_RUN である。
+対象は Issue #30 の固定監査で `unknown` だった14 source項目だけである。全体の状態は **PROPOSED / NOT_IMPLEMENTED**、**SystemGraph v0.2 candidate** であり、現行の正式契約は [DATA_MODEL.md](../DATA_MODEL.md) の **v0.1** のまま。`typeorm_repository_request` に限る[実験的な契約層](../DATA_MODEL_V02_DRAFT.md)には専用Rust/Web validatorと共有wireケースがあるが、公開Graph・実Analyzer抽出・本番File入力には適用していない。[手書き受入ケース](typeorm-declaration-cases.json)も実 Analyzer の抽出結果ではない。既存技術監査は **COMPLETED / EXCEEDED**（Module 5/21、DI 9/14、Endpoint 0/21）のまま、#30 Decision は NOT_EVALUATED、人間 UX / source-first は NOT_RUN である。
 
 ## 境界と選択
 

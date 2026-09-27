@@ -29,6 +29,8 @@ interface GraphMetadata {
 
 This document is the canonical v0.1 contract. Issue #26 will add the fixture end-to-end test, which builds the analyzer from the current checkout, generates a fresh graph, and imports that exact file through the production File API and Zod validator. A saved graph cannot substitute for current Rust output.
 
+Issue #30 has a separate [experimental 0.2 repository-request contract](DATA_MODEL_V02_DRAFT.md). Its dedicated readers are not connected to production CLI output or File import; this v0.1 contract remains unchanged.
+
 ## Node
 
 ```ts
