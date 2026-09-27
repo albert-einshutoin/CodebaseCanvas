@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { evaluate, makeResult, verifyInputFiles } from './evaluate-real-repo.mjs';
 
 const id = name => `class:${Buffer.from(name).toString('hex')}`;
@@ -21,6 +23,10 @@ const base = () => ({
 const freeze = ledger => ({ ledgerSha256: createHash('sha256').update(JSON.stringify(ledger)).digest('hex') });
 const graph = () => ({ nodes: [], edges: [], diagnostics: [], metadata: { callAnalysis: { examinedCalls: 0, emittedCalls: 0, skippedCalls: 0 } } });
 const edge = (from, kind, to, line = 1) => ({ from, kind, to, evidence: [{ source: 'nestjs', confidence: 'confirmed', file: 'src/a.ts', line }] });
+const configEvidence = (ledger, frozen, config) => {
+  const text = JSON.stringify({ version: 1, inputCommit: ledger.fixedInput.commit, sourceManifestSha256: frozen.inputSourceManifestSha256, config });
+  return [text, { version: 1, manifestSha256: createHash('sha256').update(text).digest('hex') }];
+};
 
 test('missing true target and itemless owner false relations both count', () => {
   const ledger = base(); const actual = graph();
@@ -150,32 +156,111 @@ test('input inventory covers analyzer root, manifest and source bytes', () => {
   try {
     mkdirSync(join(root, 'src'));
     const source = 'export class A {}\n'; const sourceSha = createHash('sha256').update(source).digest('hex');
-    const ledger = { sourceInventory: [{ file: 'src/a.ts', sha256: sourceSha }] };
+    const ledger = { fixedInput: { commit: 'test-commit' }, sourceInventory: [{ file: 'src/a.ts', sha256: sourceSha }] };
     const manifestSha = createHash('sha256').update(`${sourceSha}  src/a.ts\n`).digest('hex');
     const frozen = { inputSourceManifestSha256: manifestSha };
-    assert.throws(() => verifyInputFiles(ledger, frozen, root), /inventory mismatch/);
+    const config = configEvidence(ledger, frozen, { path: 'tsconfig.json', exists: false, sha256: null });
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...config), /inventory mismatch/);
     writeFileSync(join(root, 'src/a.ts'), source);
     writeFileSync(join(root, 'extra.ts'), '');
-    assert.throws(() => verifyInputFiles(ledger, frozen, root), /inventory mismatch/);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...config), /inventory mismatch/);
     rmSync(join(root, 'extra.ts'));
     writeFileSync(join(root, 'schema.prisma'), '');
-    assert.throws(() => verifyInputFiles(ledger, frozen, root), /inventory mismatch/);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...config), /inventory mismatch/);
     rmSync(join(root, 'schema.prisma'));
-    assert.throws(() => verifyInputFiles(ledger, { inputSourceManifestSha256: 'bad' }, root), /manifest freeze mismatch/);
+    assert.throws(() => verifyInputFiles(ledger, { inputSourceManifestSha256: 'bad' }, root, ...config), /manifest freeze mismatch/);
     writeFileSync(join(root, 'src/a.ts'), 'changed\n');
-    assert.throws(() => verifyInputFiles(ledger, frozen, root), /source hash mismatch/);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...config), /source hash mismatch/);
     writeFileSync(join(root, 'src/a.ts'), source);
-    assert.equal(verifyInputFiles(ledger, frozen, root).sourceFiles, 1);
+    assert.equal(verifyInputFiles(ledger, frozen, root, ...config).sourceFiles, 1);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('root tsconfig identity rejects changes, absence, unsafe types, and missing manifest before result write', () => {
+  const root = mkdtempSync(join(tmpdir(), 'issue30-config-test-'));
+  try {
+    mkdirSync(join(root, 'src'));
+    const sources = [
+      ['src/dependency.ts', 'export class Dependency {}\n'],
+      ['src/consumer.ts', "import { Dependency } from './dependency';\nexport const consumer = Dependency;\n"],
+    ];
+    for (const [file, text] of sources) writeFileSync(join(root, file), text);
+    const inventory = sources.map(([file, text]) => ({ file, sha256: createHash('sha256').update(text).digest('hex') }));
+    const ledger = { fixedInput: { commit: 'test-commit' }, sourceInventory: inventory };
+    const sourceManifest = inventory.map(({ file, sha256 }) => `${sha256}  ${file}\n`).join('');
+    const frozen = { inputSourceManifestSha256: createHash('sha256').update(sourceManifest).digest('hex') };
+    const original = '{"compilerOptions":{"moduleResolution":"node"}}\n';
+    const configPath = join(root, 'tsconfig.json');
+    writeFileSync(configPath, original);
+    const expected = configEvidence(ledger, frozen, { path: 'tsconfig.json', exists: true, sha256: createHash('sha256').update(original).digest('hex') });
+    assert.equal(verifyInputFiles(ledger, frozen, root, ...expected).sourceFiles, 2);
+
+    writeFileSync(configPath, '{"compilerOptions":{"moduleResolution":"node","moduleSuffixes":[".extra",""]}}\n');
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...expected), /config hash mismatch/);
+    writeFileSync(configPath, '{invalid json\n');
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...expected), /config hash mismatch/);
+    rmSync(configPath);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...expected), /config presence mismatch/);
+    const absent = configEvidence(ledger, frozen, { path: 'tsconfig.json', exists: false, sha256: null });
+    assert.equal(verifyInputFiles(ledger, frozen, root, ...absent).config.exists, false);
+    writeFileSync(configPath, original);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...absent), /config presence mismatch/);
+    rmSync(configPath);
+    mkdirSync(configPath);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...expected), /config is not a regular file/);
+    rmSync(configPath, { recursive: true });
+    symlinkSync(join(root, 'src/consumer.ts'), configPath);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, ...expected), /symlink|regular file/);
+    rmSync(configPath);
+    writeFileSync(configPath, original);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root), /config manifest missing/);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, expected[0], { version: 1, manifestSha256: '0'.repeat(64) }), /config manifest hash mismatch/);
+    assert.throws(() => verifyInputFiles(ledger, frozen, root,
+      ...configEvidence(ledger, frozen, { path: 'src/tsconfig.json', exists: true, sha256: createHash('sha256').update(original).digest('hex') })), /config manifest binding mismatch/);
+    const wrongCommit = JSON.stringify({ ...JSON.parse(expected[0]), inputCommit: 'other-commit' });
+    assert.throws(() => verifyInputFiles(ledger, frozen, root, wrongCommit,
+      { version: 1, manifestSha256: createHash('sha256').update(wrongCommit).digest('hex') }), /config manifest binding mismatch/);
+    assert.equal(verifyInputFiles(ledger, frozen, root, ...expected).config.exists, true);
+
+    const ledgerPath = join(root, 'ledger.json');
+    const sourceFreezePath = join(root, 'source-freeze.json');
+    const configManifestPath = join(root, 'config-manifest.json');
+    const configFreezePath = join(root, 'config-freeze.json');
+    const outputPath = join(root, 'result.json');
+    writeFileSync(ledgerPath, JSON.stringify(ledger));
+    writeFileSync(sourceFreezePath, JSON.stringify(frozen));
+    writeFileSync(configManifestPath, expected[0]);
+    writeFileSync(configFreezePath, JSON.stringify(expected[1]));
+    writeFileSync(outputPath, 'prior result\n');
+    writeFileSync(configPath, '{invalid json\n');
+    const run = spawnSync(process.execPath, ['--experimental-strip-types', fileURLToPath(new URL('./evaluate-real-repo.mjs', import.meta.url)), ledgerPath, sourceFreezePath, configManifestPath, configFreezePath, join(root, 'missing-graph.json'), root, outputPath], { encoding: 'utf8' });
+    assert.notEqual(run.status, 0);
+    assert.match(run.stderr, /config hash mismatch/);
+    assert.equal(readFileSync(outputPath, 'utf8'), 'prior result\n');
+    rmSync(outputPath);
+    assert.equal(existsSync(outputPath), false);
+    const secondRun = spawnSync(process.execPath, ['--experimental-strip-types', fileURLToPath(new URL('./evaluate-real-repo.mjs', import.meta.url)), ledgerPath, sourceFreezePath, configManifestPath, configFreezePath, join(root, 'missing-graph.json'), root, outputPath], { encoding: 'utf8' });
+    assert.notEqual(secondRun.status, 0);
+    assert.equal(existsSync(outputPath), false);
+    const oldInvocation = spawnSync(process.execPath, ['--experimental-strip-types', fileURLToPath(new URL('./evaluate-real-repo.mjs', import.meta.url)), ledgerPath, sourceFreezePath, join(root, 'missing-graph.json'), root, outputPath], { encoding: 'utf8' });
+    assert.notEqual(oldInvocation.status, 0);
+    assert.match(oldInvocation.stderr, /CONFIG_MANIFEST CONFIG_FREEZE/);
+    assert.equal(existsSync(outputPath), false);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
 test('saved result binds graph bytes, metadata and ledger freeze deterministically', () => {
   const ledger = { version: 'test', items: [] }; const saved = freeze(ledger);
   const actual = graph(); actual.metadata = { analyzerVersion: '0.1.0', analyzedAt: '2026-09-26T00:00:00Z', rootName: 'input', callAnalysis: { scope: 'parsed_named_class_methods', mode: 'same_class_only', examinedCalls: 0, emittedCalls: 0, skippedCalls: 0 } };
-  const graphText = JSON.stringify(actual); const verification = { sourceFiles: 1, manifestSha256: 'manifest' };
+  const graphText = JSON.stringify(actual); const verification = { sourceFiles: 1, manifestSha256: 'manifest',
+    config: { path: 'tsconfig.json', exists: false, sha256: null, manifestSha256: 'config-manifest' } };
   const result = makeResult(JSON.stringify(ledger), { ...saved, inputSourceManifestSha256: 'manifest' }, actual, graphText, verification);
   assert.deepEqual(result, makeResult(JSON.stringify(ledger), { ...saved, inputSourceManifestSha256: 'manifest' }, actual, graphText, verification));
   assert.equal(result.provenance.graphSha256, createHash('sha256').update(graphText).digest('hex'));
   assert.equal(result.provenance.ledgerSha256, saved.ledgerSha256);
   assert.equal(result.provenance.analyzedAt, '2026-09-26T00:00:00Z');
+  assert.equal(result.provenance.inputConfigManifestSha256, 'config-manifest');
+  assert.deepEqual(result.provenance.inputConfigVerification, { path: 'tsconfig.json', exists: false, sha256: null });
+  assert.throws(() => makeResult(JSON.stringify(ledger), { ...saved, inputSourceManifestSha256: 'manifest' }, actual, graphText,
+    { sourceFiles: 1, manifestSha256: 'manifest' }), /input config verification missing/);
 });

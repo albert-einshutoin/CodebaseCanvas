@@ -52,7 +52,7 @@ Actual 照合後、method 23 件の行位置に**台帳側の source 解釈誤�
 | calls metadata | `parsed_named_class_methods` / `same_class_only`、141 examined / 7 emitted / 134 skipped |
 | fatal / 部分解析 | CLI 成功、Graph 正規 `SystemGraphSchema.parse` 成功、error 0。既存契約上の fatal / partial error は観測せず。warning / unknown は残る |
 
-[評価 helper](evaluate-real-repo.mjs)は台帳 hash・35 source SHA を検証し、正規 validator を通した Graph の canonical ID / kind / direction / 意味 metadata / source line / evidence source / confidence、Diagnostic code・file・line・`relatedNodeId` と集計を照合する。余分な source 宣言 node と全 `calls` edge も失敗条件に含める。[機械可読の全結果](real-repo-result.json) の `provenance` に評価台帳・入力 manifest・Actual Graph の SHA と Graph metadata を記録し、`correctKeys`、`missingKeys`、`falseKeys`、`unresolvedItems` と台帳 `itemId` から各結果へ追える。
+[評価 helper](evaluate-real-repo.mjs)は台帳 hash・35 source SHA を検証し、正規 validator を通した Graph の canonical ID / kind / direction / 意味 metadata / source line / evidence source / confidence、Diagnostic code・file・line・`relatedNodeId` と集計を照合する。余分な source 宣言 node と全 `calls` edge も失敗条件に含める。[機械可読の当時の全結果](real-repo-result.json) の `provenance` に評価台帳・入力 source manifest・Actual Graph の SHA と Graph metadata を記録し、`correctKeys`、`missingKeys`、`falseKeys`、`unresolvedItems` と台帳 `itemId` から各結果へ追える。この保存結果には後述の root `tsconfig.json` 照合は含まれない。
 
 | family | source 項目 | supported 期待 edge | correct | missing | false | unsupported | 診断済み | silent | 保留 | 未解決 source 単位 | 判定 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -90,6 +90,14 @@ calls は source の 141 site を 7 supported / 134 unknown に分類。7 site �
 
 これらは誤関係や黙殺ではない。固定仕様どおりの unknown でも、利用者に提供できる主要構造量が暫定水準を満たさないという判定である。
 
+## root tsconfig.json 入力同一性の追補（Actual 後）
+
+PR #65 の追加指摘で、当時の helper は Analyzer / Resolver が読む root `tsconfig.json` を source manifest の35件とは別に照合していなかったと判明した。小さい独立入力の `src/dependency.ts` / 相対 import を持つ `src/consumer.ts` で、source bytes を保ったまま設定へ `moduleSuffixes` を追加、不正 JSON に変更、削除した3条件が**修正前はいずれも受理**された。修正後は3条件を入力同一性不一致として拒否し、既存結果の上書きや新規結果の書き込み前に停止する。正しい設定、明示した設定不存在、小さい入力での TS / Prisma inventory、directory / symlink 拒否、補助 manifest 欠落 / hash 不一致も回帰 test に含めた。
+
+固定入力 commit `c1c2cc4e448b279ff083272df1ac50d20c3304fa` の root `tsconfig.json` は Git tree 上の通常 file（mode `100644`）で、**raw bytes** の SHA-256 は `0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f`。`git show <input-commit>:tsconfig.json` から期待値を取得し、当時の隔離解析 copy の通常 file と hash が一致した。期待値を検査対象 copy から採用していない。[補助 config manifest](real-repo-input-config.json) はこの path・存在・hash、固定入力 commit、source manifest SHA、記録日時と **post-Actual** の来歴を持つ。[補助 freeze](real-repo-input-config-freeze.json) は manifest 全文 SHA-256 `dff1c8714de2d381aebe19f096b0242c75cb06127461a918e4722773d35cfaa9` を固定する。現在の正規 CLI 経路では両ファイルを必須とし、設定欠落・変更・通常 file 以外を成功扱いしない。JSON 正規化、設定の継承先の展開、root 外の読取りは行わない。同時 filesystem 改変からの完全隔離は保証しない。
+
+[追補の再照合記録](real-repo-input-config-recheck.json)は、従来結果 SHA-256 `dbe31a3f1e926a494811ccddcbc74bfcf4accd4fb64949bea7d98b8ed0c7daf7` と config manifest hash を参照し、設定照合結果を provenance に保存した。当時の隔離 copy と**保存済み Graph**（SHA-256 `b1d58bd695d34bf15c296e172781664492369a4bd7a99194c2fd7b7cf76e55f3`）を再照合し、Analyzer / Graph / 公開 UI は再実行・変更していない。再照合の全出力 SHA-256 は `b91d0a1cc2139eecb125793f909d77a9368eceb2fb0956bd8a62988ecb82cd2f`。従来結果との評価本体の全 field は一致し、Module 5/21、DI 9/14、Endpoint 0/21 と技術判定 **EXCEEDED** は不変。source-v6 / freeze-v6、source-v7 / freeze、v6/v7 の既存結果・分類・target・分母・閾値は書き換えていない。今回の入力確認を観測前固定済みの証拠とは呼ばない。
+
 ## 公開 Canvas / Clipboard Context
 
 固定 worktree の `pnpm web:build`（exit 0）後、公開応答と local build の SHA-256 を照合した。`index.html` は `0a1b7476…f29c215dda0`、`index-CCKFgRU0.js` は `9d8a3bc6…f34cc0f17d1`、`index-BGioPoxO.css` は `95728b91…45fc11db14` で、それぞれ全文 hash が一致する。公開 Version ID との対応はユーザー指定値であり、独立した Cloudflare API 照会はしていない。固定 commit の GitHub `CI` run `36226275264` は `success`（commit SHA を read-only 確認）。#28 は closed、#30 は open。CI green / 配信一致は accuracy 判定とは別証拠である。
@@ -121,8 +129,10 @@ ui_evidence_dir="$audit_dir/ui-evidence"
 git clone --no-checkout https://github.com/lujakob/nestjs-realworld-example-app.git "$input_clone"
 git -C "$input_clone" checkout --detach c1c2cc4e448b279ff083272df1ac50d20c3304fa
 git -C "$input_clone" status --porcelain
+git -C "$input_clone" show c1c2cc4e448b279ff083272df1ac50d20c3304fa:tsconfig.json | shasum -a 256
 mkdir "$analysis_root"
 git -C "$input_clone" archive c1c2cc4e448b279ff083272df1ac50d20c3304fa | tar -x -C "$analysis_root"
+shasum -a 256 "$analysis_root/tsconfig.json"
 
 # 以降は固定製品 worktree ルート
 git rev-parse HEAD HEAD^{tree}
@@ -132,6 +142,8 @@ target/debug/codebasecanvas analyze "$analysis_root"
 shasum -a 256 "$analysis_root/.codebasecanvas/graph.json"
 node --experimental-strip-types docs/validation/evaluate-real-repo.mjs \
   docs/validation/real-repo-source-v7.json docs/validation/real-repo-freeze.json \
+  docs/validation/real-repo-input-config.json \
+  docs/validation/real-repo-input-config-freeze.json \
   "$analysis_root/.codebasecanvas/graph.json" \
   "$analysis_root" "$audit_dir/recomputed-result.json"
 pnpm validation:test
@@ -142,12 +154,12 @@ node docs/validation/check-real-repo-ui.cjs \
 git diff --check
 ```
 
-対象 helper test 13 件は欠落と別 target false の同時計上、freeze 後の unsupported 再分類拒否、Diagnostic 重複 / scope、分母 0・未確認、source 台帳からの集計、unknown group 位置 / 件数、余分な node / calls、入力 SHA 拒否、provenance、UI 不一致時の非 0 終了・fresh mode の比較範囲を対象にし、今回すべて成功。UI check は指定された公開 URL にのみアクセスし、Graph の実 File 入力と実 Clipboard readback を行い、full Context と画面記録を指定された一時 directory 側へ保存する。公開 asset の SHA 比較を先に実施すること。今回の技術操作を人間 UX 試験または hosted CI の追加試験と呼ばない。[#27 性能](../POC_BENCHMARK.md)は別 commit / 別測定の既存結果であり、今回の debug build / UI 操作から性能値を再計測していない。
+既存 helper test 13 件は欠落と別 target false の同時計上、freeze 後の unsupported 再分類拒否、Diagnostic 重複 / scope、分母 0・未確認、source 台帳からの集計、unknown group 位置 / 件数、余分な node / calls、入力 SHA 拒否、provenance、UI 不一致時の非 0 終了・fresh mode の比較範囲を対象にする。今回の root `tsconfig.json` 用 1 件を追加し、対象検証は **14/14 成功**。UI check は指定された公開 URL にのみアクセスし、Graph の実 File 入力と実 Clipboard readback を行い、full Context と画面記録を指定された一時 directory 側へ保存する。公開 asset の SHA 比較を先に実施すること。今回の技術操作を人間 UX 試験または hosted CI の追加試験と呼ばない。[#27 性能](../POC_BENCHMARK.md)は別 commit / 別測定の既存結果であり、今回の debug build / UI 操作から性能値を再計測していない。
 
 専門レビューは二段階。source-v6 の観測前 oracle / 対応範囲 / 分母は Actual を見ないレビューで **ALLOW**。評価 helper の初回レビューは余分な node / calls、UI の非 0 判定、Graph provenance と回帰不足で **BLOCK**。これらを helper/test のみ修正し、影響範囲の再照合後、同じ指摘範囲の最終レビューは **ALLOW**。納品時の `validation:test` 接続・診断項目・報告訂正の限定レビューも **ALLOW**。製品 Analyzer / Web の source は変更していない。`git diff --check` は成功。Codex Companion の **Stop Review Gate は NOT_RUN**。この Codex desktop 作業では Claude Code `Stop` hook が呼び出されず、対象 worktree の Companion `stopReviewGate` 設定も false だった。2026-09-26 UTC に正規の手動 `codex:review --wait --scope working-tree` を同じ作業差分で一度起動したが、設定モデル `gpt-6-sol` が ChatGPT アカウントの Codex review に非対応という 400 エラーで終了し、判定は得られなかった。設定変更や代替モデル実行はしていない。専門レビューと失敗した手動起動を Stop Gate 実施と読み替えない。
 
 PR #65 の初回 HEAD `c252102a8e717ed84b6a6cf18b81623eafb1c5f6` に対する GitHub の Codex 自動レビューは、評価 helper に P2 を 3 件指摘した。固定入力の `src` 外の TypeScript / Prisma schema 候補の見逃し、一般の error 診断を技術判定に反映しない点、台帳 item のない既知宣言 owner からの余分な family edge の見逃しである。3 条件を既存 13 test の回帰チェックに加え、修正前は 3 件失敗、修正後は 13/13 成功。helper は固定 Analyzer と同じ除外 directory / 対象拡張子で root 全体を inventory 照合し、symlink は推測せず失敗させる。error 診断を `errorDiagnostics` に保存して EXCEEDED とし、宣言台帳の family 別既知 owner からの余分な relation を false に数える。**台帳・閾値・分母・製品 source は不変**。保存済みの固定 Graph を再照合した結果は error 0、family と calls の集計・EXCEEDED は不変。これら 3 件の限定専門レビューは **ALLOW**。この修正は初回 HEAD の Hosted CI 後であり、最終 HEAD の CI を別途確認する。
 
-納品差分で `pnpm run ci` は成功。Rust build / format / clippy / test（189 pass、1 ignored）、Web unit 163、評価 helper 13、Web typecheck / build、fixture typecheck、E2E 準備 helper 2、公開設定検査 1、Chromium E2E 5 を実ログで確認した。`pnpm audit` は独立して実行し、既知の脆弱性 0。これは納品前のローカル検証であり、固定製品 commit の過去 CI や PR 最終 HEAD の Hosted CI とは別の証拠である。通常 CI は外部実 repo の取得・技術監査・公開 URL へのアクセスを実行しない。
+前回 HEAD `0b635bbdfc54c5e73dda657455a7ae52616a7021` の納品差分で `pnpm run ci` は成功し、評価 helper は 13/13 成功した。今回の config 追補後も `env -u RUST_TEST_THREADS pnpm run ci` は成功。Rust build / format / clippy / test（189 pass、1 ignored）、Web unit 163、評価 helper **14/14**、Web typecheck / build、fixture typecheck、E2E 準備 helper 2、公開設定検査 1、Chromium E2E 5 を実ログで確認した。`pnpm audit` は前回独立して実行し、既知の脆弱性 0。これはローカル検証であり、固定製品 commit の過去 CI や PR 最終 HEAD の Hosted CI とは別の証拠である。通常 CI は外部実 repo の取得・技術監査・公開 URL へのアクセスを実行しない。
 
 未確認: 独立の新 profile による観測前固定、初見人間参加者の正答 / 理解 / 時間、source-first 比較、実 runtime 配線、自然な Clipboard 拒否、巨大 repo / 長時間操作、公開 Version ID の API による独立照合。これらを 0 件や成功として埋めない。今回の超過と未確認が残るため、#30 を GO / close にしない。

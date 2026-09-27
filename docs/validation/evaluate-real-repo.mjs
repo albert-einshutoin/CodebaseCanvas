@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const relationKey = r => `${r.from}\0${r.kind}\0${r.to}`;
@@ -165,7 +165,12 @@ export function evaluate(ledgerText, freeze, graph) {
 }
 
 
-export function verifyInputFiles(ledger, freeze, inputRoot) {
+export function verifyInputFiles(ledger, freeze, inputRoot, configManifestText, configFreeze) {
+  if (typeof configManifestText !== 'string' || !configFreeze?.manifestSha256) throw Error('input config manifest missing');
+  const configManifestSha256 = createHash('sha256').update(configManifestText).digest('hex');
+  if (configFreeze.version !== 1 || configManifestSha256 !== configFreeze.manifestSha256) throw Error('input config manifest hash mismatch');
+  const configManifest = JSON.parse(configManifestText);
+  const config = configManifest.config;
   const expected = new Map(ledger.sourceInventory.map(f => [f.file, f.sha256]));
   const found = [];
   // Match the fixed analyzer discovery exclusions; reject aliases rather than guessing their resolved scope.
@@ -184,13 +189,29 @@ export function verifyInputFiles(ledger, freeze, inputRoot) {
   if (found.length !== expected.size || found.some(file => !expected.has(file))) throw Error('input source inventory mismatch');
   const manifest = [...expected].map(([file, sha]) => `${sha}  ${file}\n`).join('');
   if (createHash('sha256').update(manifest).digest('hex') !== freeze.inputSourceManifestSha256) throw Error('input manifest freeze mismatch');
+  if (configManifest.version !== 1 || !ledger.fixedInput?.commit || configManifest.inputCommit !== ledger.fixedInput.commit ||
+      configManifest.sourceManifestSha256 !== freeze.inputSourceManifestSha256 || config?.path !== 'tsconfig.json' ||
+      typeof config.exists !== 'boolean' || (config.exists ? !/^[0-9a-f]{64}$/.test(config.sha256) : config.sha256 !== null))
+    throw Error('input config manifest binding mismatch');
   for (const [file, sha] of expected) {
     if (createHash('sha256').update(readFileSync(join(inputRoot, file))).digest('hex') !== sha) throw Error(`input source hash mismatch: ${file}`);
   }
-  return { sourceFiles: expected.size, manifestSha256: freeze.inputSourceManifestSha256 };
+  const configPath = join(inputRoot, config.path);
+  let configStat;
+  try { configStat = lstatSync(configPath); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  if (Boolean(configStat) !== config.exists) throw Error('input config presence mismatch');
+  if (configStat && !configStat.isFile()) throw Error('input config is not a regular file');
+  if (configStat && createHash('sha256').update(readFileSync(configPath)).digest('hex') !== config.sha256)
+    throw Error('input config hash mismatch');
+  return { sourceFiles: expected.size, manifestSha256: freeze.inputSourceManifestSha256,
+    config: { path: config.path, exists: config.exists, sha256: config.sha256, manifestSha256: configManifestSha256 } };
 }
 
 export function makeResult(ledgerText, freeze, graph, graphText, inputVerification) {
+  if (!inputVerification?.config?.manifestSha256) throw Error('input config verification missing');
   const provenance = {
     ledgerSha256: freeze.ledgerSha256,
     inputSourceManifestSha256: freeze.inputSourceManifestSha256,
@@ -198,17 +219,22 @@ export function makeResult(ledgerText, freeze, graph, graphText, inputVerificati
     analyzerVersion: graph.metadata.analyzerVersion,
     analyzedAt: graph.metadata.analyzedAt,
     rootName: graph.metadata.rootName,
+    inputConfigManifestSha256: inputVerification.config.manifestSha256,
+    inputConfigVerification: { path: inputVerification.config.path, exists: inputVerification.config.exists, sha256: inputVerification.config.sha256 },
   };
   return { provenance, inputVerification, ...evaluate(ledgerText, freeze, graph) };
 }
 
 if (process.argv[1]?.endsWith('/evaluate-real-repo.mjs')) {
-  const [ledgerPath, freezePath, graphPath, inputRoot, outputPath] = process.argv.slice(2);
-  if (!ledgerPath || !freezePath || !graphPath || !inputRoot || !outputPath) throw Error('usage: node --experimental-strip-types evaluate-real-repo.mjs LEDGER FREEZE GRAPH INPUT_ROOT OUTPUT');
+  const args = process.argv.slice(2);
+  if (args.length !== 7 || args.some(arg => !arg)) throw Error('usage: node --experimental-strip-types evaluate-real-repo.mjs LEDGER FREEZE CONFIG_MANIFEST CONFIG_FREEZE GRAPH INPUT_ROOT OUTPUT');
+  const [ledgerPath, freezePath, configManifestPath, configFreezePath, graphPath, inputRoot, outputPath] = args;
   const { SystemGraphSchema } = await import('../../apps/web/src/graph.ts');
   const ledgerText = readFileSync(ledgerPath, 'utf8');
   const frozen = JSON.parse(readFileSync(freezePath, 'utf8'));
-  const inputVerification = verifyInputFiles(JSON.parse(ledgerText), frozen, inputRoot);
+  const configManifestText = readFileSync(configManifestPath, 'utf8');
+  const configFreeze = JSON.parse(readFileSync(configFreezePath, 'utf8'));
+  const inputVerification = verifyInputFiles(JSON.parse(ledgerText), frozen, inputRoot, configManifestText, configFreeze);
   const graphText = readFileSync(graphPath, 'utf8');
   const graph = SystemGraphSchema.parse(JSON.parse(graphText));
   const result = makeResult(ledgerText, frozen, graph, graphText, inputVerification);
