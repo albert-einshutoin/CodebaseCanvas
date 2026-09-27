@@ -1,0 +1,1121 @@
+{
+  "status": "PROPOSED_NOT_IMPLEMENTED",
+  "proposal": "SystemGraph v0.2 frameworkDeclarations; snippets are hand-authored expectations, not Analyzer output",
+  "fixedProfile": {
+    "inputCommit": "c1c2cc4e448b279ff083272df1ac50d20c3304fa",
+    "nestTypeorm": "7.0.0",
+    "typeorm": "0.2.24",
+    "manifestSha256": "673b7b0e871621f465d76cfdeafa00df6c233f78e35ec636181b71424e1d63d2",
+    "lockSha256": "d5e2bbd08d770652e964b0f540b2c3253f948805eefa1bf6e912ecf6999e16c0",
+    "tsconfigSha256": "0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "caseFields": "facts and derivations are distinct; sourceFacts are parse/origin facts and are not always serialized as frameworkDeclarations. refs use test shorthand file#name, not serialized canonical IDs. profile fixed uses fixedProfile including root tsconfig option values; profile.base=fixed inherits fixedProfile and explicit keys override it; each profileVariant overrides that base as a separate input with the same expectation. Snippets are parser-oriented and may omit external stubs or include rejected TypeScript forms in negative cases. v01/v02 relation arrays concern TypeORM semantic relations only; other safe owner, import, or sibling module edges may coexist. Diagnostic lists state required codes, not exhaustive parser diagnostics. Every runtime outcome is unverified.",
+  "cases": [
+    {
+      "id": "C01-same-file",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Entity } from 'typeorm';\n@Entity() export class User {}\nimport { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\n@Injectable() export class S { constructor(@InjectRepository(User) readonly repo: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/s.ts#User",
+            "connectionSyntax": "omitted"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 0,
+            "kind": "string",
+            "value": "UserRepository",
+            "comparisonKey": "nest_string:557365725265706f7369746f7279"
+          }
+        ],
+        "diagnostics": [],
+        "forbiddenEdges": [
+          "S->User injects",
+          "User database_model",
+          "S->User reads/writes"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/s.ts#S",
+          "src/s.ts#User"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C02-import-alias",
+      "profile": "fixed",
+      "files": {
+        "src/user.ts": "export class User {}\n",
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository as IR } from '@nestjs/typeorm';\nimport { User as Account } from './user';\n@Injectable() export class S { constructor(@IR(Account) readonly repo: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "decoratorExport": "InjectRepository",
+            "decoratorLocal": "IR",
+            "entity": "src/user.ts#User",
+            "entityLocal": "Account"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 0,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [],
+        "forbiddenEdges": [
+          "S->User injects",
+          "S->Account fictitious class"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/s.ts#S",
+          "src/user.ts#User"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C03-default-and-named",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nclass User {}\n@Injectable() export class S { constructor(@InjectRepository(User) a: unknown, @InjectRepository(User, 'default') b: unknown, @InjectRepository(User, 'reports') c: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/s.ts#User",
+            "connectionSyntax": "omitted"
+          },
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "entity": "src/s.ts#User",
+            "connectionSyntax": "literal:default"
+          },
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 2,
+            "entity": "src/s.ts#User",
+            "connectionSyntax": "literal:reports"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 0,
+            "kind": "string",
+            "value": "UserRepository"
+          },
+          {
+            "requestParameter": 1,
+            "kind": "string",
+            "value": "UserRepository"
+          },
+          {
+            "requestParameter": 2,
+            "kind": "string",
+            "value": "reports_UserRepository"
+          }
+        ],
+        "diagnostics": [],
+        "forbiddenEdges": [
+          "any S->User injects",
+          "merge three request occurrences"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/s.ts#S",
+          "request parameter 0"
+        ]
+      },
+      "note": "Omitted and explicit default share token comparison identity; named connection differs."
+    },
+    {
+      "id": "C04-unknown-connection-with-sibling",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nclass User {}\ndeclare const connectionName: string;\n@Injectable() export class S { constructor(@InjectRepository(User, connectionName) bad: unknown, @InjectRepository(User) good: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/s.ts#User",
+            "connectionSyntax": "unknown_expression"
+          },
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "entity": "src/s.ts#User",
+            "connectionSyntax": "omitted"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 1,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_connection_expression_unknown@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "default token for parameter 0",
+          "S->User injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "request parameter 1",
+          "src/s.ts#S"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C05-same-name-distinct-source",
+      "profile": "fixed",
+      "files": {
+        "src/a/user.ts": "export class User {}\n",
+        "src/b/user.ts": "export class User {}\n",
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nimport { User as A } from './a/user';\nimport { User as B } from './b/user';\n@Injectable() export class S { constructor(@InjectRepository(A) a: unknown, @InjectRepository(B) b: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/a/user.ts#User"
+          },
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "entity": "src/b/user.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 0,
+            "kind": "string",
+            "value": "UserRepository"
+          },
+          {
+            "requestParameter": 1,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_token_name_collision@src/s.ts#S"
+        ],
+        "forbiddenEdges": [
+          "merge entity source IDs",
+          "claim necessarily distinct runtime string tokens",
+          "choose one provider"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "both source class IDs",
+          "both request occurrences"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C06-multiple-parameter-and-module-occurrences",
+      "profile": "fixed",
+      "files": {
+        "src/e.ts": "export class User {}\n",
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nimport { User } from './e';\n@Injectable() export class S { constructor(@InjectRepository(User) a: unknown, @InjectRepository(User) b: unknown) {} }\n",
+        "src/m.ts": "import { Module } from '@nestjs/common';\nimport { TypeOrmModule } from '@nestjs/typeorm';\nimport { User } from './e';\n@Module({imports:[TypeOrmModule.forFeature([User])]}) export class M {}\n@Module({imports:[TypeOrmModule.forFeature([User])]}) export class N {}\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/e.ts#User"
+          },
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "entity": "src/e.ts#User"
+          },
+          {
+            "kind": "for_feature",
+            "owner": "src/m.ts#M",
+            "entityIndex": 0,
+            "entity": "src/e.ts#User"
+          },
+          {
+            "kind": "for_feature",
+            "owner": "src/m.ts#N",
+            "entityIndex": 0,
+            "entity": "src/e.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "kind": "string",
+            "value": "UserRepository",
+            "appliesTo": "all four distinct occurrences"
+          }
+        ],
+        "diagnostics": [],
+        "forbiddenEdges": [
+          "deduplicate declarations by token",
+          "M/N->User contains",
+          "M/N->User depends_on"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin",
+            "unsupported_module_dynamic"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/s.ts#S",
+          "src/m.ts#M",
+          "src/m.ts#N"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C07-for-feature-static-and-sibling-module",
+      "profile": "fixed",
+      "files": {
+        "src/e.ts": "export class User {}\nexport class Team {}\n",
+        "src/m.ts": "import { Module } from '@nestjs/common';\nimport { TypeOrmModule } from '@nestjs/typeorm';\nimport { User, Team } from './e';\n@Module({}) class Other {}\n@Module({imports:[TypeOrmModule.forFeature([User, Team]), Other]}) export class M {}\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "for_feature",
+            "owner": "src/m.ts#M",
+            "metadataEntryIndex": 0,
+            "entities": [
+              "src/e.ts#User",
+              "src/e.ts#Team"
+            ],
+            "connectionSyntax": "omitted"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "kind": "string",
+            "values": [
+              "UserRepository",
+              "TeamRepository"
+            ]
+          }
+        ],
+        "diagnostics": [],
+        "forbiddenEdges": [
+          "M->User contains",
+          "M->Team contains",
+          "M->TypeOrmModule depends_on"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_module_dynamic"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/m.ts#M -> src/m.ts#Other depends_on"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C08-spread-with-safe-siblings",
+      "profile": "fixed",
+      "files": {
+        "src/e.ts": "export class User {}\nexport class Team {}\n",
+        "src/m.ts": "import { Module } from '@nestjs/common';\nimport { TypeOrmModule } from '@nestjs/typeorm';\nimport { User, Team } from './e';\ndeclare const more: Function[];\n@Module({imports:[TypeOrmModule.forFeature([User, ...more, Team])]}) export class M {}\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "for_feature",
+            "owner": "src/m.ts#M",
+            "entities": [
+              "src/e.ts#User",
+              "unknown_spread",
+              "src/e.ts#Team"
+            ]
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "kind": "string",
+            "values": [
+              "UserRepository",
+              "TeamRepository"
+            ],
+            "scope": "known entries only"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_feature_spread_unknown@entity:1"
+        ],
+        "forbiddenEdges": [
+          "guess spread entries",
+          "claim final provider set",
+          "M->User contains"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_module_dynamic"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/m.ts#M",
+          "known entity entries 0 and 2"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C21-dynamic-feature-array-with-safe-sibling",
+      "profile": "fixed",
+      "files": {
+        "src/e.ts": "export class User {}\n",
+        "src/m.ts": "import { Module } from '@nestjs/common';\nimport { TypeOrmModule } from '@nestjs/typeorm';\nimport { User } from './e';\ndeclare const entities: Function[];\n@Module({}) class Other {}\n@Module({imports:[TypeOrmModule.forFeature(entities), Other]}) export class M {}\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "for_feature",
+            "owner": "src/m.ts#M",
+            "metadataEntryIndex": 0,
+            "entitiesSyntax": "unknown_expression"
+          }
+        ],
+        "derivedUnderProfile": [],
+        "diagnostics": [
+          "typeorm_feature_array_unknown@imports:0"
+        ],
+        "forbiddenEdges": [
+          "infer registered User from import presence",
+          "M->User contains",
+          "claim final provider set"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_module_dynamic"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/m.ts#M -> src/m.ts#Other depends_on"
+        ]
+      },
+      "note": "The direct forFeature call is located, but no entity entry or token is inferred from a dynamic array."
+    },
+    {
+      "id": "C09-wrapper-with-safe-sibling",
+      "profile": "fixed",
+      "files": {
+        "src/e.ts": "export class User {}\n",
+        "src/m.ts": "import { Module } from '@nestjs/common';\nimport { TypeOrmModule } from '@nestjs/typeorm';\nimport { User } from './e';\nfunction wrap(x: unknown) { return x; }\n@Module({}) class Other {}\n@Module({imports:[wrap(TypeOrmModule.forFeature([User])), Other]}) export class M {}\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "unclassified_dynamic_import",
+            "owner": "src/m.ts#M",
+            "metadataEntryIndex": 0
+          }
+        ],
+        "derivedUnderProfile": [],
+        "diagnostics": [
+          "typeorm_wrapper_origin_unknown@imports:0"
+        ],
+        "forbiddenEdges": [
+          "M->User contains",
+          "unwrap and assert forFeature registration"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_module_dynamic"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/m.ts#M -> src/m.ts#Other depends_on"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C10-foreign-and-shadow-with-positive-request",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository as Good } from '@nestjs/typeorm';\nimport { InjectRepository as Foreign } from 'foreign';\nclass User {}\nfunction InjectRepository(_: unknown): ParameterDecorator { return () => {}; }\n@Injectable() export class S { constructor(@Foreign(User) a: unknown, @InjectRepository(User) b: unknown, @Good(User) c: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 2,
+            "entity": "src/s.ts#User",
+            "decoratorExport": "InjectRepository"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 2,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_decorator_origin_unknown@parameter:0",
+          "typeorm_decorator_origin_unknown@parameter:1"
+        ],
+        "forbiddenEdges": [
+          "S->User injects",
+          "treat foreign/local spelling as official"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "parameter 2",
+          "src/s.ts#S"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C11-type-only-with-positive-request",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport type { InjectRepository as TypeOnly } from '@nestjs/typeorm';\nimport { InjectRepository as Good } from '@nestjs/typeorm';\nclass User {}\n@Injectable() export class S { constructor(@TypeOnly(User) bad: unknown, @Good(User) good: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "entity": "src/s.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 1,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_decorator_type_only@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "treat TypeOnly as runtime decorator",
+          "S->User injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "parameter 1",
+          "src/s.ts#S"
+        ]
+      },
+      "note": "Negative syntax is parse-oriented; TypeScript type checking may reject its use as a value."
+    },
+    {
+      "id": "C12-reexport-with-positive-request",
+      "profile": "fixed",
+      "files": {
+        "src/barrel.ts": "export { InjectRepository as ViaBarrel } from '@nestjs/typeorm';\n",
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository as Good } from '@nestjs/typeorm';\nimport { ViaBarrel } from './barrel';\nclass User {}\n@Injectable() export class S { constructor(@ViaBarrel(User) bad: unknown, @Good(User) good: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "entity": "src/s.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 1,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_decorator_origin_unresolved@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "follow barrel silently",
+          "S->User injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "parameter 1",
+          "src/s.ts#S"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C13-namespace-with-positive-request",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport * as ORM from '@nestjs/typeorm';\nimport { InjectRepository as Good } from '@nestjs/typeorm';\nclass User {}\n@Injectable() export class S { constructor(@ORM.InjectRepository(User) bad: unknown, @Good(User) good: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "entity": "src/s.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 1,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_namespace_origin_unknown@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "infer namespace member origin from spelling",
+          "S->User injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "parameter 1",
+          "src/s.ts#S"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C14-custom-repository-and-schema",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nimport { Repository, EntitySchema } from 'typeorm';\nclass User {}\nclass Custom extends Repository<User> {}\nconst schema = new EntitySchema({name:'User', columns:{}});\n@Injectable() export class S { constructor(@InjectRepository(Custom) custom: unknown, @InjectRepository(schema) schemed: unknown, @InjectRepository(User) normal: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "argument": "src/s.ts#Custom"
+          },
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 1,
+            "argument": "src/s.ts#schema"
+          },
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 2,
+            "entity": "src/s.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 2,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_custom_repository_branch_unsupported@parameter:0",
+          "typeorm_entity_schema_unsupported@parameter:1"
+        ],
+        "forbiddenEdges": [
+          "CustomRepository guessed from ordinary rule",
+          "schema as Prisma database_model",
+          "S->User injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "parameter 2",
+          "src/s.ts#S"
+        ]
+      },
+      "note": "EntitySchema is a parse-only negative shape here; @nestjs/typeorm 7.0.0 types InjectRepository(entity) as Function, so this case is not a TypeScript build expectation."
+    },
+    {
+      "id": "C15-provider-override-and-unregistered",
+      "profile": "fixed",
+      "files": {
+        "src/s.ts": "import { Injectable, Module } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nclass User {}\nclass Fake {}\n@Injectable() class S { constructor(@InjectRepository(User) repo: unknown) {} }\n@Module({providers:[S, {provide:'UserRepository', useClass:Fake}]}) export class M {}\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/s.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 0,
+            "kind": "string",
+            "value": "UserRepository"
+          }
+        ],
+        "diagnostics": [],
+        "forbiddenEdges": [
+          "S->Fake injects",
+          "request matches actual provider",
+          "DB reads/writes"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin",
+            "unsupported_module_provider"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/s.ts#S",
+          "src/s.ts#M"
+        ]
+      },
+      "note": "No forFeature declaration is present; static token equality to a manual provider is not a runtime selection guarantee."
+    },
+    {
+      "id": "C16-version-unknown",
+      "profile": {
+        "nestTypeormLockedVersion": null
+      },
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nclass User {}\n@Injectable() export class S { constructor(@InjectRepository(User) repo: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/s.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [],
+        "diagnostics": [
+          "typeorm_version_unverified@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "guess v7 token",
+          "S->User injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/s.ts#S",
+          "src/s.ts#User"
+        ]
+      },
+      "note": "Absence of a verifiable lock permits syntax facts only."
+    },
+    {
+      "id": "C17-manifest-lock-mismatch",
+      "profile": {
+        "manifest": "@nestjs/typeorm ^7.0.0",
+        "lock": "@nestjs/typeorm 8.0.0"
+      },
+      "files": {
+        "src/s.ts": "import { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nclass User {}\n@Injectable() export class S { constructor(@InjectRepository(User) repo: unknown) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "repository_request",
+            "owner": "src/s.ts#S",
+            "parameterIndex": 0,
+            "entity": "src/s.ts#User"
+          }
+        ],
+        "derivedUnderProfile": [],
+        "diagnostics": [
+          "typeorm_version_conflict@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "use manifest range as installed version",
+          "guess v7 token"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_decorator_origin"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/s.ts#S",
+          "src/s.ts#User"
+        ]
+      },
+      "note": ""
+    },
+    {
+      "id": "C18-external-Connection-verified",
+      "profile": {
+        "base": "fixed",
+        "tsconfigSha256": "0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+      },
+      "files": {
+        "src/app.ts": "import { Module } from '@nestjs/common';\nimport { Connection } from 'typeorm';\n@Module({}) export class App { constructor(readonly connection: Connection) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "constructor_type_reference",
+            "owner": "src/app.ts#App",
+            "parameterIndex": 0,
+            "importedType": "typeorm/Connection"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "requestParameter": 0,
+            "kind": "external_class_export",
+            "value": "typeorm@0.2.24/Connection",
+            "runtimeClassIdentity": "unverified"
+          }
+        ],
+        "diagnostics": [],
+        "forbiddenEdges": [
+          "App->fictitious external class injects",
+          "Connection as DataSource"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_external"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": [],
+          "frameworkDeclarationKinds": [
+            "typeorm_external_class_request"
+          ]
+        },
+        "positiveControl": [
+          "src/app.ts#App"
+        ]
+      },
+      "note": "Requires fixed typeorm 0.2.24 export/class evidence and emitDecoratorMetadata=true; still no runtime injection guarantee."
+    },
+    {
+      "id": "C19-external-Connection-unverified",
+      "profile": {
+        "typeormLockedVersion": null,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+      },
+      "files": {
+        "src/app.ts": "import { Module } from '@nestjs/common';\nimport { Connection } from 'typeorm';\n@Module({}) export class App { constructor(readonly connection: Connection) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "constructor_type_reference",
+            "owner": "src/app.ts#App",
+            "parameterIndex": 0,
+            "importedType": "typeorm/Connection"
+          }
+        ],
+        "derivedUnderProfile": [],
+        "diagnostics": [
+          "typeorm_external_class_profile_unknown@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "assert external class from spelling",
+          "App->Connection injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_external"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": [],
+          "frameworkDeclarationKinds": []
+        },
+        "positiveControl": [
+          "src/app.ts#App"
+        ]
+      },
+      "note": "Unknown TypeORM profile must not generalize all ExternalSymbol bindings to classes."
+    },
+    {
+      "id": "C22-external-Connection-metadata-unavailable",
+      "profile": {
+        "base": "fixed",
+        "experimentalDecorators": true
+      },
+      "profileVariants": [
+        {
+          "emitDecoratorMetadata": null,
+          "tsconfigSha256": null
+        },
+        {
+          "emitDecoratorMetadata": false,
+          "tsconfigSha256": null
+        }
+      ],
+      "files": {
+        "src/app.ts": "import { Module } from '@nestjs/common';\nimport { Connection } from 'typeorm';\n@Module({}) export class App { constructor(readonly connection: Connection) {} }\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "constructor_type_reference",
+            "owner": "src/app.ts#App",
+            "parameterIndex": 0,
+            "importedType": "typeorm/Connection"
+          }
+        ],
+        "derivedUnderProfile": [],
+        "diagnostics": [
+          "typeorm_decorator_metadata_unavailable@parameter:0"
+        ],
+        "forbiddenEdges": [
+          "assert class-token request without metadata emit",
+          "App->Connection injects"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_di_external"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": [],
+          "frameworkDeclarationKinds": []
+        },
+        "positiveControl": [
+          "src/app.ts#App",
+          "Connection source type reference"
+        ]
+      },
+      "note": "Run both profile variants. A confirmed external class export remains a type reference; metadata disabled or unverified must not become a class-token request."
+    },
+    {
+      "id": "C20-forRoot-without-runtime-config",
+      "profile": "fixed",
+      "files": {
+        "src/app.ts": "import { Module } from '@nestjs/common';\nimport { TypeOrmModule } from '@nestjs/typeorm';\n@Module({imports:[TypeOrmModule.forRoot()]}) export class App {}\n"
+      },
+      "expect": {
+        "sourceFacts": [
+          {
+            "kind": "for_root",
+            "owner": "src/app.ts#App",
+            "metadataEntryIndex": 0,
+            "optionsSyntax": "omitted"
+          }
+        ],
+        "derivedUnderProfile": [
+          {
+            "kind": "external_class_export",
+            "value": "typeorm@0.2.24/Connection",
+            "runtimeClassIdentity": "unverified"
+          }
+        ],
+        "diagnostics": [
+          "typeorm_root_runtime_config_unknown@imports:0"
+        ],
+        "forbiddenEdges": [
+          "App->TypeOrmModule depends_on",
+          "claim DB connection success",
+          "copy ormconfig secrets"
+        ],
+        "v01": {
+          "diagnostics": [
+            "unsupported_module_dynamic"
+          ],
+          "typeormSemanticRelations": []
+        },
+        "v02": {
+          "runtime": "unverified",
+          "typeormSemanticEdges": []
+        },
+        "positiveControl": [
+          "src/app.ts#App"
+        ]
+      },
+      "note": ""
+    }
+  ]
+}
