@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "recordedAtUtc": "2026-09-27T04:23:15Z",
+  "phase": "post-Actual input identity supplement; not part of the source-v6 or source-v7 freeze",
+  "inputCommit": "c1c2cc4e448b279ff083272df1ac50d20c3304fa",
+  "sourceManifestSha256": "47b4d73861771f4bae81502be1d541dd09991cddf23e04dc738d558ddf45c405",
+  "config": {
+    "path": "tsconfig.json",
+    "exists": true,
+    "sha256": "0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f"
+  }
+}

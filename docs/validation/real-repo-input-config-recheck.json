@@ -1,0 +1,98 @@
+{
+  "recordedAtUtc": "2026-09-27T04:24:19.662Z",
+  "phase": "post-Actual input identity supplement; source-v6/v7 freezes and prior result retained",
+  "provenance": {
+    "productCommit": "434bf36a815232f88fc157dd1c4a0df5915030da",
+    "productTree": "894b669e1beb8cb1a21c8b78c8c3e7e5fb005f71",
+    "inputCommit": "c1c2cc4e448b279ff083272df1ac50d20c3304fa",
+    "priorResultPath": "docs/validation/real-repo-result.json",
+    "priorResultSha256": "dbe31a3f1e926a494811ccddcbc74bfcf4accd4fb64949bea7d98b8ed0c7daf7",
+    "fullRecheckResultSha256": "b91d0a1cc2139eecb125793f909d77a9368eceb2fb0956bd8a62988ecb82cd2f",
+    "ledgerSha256": "01c834c700dceff889a1458e46c32586ef0d01bdcacdad7187ee892ab47ecc20",
+    "inputSourceManifestSha256": "47b4d73861771f4bae81502be1d541dd09991cddf23e04dc738d558ddf45c405",
+    "graphSha256": "b1d58bd695d34bf15c296e172781664492369a4bd7a99194c2fd7b7cf76e55f3",
+    "analyzerVersion": "0.1.0",
+    "analyzedAt": "2026-09-26T15:26:51Z",
+    "rootName": "codebasecanvas-issue30-analysis",
+    "inputConfigManifestSha256": "dff1c8714de2d381aebe19f096b0242c75cb06127461a918e4722773d35cfaa9",
+    "inputConfigVerification": {
+      "path": "tsconfig.json",
+      "exists": true,
+      "sha256": "0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f"
+    }
+  },
+  "inputVerification": {
+    "sourceFiles": 35,
+    "manifestSha256": "47b4d73861771f4bae81502be1d541dd09991cddf23e04dc738d558ddf45c405",
+    "config": {
+      "path": "tsconfig.json",
+      "exists": true,
+      "sha256": "0da1a8198a9dbed9fcc80b412af5b621667aa36ea8b2fa976e9c31b2587f951f",
+      "manifestSha256": "dff1c8714de2d381aebe19f096b0242c75cb06127461a918e4722773d35cfaa9"
+    }
+  },
+  "comparison": {
+    "priorResultCoreMatches": true,
+    "technicalVerdict": "EXCEEDED",
+    "families": {
+      "module": {
+        "sourceItems": 21,
+        "supportedExpected": 16,
+        "correct": 16,
+        "missing": 0,
+        "false": 0,
+        "unsupported": 5,
+        "diagnosed": 5,
+        "silentOmission": 0,
+        "unresolved": 5,
+        "verdict": "EXCEEDED"
+      },
+      "di": {
+        "sourceItems": 14,
+        "supportedExpected": 5,
+        "correct": 5,
+        "missing": 0,
+        "false": 0,
+        "unsupported": 9,
+        "diagnosed": 9,
+        "silentOmission": 0,
+        "unresolved": 9,
+        "verdict": "EXCEEDED"
+      },
+      "endpoint": {
+        "sourceItems": 21,
+        "supportedExpected": 42,
+        "correct": 42,
+        "missing": 0,
+        "false": 0,
+        "unsupported": 0,
+        "diagnosed": 0,
+        "silentOmission": 0,
+        "unresolved": 0,
+        "verdict": "WITHIN"
+      }
+    },
+    "calls": {
+      "expectedSummary": {
+        "examinedCalls": 141,
+        "emittedCalls": 7,
+        "skippedCalls": 134
+      },
+      "actualSummary": {
+        "scope": "parsed_named_class_methods",
+        "mode": "same_class_only",
+        "examinedCalls": 141,
+        "emittedCalls": 7,
+        "skippedCalls": 134
+      },
+      "missingEdges": 0,
+      "falseEdges": 0,
+      "unknownMismatches": 0
+    }
+  },
+  "execution": {
+    "savedGraphReused": true,
+    "analyzerRerun": false,
+    "publicUiRerun": false
+  }
+}

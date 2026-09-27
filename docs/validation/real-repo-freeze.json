@@ -1,0 +1,10 @@
+{
+  "version": "source-v7",
+  "recordedAtUtc": "2026-09-26T15:28:18.422519+00:00",
+  "ledgerSha256": "01c834c700dceff889a1458e46c32586ef0d01bdcacdad7187ee892ab47ecc20",
+  "inputSourceManifestSha256": "47b4d73861771f4bae81502be1d541dd09991cddf23e04dc738d558ddf45c405",
+  "supersedes": "source-v6; post-Actual source recheck found method span starts at decorator, not name; source-v6 remains the pre-Actual reviewed baseline. No family/source denominator or threshold changed.",
+  "reviewState": "SELF_RECHECKED_POST_ACTUAL",
+  "sourceRecheck": "TypeScript 5.9 parser method.getStart on fixed source and fixed crates/analyzer/src/typescript.rs method.span.start independently confirm decorator-start location",
+  "notes": "Hash and repository time are not independent timestamp proof. Profile observed in #7 and #27 before ledger."
+}

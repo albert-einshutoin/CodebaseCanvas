@@ -1,0 +1,12 @@
+{
+  "version": "source-v6",
+  "recordedAtUtc": "2026-09-26T15:25:39.474830+00:00",
+  "ledgerSha256": "78d2ae4de12c11bb943f6cfe2654fb3a23b280f6364ce96f9d95b4fd361d20bd",
+  "inputSourceManifestSha256": "47b4d73861771f4bae81502be1d541dd09991cddf23e04dc738d558ddf45c405",
+  "supersedes": "source-v5; derive unique call edge count from ledger tuples instead of hard-coding unique target count",
+  "reviewState": "ALLOW",
+  "notes": "Hash and repository time are not independent timestamp proof. Profile observed in #7 and #27 before ledger.",
+  "reviewedAtUtc": "2026-09-26T15:26:33.031224+00:00",
+  "reviewScope": "source-v6 vs fixed source and contracts only; reviewer did not read Actual or #27 raw Graph",
+  "knownExposure": "#7 source probe and #27 aggregate counts were known before this oracle; not a blind holdout"
+}
