@@ -10097,6 +10097,426 @@
         ],
         "unknown": "strip-me"
       }
+    },
+    {
+      "name": "unknown connection rejects normalized name",
+      "graph": {
+        "schemaVersion": "0.2",
+        "metadata": {
+          "analyzerVersion": "contract-fixture",
+          "analyzedAt": "2026-01-01T00:00:00Z",
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 0,
+            "emittedCalls": 0,
+            "skippedCalls": 0
+          }
+        },
+        "nodes": [
+          {
+            "id": "class:7372632f732e7473:53",
+            "kind": "class",
+            "name": "S",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          },
+          {
+            "id": "class:7372632f732e7473:55736572",
+            "kind": "class",
+            "name": "User",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          }
+        ],
+        "edges": [],
+        "diagnostics": [],
+        "frameworkDeclarations": [
+          {
+            "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:3132:706172616d657465723a30",
+            "kind": "typeorm_repository_request",
+            "ownerId": "class:7372632f732e7473:53",
+            "site": {
+              "file": "src/s.ts",
+              "startByte": 12,
+              "endByte": 24,
+              "line": 1,
+              "parameterIndex": 0
+            },
+            "origin": {
+              "specifier": "@nestjs/typeorm",
+              "exportedName": "InjectRepository",
+              "localName": "InjectRepository",
+              "lockedVersion": "7.0.0"
+            },
+            "connection": {
+              "syntax": "unknown_expression",
+              "normalizedName": "default"
+            },
+            "entityRef": {
+              "id": "class:7372632f732e7473:55736572",
+              "kind": "class",
+              "name": "User"
+            },
+            "token": {
+              "state": "unknown",
+              "reason": "connection_expression_unknown"
+            },
+            "evidence": [
+              {
+                "claim": "argument_reference",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              },
+              {
+                "claim": "decorator_origin",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ],
+            "runtime": {
+              "providerExistence": "unverified",
+              "visibility": "unverified",
+              "injection": "unverified"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown connection rejects value",
+      "graph": {
+        "schemaVersion": "0.2",
+        "metadata": {
+          "analyzerVersion": "contract-fixture",
+          "analyzedAt": "2026-01-01T00:00:00Z",
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 0,
+            "emittedCalls": 0,
+            "skippedCalls": 0
+          }
+        },
+        "nodes": [
+          {
+            "id": "class:7372632f732e7473:53",
+            "kind": "class",
+            "name": "S",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          },
+          {
+            "id": "class:7372632f732e7473:55736572",
+            "kind": "class",
+            "name": "User",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          }
+        ],
+        "edges": [],
+        "diagnostics": [],
+        "frameworkDeclarations": [
+          {
+            "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:3132:706172616d657465723a30",
+            "kind": "typeorm_repository_request",
+            "ownerId": "class:7372632f732e7473:53",
+            "site": {
+              "file": "src/s.ts",
+              "startByte": 12,
+              "endByte": 24,
+              "line": 1,
+              "parameterIndex": 0
+            },
+            "origin": {
+              "specifier": "@nestjs/typeorm",
+              "exportedName": "InjectRepository",
+              "localName": "InjectRepository",
+              "lockedVersion": "7.0.0"
+            },
+            "connection": {
+              "syntax": "unknown_expression",
+              "value": "reports"
+            },
+            "entityRef": {
+              "id": "class:7372632f732e7473:55736572",
+              "kind": "class",
+              "name": "User"
+            },
+            "token": {
+              "state": "unknown",
+              "reason": "connection_expression_unknown"
+            },
+            "evidence": [
+              {
+                "claim": "argument_reference",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              },
+              {
+                "claim": "decorator_origin",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ],
+            "runtime": {
+              "providerExistence": "unverified",
+              "visibility": "unverified",
+              "injection": "unverified"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown connection rejects arbitrary field",
+      "graph": {
+        "schemaVersion": "0.2",
+        "metadata": {
+          "analyzerVersion": "contract-fixture",
+          "analyzedAt": "2026-01-01T00:00:00Z",
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 0,
+            "emittedCalls": 0,
+            "skippedCalls": 0
+          }
+        },
+        "nodes": [
+          {
+            "id": "class:7372632f732e7473:53",
+            "kind": "class",
+            "name": "S",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          },
+          {
+            "id": "class:7372632f732e7473:55736572",
+            "kind": "class",
+            "name": "User",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          }
+        ],
+        "edges": [],
+        "diagnostics": [],
+        "frameworkDeclarations": [
+          {
+            "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:3132:706172616d657465723a30",
+            "kind": "typeorm_repository_request",
+            "ownerId": "class:7372632f732e7473:53",
+            "site": {
+              "file": "src/s.ts",
+              "startByte": 12,
+              "endByte": 24,
+              "line": 1,
+              "parameterIndex": 0
+            },
+            "origin": {
+              "specifier": "@nestjs/typeorm",
+              "exportedName": "InjectRepository",
+              "localName": "InjectRepository",
+              "lockedVersion": "7.0.0"
+            },
+            "connection": {
+              "syntax": "unknown_expression",
+              "unexpected": true
+            },
+            "entityRef": {
+              "id": "class:7372632f732e7473:55736572",
+              "kind": "class",
+              "name": "User"
+            },
+            "token": {
+              "state": "unknown",
+              "reason": "connection_expression_unknown"
+            },
+            "evidence": [
+              {
+                "claim": "argument_reference",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              },
+              {
+                "claim": "decorator_origin",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ],
+            "runtime": {
+              "providerExistence": "unverified",
+              "visibility": "unverified",
+              "injection": "unverified"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown connection rejects null normalized name",
+      "graph": {
+        "schemaVersion": "0.2",
+        "metadata": {
+          "analyzerVersion": "contract-fixture",
+          "analyzedAt": "2026-01-01T00:00:00Z",
+          "callAnalysis": {
+            "scope": "parsed_named_class_methods",
+            "mode": "same_class_only",
+            "examinedCalls": 0,
+            "emittedCalls": 0,
+            "skippedCalls": 0
+          }
+        },
+        "nodes": [
+          {
+            "id": "class:7372632f732e7473:53",
+            "kind": "class",
+            "name": "S",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          },
+          {
+            "id": "class:7372632f732e7473:55736572",
+            "kind": "class",
+            "name": "User",
+            "file": "src/s.ts",
+            "line": 1,
+            "evidence": [
+              {
+                "source": "ast",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ]
+          }
+        ],
+        "edges": [],
+        "diagnostics": [],
+        "frameworkDeclarations": [
+          {
+            "id": "typeorm_decl:7372632f732e7473:747970656f726d5f7265706f7369746f72795f72657175657374:3132:706172616d657465723a30",
+            "kind": "typeorm_repository_request",
+            "ownerId": "class:7372632f732e7473:53",
+            "site": {
+              "file": "src/s.ts",
+              "startByte": 12,
+              "endByte": 24,
+              "line": 1,
+              "parameterIndex": 0
+            },
+            "origin": {
+              "specifier": "@nestjs/typeorm",
+              "exportedName": "InjectRepository",
+              "localName": "InjectRepository",
+              "lockedVersion": "7.0.0"
+            },
+            "connection": {
+              "syntax": "unknown_expression",
+              "normalizedName": null
+            },
+            "entityRef": {
+              "id": "class:7372632f732e7473:55736572",
+              "kind": "class",
+              "name": "User"
+            },
+            "token": {
+              "state": "unknown",
+              "reason": "connection_expression_unknown"
+            },
+            "evidence": [
+              {
+                "claim": "argument_reference",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              },
+              {
+                "claim": "decorator_origin",
+                "source": "resolver",
+                "file": "src/s.ts",
+                "line": 1,
+                "confidence": "confirmed"
+              }
+            ],
+            "runtime": {
+              "providerExistence": "unverified",
+              "visibility": "unverified",
+              "injection": "unverified"
+            }
+          }
+        ]
+      }
     }
   ],
   "validJson": [

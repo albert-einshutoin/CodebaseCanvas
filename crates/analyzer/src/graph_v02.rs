@@ -112,7 +112,7 @@ pub enum Connection {
         normalized_name: String,
     },
     #[serde(rename = "unknown_expression")]
-    UnknownExpression,
+    UnknownExpression {},
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -290,7 +290,7 @@ impl RepositoryRequest {
                 value,
                 normalized_name,
             } if !value.is_empty() && value == normalized_name => Some(normalized_name.as_str()),
-            Connection::UnknownExpression => None,
+            Connection::UnknownExpression {} => None,
             _ => return fail(),
         };
         let expected_reason = if connection_name.is_none() {
