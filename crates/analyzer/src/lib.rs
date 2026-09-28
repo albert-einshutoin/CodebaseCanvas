@@ -6,6 +6,7 @@ use std::collections::{HashMap, HashSet};
 pub mod calls;
 pub mod discovery;
 pub mod graph_builder;
+pub mod graph_v02;
 pub mod nestjs_di;
 pub mod nestjs_modules;
 pub mod nestjs_roles;
@@ -347,7 +348,7 @@ fn id_parts(id: &str) -> Option<(&str, Vec<String>)> {
     }
 }
 impl NodeKind {
-    fn class_like(self) -> bool {
+    pub(crate) fn class_like(self) -> bool {
         matches!(
             self,
             Self::Module | Self::Controller | Self::Service | Self::Repository | Self::Class
@@ -485,23 +486,49 @@ impl SystemGraph {
     }
 
     pub(crate) fn canonicalize(&mut self) {
-        self.nodes.sort_by(|a, b| a.id.cmp(&b.id));
-        self.edges.sort_by(|a, b| a.id.cmp(&b.id));
-        fn sort_evidence(items: &mut Vec<Evidence>) {
-            items.sort_by_cached_key(|e| serde_json::to_string(e).expect("finite evidence fields"));
-            items.dedup();
-        }
-        for n in &mut self.nodes {
-            sort_evidence(&mut n.evidence);
-        }
-        for e in &mut self.edges {
-            sort_evidence(&mut e.evidence);
-        }
-        self.diagnostics
-            .sort_by_cached_key(|d| serde_json::to_string(d).expect("finite diagnostic fields"));
+        canonicalize_graph_parts(&mut self.nodes, &mut self.edges, &mut self.diagnostics);
     }
 
     pub fn validate(&self) -> Result<(), String> {
+        GraphParts {
+            metadata: &self.metadata,
+            nodes: &self.nodes,
+            edges: &self.edges,
+            diagnostics: &self.diagnostics,
+        }
+        .validate()
+    }
+}
+
+pub(crate) fn canonicalize_graph_parts(
+    nodes: &mut [GraphNode],
+    edges: &mut [GraphEdge],
+    diagnostics: &mut [Diagnostic],
+) {
+    nodes.sort_by(|a, b| a.id.cmp(&b.id));
+    edges.sort_by(|a, b| a.id.cmp(&b.id));
+    fn sort_evidence(items: &mut Vec<Evidence>) {
+        items.sort_by_cached_key(|e| serde_json::to_string(e).expect("finite evidence fields"));
+        items.dedup();
+    }
+    for n in nodes {
+        sort_evidence(&mut n.evidence);
+    }
+    for e in edges {
+        sort_evidence(&mut e.evidence);
+    }
+    diagnostics.sort_by_cached_key(|d| serde_json::to_string(d).expect("finite diagnostic fields"));
+}
+
+pub(crate) struct GraphParts<'a> {
+    pub(crate) metadata: &'a GraphMetadata,
+    pub(crate) nodes: &'a [GraphNode],
+    pub(crate) edges: &'a [GraphEdge],
+    pub(crate) diagnostics: &'a [Diagnostic],
+}
+
+impl GraphParts<'_> {
+    pub(crate) fn validate(&self) -> Result<(), String> {
         let fail = |message: &str| Err(message.to_owned());
         if self.metadata.analyzer_version.is_empty()
             || self
@@ -523,7 +550,7 @@ impl SystemGraph {
         let mut members: HashMap<&str, Vec<&str>> = HashMap::new();
         let mut exposing: HashMap<&str, Vec<&str>> = HashMap::new();
         let mut handlers: HashMap<&str, Vec<&str>> = HashMap::new();
-        for e in &self.edges {
+        for e in self.edges {
             let (Some(a), Some(b)) = (nodes.get(e.from.as_str()), nodes.get(e.to.as_str())) else {
                 return fail("Dangling edge");
             };
@@ -574,7 +601,7 @@ impl SystemGraph {
                 return fail("Unsupported edge semantics");
             }
         }
-        for n in &self.nodes {
+        for n in self.nodes {
             let mut seen = HashSet::from([n.id.as_str()]);
             let mut parent = n.parent_id.as_deref();
             while let Some(id) = parent {
@@ -682,7 +709,7 @@ impl SystemGraph {
         }
         let mut skipped = 0u64;
         let mut groups = HashSet::new();
-        for d in &self.diagnostics {
+        for d in self.diagnostics {
             if d.code.is_empty()
                 || d.message.is_empty()
                 || !position(d.file.as_deref(), d.line, None)
