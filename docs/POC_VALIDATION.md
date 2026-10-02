@@ -113,3 +113,9 @@ Status: **TECHNICAL_AUDIT_RECORDED / HUMAN_NOT_RUN**。#30最終Decision: **NOT_
 | #30最終Decision | NOT_EVALUATED |
 
 リハーサルの実施結果と資料差分レビューは進行者資料にのみ記録。LLM仮想参加者や予想回答で結果を埋めない。
+
+## v0.1 継続判断案をレビュー中（Issue #30）
+
+[v0.1 継続判断レビュー案](validation/V01_DECISION_REVIEW.md)は、既存の技術監査・利用フロー・性能・公開記録と未評価事項を照合した **DRAFT_FOR_REVIEW / 推奨 REVISE** である。これは対象課題と評価前提を見直す提案であり、正式な採否承認は未取得。正式な #30 Decision は **NOT_EVALUATED**、Issue は **OPEN** のままで、人間 UX 結果への読み替えはしない。上の当時の監査・評価記録は維持する。技術監査は **COMPLETED / EXCEEDED**、Phase A は A-draft-1 / 承認 PENDING / 実評価 NOT_RUN / 初見参加者 0 名、Phase B の人間 UX・source-first 比較も NOT_RUN のまま。
+
+Phase A の「#17 未接続」「本番 analyze 非0」は固定アプリ `e0a139a6c498ddccc7fb0ba18c74c69beb73935f` について計画した時点の記述であり、最新 main の仕様ではない。今回、Phase A の固定アプリ・課題・正解を差し替えず、#30 の GitHub checkbox や Decision も変更しない。
