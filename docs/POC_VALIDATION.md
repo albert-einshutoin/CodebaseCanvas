@@ -119,3 +119,19 @@ Status: **TECHNICAL_AUDIT_RECORDED / HUMAN_NOT_RUN**。#30最終Decision: **NOT_
 [v0.1 継続判断レビュー案](validation/V01_DECISION_REVIEW.md)は、既存の技術監査・利用フロー・性能・公開記録と未評価事項を照合した **DRAFT_FOR_REVIEW / 推奨 REVISE** である。これは対象課題と評価前提を見直す提案であり、正式な採否承認は未取得。正式な #30 Decision は **NOT_EVALUATED**、Issue は **OPEN** のままで、人間 UX 結果への読み替えはしない。上の当時の監査・評価記録は維持する。技術監査は **COMPLETED / EXCEEDED**、Phase A は A-draft-1 / 承認 PENDING / 実評価 NOT_RUN / 初見参加者 0 名、Phase B の人間 UX・source-first 比較も NOT_RUN のまま。
 
 Phase A の「#17 未接続」「本番 analyze 非0」は固定アプリ `e0a139a6c498ddccc7fb0ba18c74c69beb73935f` について計画した時点の記述であり、最新 main の仕様ではない。今回、Phase A の固定アプリ・課題・正解を差し替えず、#30 の GitHub checkbox や Decision も変更しない。
+
+## 実 repo 人間評価の準備キット（2026-10-11 JST）
+
+**B-prep-1 / READY_FOR_REVIEW / Execution approval PENDING**。この追加工程は評価準備の完成に限定する。人間 UX・source-first 比較は **NOT_RUN / 参加者0名**、得点・時間・回答欄は空欄。#30 全体は **NOT_COMPLETE / 正式 Decision NOT_EVALUATED**、REVISE 案は未承認のまま。
+
+- [実 repo 評価計画・比較・失敗/欠測・同意・実施前の承認事項](validation/REAL_REPO_UX_PLAN.md)
+- [参加者用課題](validation/REAL_REPO_UX_TASKS.md)
+- [進行者用の固定 source 正解・採点・空票](validation/REAL_REPO_UX_FACILITATOR.md)
+- [環境準備・再実行コマンド・技術リハーサル記録](validation/REAL_REPO_UX_ENVIRONMENT.md)
+- [封印する資料・参照先の SHA-256 manifest](validation/REAL_REPO_UX_SHA256SUMS.txt)
+
+入力は既存と同じ `lujakob/nestjs-realworld-example-app` / `c1c2cc4e448b279ff083272df1ac50d20c3304fa`。製品は最新 main 確認時点の `b48df42d61d43b7389c191346282ecfdde52529a` を新たに固定した。使い捨て source copy の実 CLI 解析→local Web の実 File 入力→検索・選択・Details・unknown・source location・実 Clipboard Context を確認し、**TECHNICAL_REHEARSAL_COMPLETED**。既存台帳との再照合は supported missing/false0、Module/DI の暫定未解決率は **EXCEEDED** のまま。準備・技術操作を人間の理解、製品価値、release GO に算入しない。
+
+上の Phase B 表の「未固定」は当時の状態。本キットで課題/正解/具体的比較案はレビュー可能になったが、実施承認と人間結果は未取得。過去の監査、source-v6/v7、Phase A 固定資料、継続判断案は書き換えない。参加者連絡、公開更新、Issue 更新/close、次 Issue の開始は行わない。
+
+B-prep-1 の納品追補では、初回リハーサルの一時原本が消失していることを明記し、固定製品・固定入力で新しい技術確認を実施した。[環境記録の納品時再確認](validation/REAL_REPO_UX_ENVIRONMENT.md#納品時の再確認)に `2026-10-11T01:10:47Z` のgraphとrepo外の永続証拠の所在を記録する。納品資料のcommitと評価製品commitを分離し、資料統合後も固定製品から再現できる手順にした。課題・採点・比較条件は変更せず、人間評価NOT_RUN・参加者0名・承認PENDING・正式Decision NOT_EVALUATED・REVISE未承認・Module/DI EXCEEDEDを維持する。
